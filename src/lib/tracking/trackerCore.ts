@@ -2,6 +2,13 @@ import { buildEventData } from './eventBuilder';
 import { sendToPixel } from './pixelSender';
 import { sendToConversionsApi } from './conversionsApi';
 
+declare global {
+  interface Window {
+    fbq: Function;
+    _fbq: any;
+  }
+}
+
 export class TrackerCore {
   private static instance: TrackerCore;
   private pixelId: string;

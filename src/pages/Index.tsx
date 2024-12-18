@@ -61,9 +61,20 @@ const Index = () => {
     setCredentials({ pixelId, apiToken });
   };
 
-  const handleEdit = (funnel: { id: string, steps: FunnelStep[] }) => {
+  const handleEdit = (funnel: { id: string, steps: any[] }) => {
+    // Convert database step types to FunnelStep type
+    const convertedSteps: FunnelStep[] = funnel.steps.map(step => ({
+      id: step.id,
+      name: step.name,
+      path: step.path,
+      event: step.event,
+      selector: step.selector || '',
+      triggerType: step.trigger_type as 'pageview' | 'click' | 'scroll',
+      orderPosition: step.order_position
+    }));
+    
     setEditingFunnelId(funnel.id);
-    setSteps(funnel.steps);
+    setSteps(convertedSteps);
   };
 
   const handleDelete = (funnelId: string) => {
@@ -121,7 +132,7 @@ const Index = () => {
                           <div key={step.id} className="flex items-center gap-2">
                             <span className="font-medium">{index + 1}.</span>
                             <span>{step.name}</span>
-                            <span className="text-gray-500">({step.triggerType})</span>
+                            <span className="text-gray-500">({step.trigger_type})</span>
                           </div>
                         ))}
                       </div>
