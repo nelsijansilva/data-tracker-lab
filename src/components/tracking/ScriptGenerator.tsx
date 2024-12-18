@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { buildEventData } from "@/lib/tracking/fbParameters";
 
 interface FunnelStep {
   id: string;
@@ -48,27 +49,44 @@ export const ScriptGenerator = ({ pixelId, apiToken, backendUrl, steps }: Script
   fbq('track', 'PageView');
 
   // Track funnel events
-  function trackFunnelEvent(stepData, eventType = 'custom') {
+  async function trackFunnelEvent(stepData, eventType = 'custom') {
+    const eventData = {
+      event_name: stepData.event,
+      event_time: Math.floor(Date.now() / 1000),
+      event_id: \`\${Date.now()}-\${Math.random().toString(36).substr(2, 9)}\`,
+      event_source_url: window.location.href,
+      user_data: {
+        client_user_agent: navigator.userAgent,
+        client_ip_address: '',  // Will be set by server
+        fbp: document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1] || '',
+        fbc: document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1] || '',
+      },
+      action_source: 'website',
+    };
+
     // Track with Facebook Pixel
-    fbq('track', stepData.event);
+    fbq('track', stepData.event, {
+      eventID: eventData.event_id,
+    });
 
     // Send to backend
-    fetch(BACKEND_URL + '/track', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        pixelId: PIXEL_ID,
-        event: stepData.event,
-        stepName: stepData.name,
-        path: stepData.path,
-        eventType: eventType,
-        timestamp: new Date().toISOString(),
-        url: window.location.href,
-        userAgent: navigator.userAgent,
-      }),
-    }).catch(console.error);
+    try {
+      await fetch(BACKEND_URL + '/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pixelId: PIXEL_ID,
+          ...eventData,
+          stepName: stepData.name,
+          path: stepData.path,
+          eventType: eventType,
+        }),
+      });
+    } catch (error) {
+      console.error('Error sending event to backend:', error);
+    }
   }
 
   // Track page views
