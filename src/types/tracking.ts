@@ -19,3 +19,9 @@ export interface PixelConfiguration {
   pixelId: string;
   apiToken: string;
 }
+
+export interface CDNConfig {
+  id: string;
+  subdomain: string;
+  status: string;
+}
