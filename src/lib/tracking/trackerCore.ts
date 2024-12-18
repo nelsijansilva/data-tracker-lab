@@ -42,13 +42,10 @@ export class TrackerCore {
         window,
         document,
         'script',
-        'https://connect.facebook.net/en_US/fbevents.js',
-        undefined,
-        undefined,
-        undefined
+        'https://connect.facebook.net/en_US/fbevents.js'
       );
 
-      // Ensure fbq is defined before calling it
+      // Initialize pixel after ensuring fbq is defined
       if (typeof window.fbq === 'function') {
         window.fbq('init', this.pixelId);
         window.fbq('track', 'PageView');
