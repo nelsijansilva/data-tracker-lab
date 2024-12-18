@@ -2,51 +2,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-interface FunnelStep {
-  id: string;
-  name: string;
-  path: string;
-  event: string;
-  selector?: string;
-  triggerType: 'pageview' | 'click' | 'scroll';
-}
+import { FunnelStepForm } from "./FunnelStepForm";
+import type { FunnelStep } from "@/types/tracking";
 
 interface FunnelStepsProps {
   steps: FunnelStep[];
   onChange: (steps: FunnelStep[]) => void;
   onSave: () => void;
 }
-
-// Standard Facebook Events
-const FB_STANDARD_EVENTS = [
-  'AddPaymentInfo',
-  'AddToCart',
-  'AddToWishlist',
-  'CompleteRegistration',
-  'Contact',
-  'CustomizeProduct',
-  'Donate',
-  'FindLocation',
-  'InitiateCheckout',
-  'Lead',
-  'Purchase',
-  'Schedule',
-  'Search',
-  'StartTrial',
-  'SubmitApplication',
-  'Subscribe',
-  'ViewContent'
-];
 
 export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
   const [funnelName, setFunnelName] = useState("");
@@ -131,65 +95,14 @@ export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
         </div>
 
         {steps.map((step) => (
-          <div key={step.id} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
-            <Input
-              placeholder="Step Name"
-              value={step.name}
-              onChange={(e) => updateStep(step.id, "name", e.target.value)}
-              className="md:col-span-1"
-            />
-            <Input
-              placeholder="Page Path (e.g., /checkout)"
-              value={step.path}
-              onChange={(e) => updateStep(step.id, "path", e.target.value)}
-              className="md:col-span-1"
-            />
-            <Select
-              value={step.event}
-              onValueChange={(value) => updateStep(step.id, "event", value)}
-            >
-              <SelectTrigger className="md:col-span-1">
-                <SelectValue placeholder="Select Event" />
-              </SelectTrigger>
-              <SelectContent>
-                {FB_STANDARD_EVENTS.map((event) => (
-                  <SelectItem key={event} value={event}>
-                    {event}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={step.triggerType}
-              onValueChange={(value) => updateStep(step.id, "triggerType", value as 'pageview' | 'click' | 'scroll')}
-            >
-              <SelectTrigger className="md:col-span-1">
-                <SelectValue placeholder="Select Trigger" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pageview">Page View</SelectItem>
-                <SelectItem value="click">Click Event</SelectItem>
-                <SelectItem value="scroll">Scroll Event</SelectItem>
-              </SelectContent>
-            </Select>
-            {(step.triggerType === 'click' || step.triggerType === 'scroll') && (
-              <Input
-                placeholder="CSS Selector (class or ID)"
-                value={step.selector || ''}
-                onChange={(e) => updateStep(step.id, "selector", e.target.value)}
-                className="md:col-span-1"
-              />
-            )}
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={() => removeStep(step.id)}
-              className="md:col-span-1"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <FunnelStepForm
+            key={step.id}
+            step={step}
+            onUpdate={updateStep}
+            onRemove={removeStep}
+          />
         ))}
+
         <div className="flex gap-4">
           <Button onClick={addStep} className="flex-1">
             Add Step
