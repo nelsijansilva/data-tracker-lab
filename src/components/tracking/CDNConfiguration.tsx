@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,11 +42,18 @@ export const CDNConfiguration = () => {
       queryClient.invalidateQueries({ queryKey: ['cdn-configurations'] });
       toast({
         title: "CDN Configuration Saved",
-        description: `To complete setup, add a CNAME record in your DNS settings:\n
-          Record Type: CNAME\n
-          Name: ${subdomain.split('.')[0]}\n
-          Value: assets.yourdomain.com\n
-          TTL: 3600`,
+        description: `Para completar a configuração no Cloudflare, siga estes passos:\n
+          1. Acesse o painel do Cloudflare\n
+          2. Vá para a seção DNS\n
+          3. Adicione um registro CNAME:\n
+            - Tipo: CNAME\n
+            - Nome: ${subdomain.split('.')[0]}\n
+            - Destino: ${window.location.hostname}\n
+            - Proxy status: Proxied (laranja)\n
+          4. Em SSL/TLS, certifique-se que está como "Flexible"\n
+          5. Em Rules > Page Rules, adicione:\n
+            - URL: ${subdomain}/*\n
+            - Cache Level: Cache Everything`,
       });
       setSubdomain("");
     },
@@ -54,7 +61,7 @@ export const CDNConfiguration = () => {
       console.error('Error saving CDN configuration:', error);
       toast({
         title: "Error",
-        description: "Failed to save CDN configuration",
+        description: "Falha ao salvar configuração do CDN",
         variant: "destructive",
       });
     }
@@ -72,15 +79,15 @@ export const CDNConfiguration = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cdn-configurations'] });
       toast({
-        title: "Configuration Deleted",
-        description: "CDN configuration was successfully removed",
+        title: "Configuração Removida",
+        description: "A configuração do CDN foi removida com sucesso",
       });
     },
     onError: (error) => {
       console.error('Error deleting CDN configuration:', error);
       toast({
         title: "Error",
-        description: "Failed to delete CDN configuration",
+        description: "Falha ao remover configuração do CDN",
         variant: "destructive",
       });
     }
@@ -89,18 +96,24 @@ export const CDNConfiguration = () => {
   const verifyMutation = useMutation({
     mutationFn: async (subdomain: string) => {
       try {
-        const response = await fetch(`https://${subdomain}/health-check`);
-        return response.ok;
+        // Usando um Edge Function para contornar o CORS
+        const { data, error } = await supabase.functions.invoke('verify-cdn', {
+          body: { url: `https://${subdomain}` }
+        });
+        
+        if (error) throw error;
+        return data.isValid;
       } catch (error) {
+        console.error('Verification error:', error);
         return false;
       }
     },
     onSuccess: (isValid, subdomain) => {
       toast({
-        title: isValid ? "Connection Verified" : "Verification Failed",
+        title: isValid ? "Conexão Verificada" : "Falha na Verificação",
         description: isValid 
-          ? `The CNAME record for ${subdomain} is correctly configured`
-          : `Could not verify the CNAME record for ${subdomain}. Please check your DNS settings`,
+          ? `O registro CNAME para ${subdomain} está configurado corretamente`
+          : `Não foi possível verificar o registro CNAME para ${subdomain}. Por favor, verifique suas configurações no Cloudflare`,
         variant: isValid ? "default" : "destructive",
       });
     }
@@ -112,7 +125,7 @@ export const CDNConfiguration = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this configuration?')) {
+    if (window.confirm('Tem certeza que deseja deletar esta configuração?')) {
       deleteMutation.mutate(id);
     }
   };
@@ -124,27 +137,27 @@ export const CDNConfiguration = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>CDN Configuration</CardTitle>
+        <CardTitle>Configuração do CDN (Cloudflare)</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Input
               type="text"
-              placeholder="Enter subdomain (e.g., cdn.example.com)"
+              placeholder="Digite o subdomínio (ex: cdn.seudominio.com)"
               value={subdomain}
               onChange={(e) => setSubdomain(e.target.value)}
               required
             />
           </div>
           <Button type="submit" className="w-full">
-            Save Configuration
+            Salvar Configuração
           </Button>
         </form>
 
         {configurations && configurations.length > 0 && (
           <div className="mt-6 space-y-4">
-            <h3 className="font-semibold">Existing Configurations</h3>
+            <h3 className="font-semibold">Configurações Existentes</h3>
             {configurations.map((config) => (
               <div key={config.id} className="flex items-center justify-between p-3 border rounded">
                 <span>{config.subdomain}</span>
@@ -155,7 +168,7 @@ export const CDNConfiguration = () => {
                     onClick={() => handleVerify(config.subdomain)}
                   >
                     <RefreshCw className="h-4 w-4 mr-1" />
-                    Verify
+                    Verificar
                   </Button>
                   <Button
                     variant="destructive"
