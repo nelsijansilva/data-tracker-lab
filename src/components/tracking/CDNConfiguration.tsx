@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { CDNStatusIndicator } from "./CDNStatusIndicator";
 
 interface CDNConfig {
   id: string;
@@ -34,7 +35,7 @@ export const CDNConfiguration = () => {
     mutationFn: async (subdomain: string) => {
       const { error } = await supabase
         .from('cdn_configurations')
-        .insert([{ subdomain }]);
+        .insert([{ subdomain, status: 'pending' }]);
       
       if (error) throw error;
     },
@@ -103,10 +104,18 @@ export const CDNConfiguration = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (response, subdomain) => {
+    onSuccess: async (response, subdomain) => {
       const { isValid, details } = response;
       
       if (isValid) {
+        // Atualiza o status para 'verified' no banco
+        await supabase
+          .from('cdn_configurations')
+          .update({ status: 'verified' })
+          .eq('subdomain', subdomain);
+        
+        queryClient.invalidateQueries({ queryKey: ['cdn-configurations'] });
+        
         toast({
           title: "Conexão Verificada",
           description: `O domínio ${subdomain} está configurado corretamente e passando pelo Cloudflare.
@@ -180,7 +189,13 @@ export const CDNConfiguration = () => {
             <h3 className="font-semibold">Configurações Existentes</h3>
             {configurations.map((config) => (
               <div key={config.id} className="flex items-center justify-between p-3 border rounded">
-                <span>{config.subdomain}</span>
+                <div className="flex flex-col gap-1">
+                  <span>{config.subdomain}</span>
+                  <CDNStatusIndicator 
+                    isVerified={config.status === 'verified'} 
+                    subdomain={config.subdomain}
+                  />
+                </div>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
