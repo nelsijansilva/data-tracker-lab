@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CredentialsForm } from "@/components/tracking/CredentialsForm";
 import { FunnelSteps } from "@/components/tracking/FunnelSteps";
 import { ScriptGenerator } from "@/components/tracking/ScriptGenerator";
+import { CDNConfiguration } from "@/components/tracking/CDNConfiguration";
 import { getFunnels } from "@/lib/tracking/supabaseClient";
 import type { FunnelStep } from "@/types/tracking";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,13 +29,11 @@ const Index = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (funnelId: string) => {
-      // Delete funnel steps first due to foreign key constraint
       await supabase
         .from('funnel_steps')
         .delete()
         .eq('funnel_id', funnelId);
       
-      // Then delete the funnel
       await supabase
         .from('funnels')
         .delete()
@@ -62,14 +61,13 @@ const Index = () => {
   };
 
   const handleEdit = (funnel: { id: string, steps: any[] }) => {
-    // Convert database step types to FunnelStep type
     const convertedSteps: FunnelStep[] = funnel.steps.map(step => ({
       id: step.id,
       name: step.name,
       path: step.path,
       event: step.event,
       selector: step.selector || '',
-      triggerType: step.trigger_type as 'pageview' | 'click' | 'scroll',
+      triggerType: step.triggerType,
       orderPosition: step.order_position
     }));
     
@@ -88,7 +86,10 @@ const Index = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         <h1 className="text-4xl font-bold text-gray-900">Facebook Funnel Tracker</h1>
         
-        <CredentialsForm onSave={handleCredentialsSave} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <CredentialsForm onSave={handleCredentialsSave} />
+          <CDNConfiguration />
+        </div>
 
         {credentials.pixelId && credentials.apiToken && (
           <>
@@ -132,7 +133,7 @@ const Index = () => {
                           <div key={step.id} className="flex items-center gap-2">
                             <span className="font-medium">{index + 1}.</span>
                             <span>{step.name}</span>
-                            <span className="text-gray-500">({step.trigger_type})</span>
+                            <span className="text-gray-500">({step.triggerType})</span>
                           </div>
                         ))}
                       </div>

@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cdn_configurations: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          subdomain: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          subdomain: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          subdomain?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       funnel_steps: {
         Row: {
           created_at: string
