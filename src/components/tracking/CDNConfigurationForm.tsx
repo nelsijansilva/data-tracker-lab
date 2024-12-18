@@ -32,9 +32,25 @@ export const CDNConfigurationForm = () => {
             - Proxy status: Proxied (laranja)\n
             - TTL: Auto\n
           4. Em SSL/TLS, certifique-se que está como "Flexible"\n
-          5. Em Rules > Page Rules, adicione:\n
-            - URL: ${subdomain}/*\n
-            - Cache Level: Cache Everything`,
+          5. Em Rules > Page Rules, adicione duas regras:\n
+            a) Primeira regra:\n
+              - URL: ${subdomain}/*\n
+              - Cache Level: Cache Everything\n
+              - Edge Cache TTL: 4 hours\n
+            b) Segunda regra:\n
+              - URL: ${subdomain}/tracking/*\n
+              - Configure as seguintes opções:\n
+                * Cache Level: Bypass\n
+                * SSL: Flexible\n
+                * Security Level: Medium\n
+                * Browser Cache TTL: 4 hours\n
+          6. Em Rules > Transform Rules, crie uma nova regra:\n
+            - Nome: CORS for Tracking\n
+            - Quando: Hostname é ${subdomain}\n
+            - Então: Set response headers\n
+              * Access-Control-Allow-Origin: *\n
+              * Access-Control-Allow-Methods: GET, OPTIONS\n
+              * Access-Control-Allow-Headers: Content-Type`,
       });
       setSubdomain("");
     },
