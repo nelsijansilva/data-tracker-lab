@@ -2,7 +2,7 @@ import { FunnelStep } from '@/types/tracking';
 
 export const generateTrackingScript = (
   pixelId: string, 
-  backendUrl: string, 
+  apiToken: string, 
   steps: FunnelStep[]
 ): string => {
   return `
@@ -11,8 +11,9 @@ export const generateTrackingScript = (
 (function() {
   // Initialize tracking
   const PIXEL_ID = '${pixelId}';
-  const BACKEND_URL = '${backendUrl}';
+  const API_TOKEN = '${apiToken}';
   const FUNNEL_STEPS = ${JSON.stringify(steps, null, 2)};
+  const API_ENDPOINT = 'https://graph.facebook.com/v17.0/' + PIXEL_ID + '/events';
 
   // Initialize Facebook Pixel
   !function(f,b,e,v,n,t,s)
@@ -27,44 +28,71 @@ export const generateTrackingScript = (
   fbq('init', PIXEL_ID);
   fbq('track', 'PageView');
 
+  // Utility functions
+  async function getIpAddress() {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip;
+    } catch (error) {
+      console.error('Error getting IP:', error);
+      return '';
+    }
+  }
+
+  function getFacebookBrowserParams() {
+    return {
+      fbp: document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1] || '',
+      fbc: document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1] || ''
+    };
+  }
+
   // Track funnel events
   async function trackFunnelEvent(stepData, eventType = 'custom') {
-    const eventData = {
-      event_name: stepData.event,
-      event_time: Math.floor(Date.now() / 1000),
-      event_id: \`\${Date.now()}-\${Math.random().toString(36).substr(2, 9)}\`,
-      event_source_url: window.location.href,
-      user_data: {
-        client_user_agent: navigator.userAgent,
-        client_ip_address: '',
-        fbp: document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1] || '',
-        fbc: document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1] || '',
-      },
-      action_source: 'website',
-    };
-
+    const timestamp = Date.now();
+    const eventId = \`\${timestamp}-\${Math.random().toString(36).substr(2, 9)}\`;
+    const { fbp, fbc } = getFacebookBrowserParams();
+    
     // Track with Facebook Pixel
     fbq('track', stepData.event, {
-      eventID: eventData.event_id,
+      eventID: eventId
     });
 
-    // Send to backend
+    // Prepare data for Conversions API
+    const eventData = {
+      data: [{
+        event_name: stepData.event,
+        event_time: Math.floor(timestamp / 1000),
+        event_id: eventId,
+        event_source_url: window.location.href,
+        action_source: 'website',
+        user_data: {
+          client_user_agent: navigator.userAgent,
+          client_ip_address: await getIpAddress(),
+          fbp,
+          fbc
+        }
+      }]
+    };
+
+    // Send to Conversions API
     try {
-      await fetch(BACKEND_URL + '/track', {
+      const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': \`Bearer \${API_TOKEN}\`
         },
-        body: JSON.stringify({
-          pixelId: PIXEL_ID,
-          ...eventData,
-          stepName: stepData.name,
-          path: stepData.path,
-          eventType: eventType,
-        }),
+        body: JSON.stringify(eventData)
       });
+
+      if (!response.ok) {
+        throw new Error(\`HTTP error! status: \${response.status}\`);
+      }
+      
+      console.log('Event tracked successfully:', stepData.event);
     } catch (error) {
-      console.error('Error sending event to backend:', error);
+      console.error('Error sending to Conversions API:', error);
     }
   }
 
@@ -113,7 +141,7 @@ export const generateTrackingScript = (
   setupClickListeners();
   setupScrollListeners();
 
-  // Track navigation changes
+  // Track navigation changes (for SPAs)
   let lastPath = window.location.pathname;
   const observer = new MutationObserver(() => {
     const currentPath = window.location.pathname;

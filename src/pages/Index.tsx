@@ -1,25 +1,15 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { CredentialsForm } from "@/components/tracking/CredentialsForm";
 import { FunnelSteps } from "@/components/tracking/FunnelSteps";
 import { ScriptGenerator } from "@/components/tracking/ScriptGenerator";
-
-interface FunnelStep {
-  id: string;
-  name: string;
-  path: string;
-  event: string;
-  selector?: string;
-  triggerType: 'pageview' | 'click' | 'scroll';
-}
+import type { FunnelStep } from "@/types/tracking";
 
 const Index = () => {
   const [credentials, setCredentials] = useState({
     pixelId: "",
     apiToken: "",
   });
-  const [backendUrl, setBackendUrl] = useState("");
   const [steps, setSteps] = useState<FunnelStep[]>([]);
 
   const handleCredentialsSave = (pixelId: string, apiToken: string) => {
@@ -35,29 +25,16 @@ const Index = () => {
 
         {credentials.pixelId && credentials.apiToken && (
           <>
-            <Card className="p-6">
-              <label htmlFor="backendUrl" className="block text-sm font-medium mb-2">
-                Backend URL
-              </label>
-              <Input
-                id="backendUrl"
-                placeholder="Enter your backend URL (e.g., https://api.example.com)"
-                value={backendUrl}
-                onChange={(e) => setBackendUrl(e.target.value)}
-              />
-            </Card>
-
             <FunnelSteps 
               steps={steps} 
               onChange={setSteps}
               onSave={() => {}}
             />
 
-            {backendUrl && steps.length > 0 && (
+            {steps.length > 0 && (
               <ScriptGenerator
                 pixelId={credentials.pixelId}
                 apiToken={credentials.apiToken}
-                backendUrl={backendUrl}
                 steps={steps}
               />
             )}

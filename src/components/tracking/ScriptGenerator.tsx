@@ -9,16 +9,15 @@ import type { FunnelStep } from "@/types/tracking";
 interface ScriptGeneratorProps {
   pixelId: string;
   apiToken: string;
-  backendUrl: string;
   steps: FunnelStep[];
 }
 
-export const ScriptGenerator = ({ pixelId, apiToken, backendUrl, steps }: ScriptGeneratorProps) => {
+export const ScriptGenerator = ({ pixelId, apiToken, steps }: ScriptGeneratorProps) => {
   const { toast } = useToast();
   const [trackingScript, setTrackingScript] = useState("");
 
   const generateScript = () => {
-    const script = generateTrackingScript(pixelId, backendUrl, steps);
+    const script = generateTrackingScript(pixelId, apiToken, steps);
     setTrackingScript(script);
     toast({
       title: "Script Generated",
