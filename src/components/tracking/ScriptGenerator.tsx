@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { generateTrackingScript } from "@/lib/tracking/trackingUtils";
+import { generateCDNScript } from "@/lib/tracking/trackingScript";
 import { ScriptDisplay } from "./ScriptDisplay";
 import type { FunnelStep } from "@/types/tracking";
 
@@ -17,7 +17,7 @@ export const ScriptGenerator = ({ pixelId, apiToken, steps }: ScriptGeneratorPro
   const [trackingScript, setTrackingScript] = useState("");
 
   const generateScript = () => {
-    const script = generateTrackingScript(pixelId, apiToken, steps);
+    const script = generateCDNScript(pixelId);
     setTrackingScript(script);
     toast({
       title: "Script Generated",
