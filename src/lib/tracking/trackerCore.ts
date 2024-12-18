@@ -1,22 +1,19 @@
-import { FunnelStep } from '@/types/tracking';
 import { buildEventData } from './eventBuilder';
 import { sendToPixel } from './pixelSender';
 import { sendToConversionsApi } from './conversionsApi';
 
-declare const fbq: any;
-
 export class TrackerCore {
   private static instance: TrackerCore;
   private pixelId: string;
-  private steps: FunnelStep[];
+  private steps: any[];
 
-  private constructor(pixelId: string, steps: FunnelStep[]) {
+  private constructor(pixelId: string, steps: any[]) {
     this.pixelId = pixelId;
     this.steps = steps;
     this.initFacebookPixel();
   }
 
-  static init(pixelId: string, steps: FunnelStep[]): TrackerCore {
+  static init(pixelId: string, steps: any[]): TrackerCore {
     if (!TrackerCore.instance) {
       TrackerCore.instance = new TrackerCore(pixelId, steps);
     }
@@ -26,7 +23,7 @@ export class TrackerCore {
   private initFacebookPixel(): void {
     // Initialize Facebook Pixel
     if (typeof window.fbq === 'undefined') {
-      ((f: any, b: any, e: any, v: any, n: any, t: any, s: any) => {
+      ((f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) => {
         if (f.fbq) return;
         n = f.fbq = function() {
           n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
@@ -45,7 +42,10 @@ export class TrackerCore {
         window,
         document,
         'script',
-        'https://connect.facebook.net/en_US/fbevents.js'
+        'https://connect.facebook.net/en_US/fbevents.js',
+        undefined,
+        undefined,
+        undefined
       );
 
       fbq('init', this.pixelId);
