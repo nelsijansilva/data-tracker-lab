@@ -4,6 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FunnelStep {
   id: string;
@@ -11,7 +18,7 @@ interface FunnelStep {
   path: string;
   event: string;
   selector?: string;
-  triggerType: 'pageview' | 'click';
+  triggerType: 'pageview' | 'click' | 'scroll';
 }
 
 interface FunnelStepsProps {
@@ -19,6 +26,27 @@ interface FunnelStepsProps {
   onChange: (steps: FunnelStep[]) => void;
   onSave: () => void;
 }
+
+// Standard Facebook Events
+const FB_STANDARD_EVENTS = [
+  'AddPaymentInfo',
+  'AddToCart',
+  'AddToWishlist',
+  'CompleteRegistration',
+  'Contact',
+  'CustomizeProduct',
+  'Donate',
+  'FindLocation',
+  'InitiateCheckout',
+  'Lead',
+  'Purchase',
+  'Schedule',
+  'Search',
+  'StartTrial',
+  'SubmitApplication',
+  'Subscribe',
+  'ViewContent'
+];
 
 export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
   const [funnelName, setFunnelName] = useState("");
@@ -36,7 +64,7 @@ export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
     onChange([...steps, newStep]);
   };
 
-  const updateStep = (id: string, field: keyof FunnelStep, value: string | 'pageview' | 'click') => {
+  const updateStep = (id: string, field: keyof FunnelStep, value: string | 'pageview' | 'click' | 'scroll') => {
     const updatedSteps = steps.map((step) =>
       step.id === id ? { ...step, [field]: value } : step
     );
@@ -116,21 +144,35 @@ export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
               onChange={(e) => updateStep(step.id, "path", e.target.value)}
               className="md:col-span-1"
             />
-            <Input
-              placeholder="Event Name"
+            <Select
               value={step.event}
-              onChange={(e) => updateStep(step.id, "event", e.target.value)}
-              className="md:col-span-1"
-            />
-            <select
-              value={step.triggerType}
-              onChange={(e) => updateStep(step.id, "triggerType", e.target.value as 'pageview' | 'click')}
-              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm md:col-span-1"
+              onValueChange={(value) => updateStep(step.id, "event", value)}
             >
-              <option value="pageview">Page View</option>
-              <option value="click">Click Event</option>
-            </select>
-            {step.triggerType === 'click' && (
+              <SelectTrigger className="md:col-span-1">
+                <SelectValue placeholder="Select Event" />
+              </SelectTrigger>
+              <SelectContent>
+                {FB_STANDARD_EVENTS.map((event) => (
+                  <SelectItem key={event} value={event}>
+                    {event}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={step.triggerType}
+              onValueChange={(value) => updateStep(step.id, "triggerType", value as 'pageview' | 'click' | 'scroll')}
+            >
+              <SelectTrigger className="md:col-span-1">
+                <SelectValue placeholder="Select Trigger" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pageview">Page View</SelectItem>
+                <SelectItem value="click">Click Event</SelectItem>
+                <SelectItem value="scroll">Scroll Event</SelectItem>
+              </SelectContent>
+            </Select>
+            {(step.triggerType === 'click' || step.triggerType === 'scroll') && (
               <Input
                 placeholder="CSS Selector (class or ID)"
                 value={step.selector || ''}

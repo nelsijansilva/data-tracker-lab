@@ -10,7 +10,7 @@ interface FunnelStep {
   path: string;
   event: string;
   selector?: string;
-  triggerType: 'pageview' | 'click';
+  triggerType: 'pageview' | 'click' | 'scroll';
 }
 
 interface ScriptGeneratorProps {
@@ -47,7 +47,7 @@ export const ScriptGenerator = ({ pixelId, apiToken, backendUrl, steps }: Script
   fbq('init', PIXEL_ID);
   fbq('track', 'PageView');
 
-  // Track funnel steps
+  // Track funnel events
   function trackFunnelEvent(stepData, eventType = 'custom') {
     // Track with Facebook Pixel
     fbq('track', stepData.event);
@@ -87,9 +87,34 @@ export const ScriptGenerator = ({ pixelId, apiToken, backendUrl, steps }: Script
     });
   }
 
+  // Set up scroll event listeners
+  function setupScrollListeners() {
+    const scrollSteps = FUNNEL_STEPS.filter(s => s.triggerType === 'scroll' && s.selector);
+    let scrollEvents = new Set();
+
+    scrollSteps.forEach(step => {
+      const elements = document.querySelectorAll(step.selector);
+      elements.forEach(element => {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting && !scrollEvents.has(step.id)) {
+                trackFunnelEvent(step, 'scroll');
+                scrollEvents.add(step.id);
+              }
+            });
+          },
+          { threshold: 0.5 }
+        );
+        observer.observe(element);
+      });
+    });
+  }
+
   // Track initial page load
   trackPageView(window.location.pathname);
   setupClickListeners();
+  setupScrollListeners();
 
   // Track navigation changes
   let lastPath = window.location.pathname;
@@ -98,7 +123,8 @@ export const ScriptGenerator = ({ pixelId, apiToken, backendUrl, steps }: Script
     if (currentPath !== lastPath) {
       lastPath = currentPath;
       trackPageView(currentPath);
-      setupClickListeners(); // Re-setup click listeners after navigation
+      setupClickListeners();
+      setupScrollListeners();
     }
   });
 
