@@ -26,7 +26,7 @@ serve(async (req) => {
 
   // Get domain from request
   const url = new URL(req.url);
-  const domain = url.searchParams.get('domain') || 'unknown';
+  const domain = url.searchParams.get('domain') || url.headers.get('referer') || 'unknown';
 
   // Initialize Supabase client
   const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
@@ -38,6 +38,8 @@ serve(async (req) => {
     await supabase
       .from('tracking_requests')
       .insert([{ domain, timestamp: new Date().toISOString() }]);
+
+    console.log('Logged tracking request for domain:', domain);
   } catch (error) {
     console.error('Error logging tracking request:', error);
   }
@@ -70,7 +72,10 @@ serve(async (req) => {
 
       // Initialize pixel with ID
       fbq('init', e);
-      fbq('track', 'PageView');
+      fbq('track', 'PageView', {
+        domain: '${domain}',
+        timestamp: new Date().toISOString()
+      });
 
       // Track page changes
       var currentPath = window.location.pathname;
@@ -105,7 +110,7 @@ serve(async (req) => {
         }
       });
 
-      console.log('[FB Tracker] Initialized successfully');
+      console.log('[FB Tracker] Initialized successfully for domain:', '${domain}');
     }();
   `;
 
