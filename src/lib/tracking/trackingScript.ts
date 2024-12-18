@@ -15,6 +15,7 @@ const getVerifiedCDN = async (): Promise<string | null> => {
 export const generateCDNScript = async (pixelId: string): Promise<string> => {
   const cdnDomain = await getVerifiedCDN();
   const scriptDomain = cdnDomain || 'avxgduktxkorwfmccwbs.supabase.co/functions/v1';
+  const domain = window.location.hostname;
   
   return `
 <!-- Facebook Funnel Tracking Script -->
@@ -23,7 +24,7 @@ export const generateCDNScript = async (pixelId: string): Promise<string> => {
   var script = document.createElement("script");
   script.setAttribute("async", "");
   script.setAttribute("defer", "");
-  script.setAttribute("src", "https://${scriptDomain}/serve-tracker");
+  script.setAttribute("src", "https://${scriptDomain}/serve-tracker?domain=${domain}");
   document.head.appendChild(script);
 </script>
 <!-- End Facebook Funnel Tracking Script -->`;

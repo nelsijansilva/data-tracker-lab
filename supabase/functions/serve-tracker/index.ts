@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,6 +23,24 @@ serve(async (req) => {
   }
 
   console.log('Serving tracker script');
+
+  // Get domain from request
+  const url = new URL(req.url);
+  const domain = url.searchParams.get('domain') || 'unknown';
+
+  // Initialize Supabase client
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
+  const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') as string;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  try {
+    // Log tracking request
+    await supabase
+      .from('tracking_requests')
+      .insert([{ domain, timestamp: new Date().toISOString() }]);
+  } catch (error) {
+    console.error('Error logging tracking request:', error);
+  }
 
   const script = `
     !function(){
@@ -61,7 +80,8 @@ serve(async (req) => {
           currentPath = newPath;
           fbq('trackCustom', 'PageView', {
             path: newPath,
-            title: document.title
+            title: document.title,
+            domain: window.location.hostname
           });
         }
       });
@@ -79,10 +99,13 @@ serve(async (req) => {
           fbq('trackCustom', 'Click', {
             element: target.tagName.toLowerCase(),
             path: window.location.pathname,
-            text: target.textContent?.trim() || ''
+            text: target.textContent?.trim() || '',
+            domain: window.location.hostname
           });
         }
       });
+
+      console.log('[FB Tracker] Initialized successfully');
     }();
   `;
 
