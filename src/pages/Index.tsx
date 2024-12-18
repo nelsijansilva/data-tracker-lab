@@ -10,6 +10,8 @@ interface FunnelStep {
   name: string;
   path: string;
   event: string;
+  selector?: string;
+  triggerType: 'pageview' | 'click';
 }
 
 const Index = () => {
@@ -45,7 +47,11 @@ const Index = () => {
               />
             </Card>
 
-            <FunnelSteps steps={steps} onChange={setSteps} />
+            <FunnelSteps 
+              steps={steps} 
+              onChange={setSteps}
+              onSave={() => {}}
+            />
 
             {backendUrl && steps.length > 0 && (
               <ScriptGenerator
