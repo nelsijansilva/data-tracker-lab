@@ -3,6 +3,8 @@ import { buildEventData } from './eventBuilder';
 import { sendToPixel } from './pixelSender';
 import { sendToConversionsApi } from './conversionsApi';
 
+declare const fbq: any;
+
 export class TrackerCore {
   private static instance: TrackerCore;
   private pixelId: string;
@@ -22,17 +24,33 @@ export class TrackerCore {
   }
 
   private initFacebookPixel(): void {
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
+    // Initialize Facebook Pixel
+    if (typeof window.fbq === 'undefined') {
+      ((f: any, b: any, e: any, v: any, n: any, t: any, s: any) => {
+        if (f.fbq) return;
+        n = f.fbq = function() {
+          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = true;
+        n.version = '2.0';
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = true;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(
+        window,
+        document,
+        'script',
+        'https://connect.facebook.net/en_US/fbevents.js'
+      );
 
-    fbq('init', this.pixelId);
-    fbq('track', 'PageView');
+      fbq('init', this.pixelId);
+      fbq('track', 'PageView');
+    }
   }
 
   async trackEvent(eventName: string, data: any = {}): Promise<void> {

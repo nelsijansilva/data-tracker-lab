@@ -1,3 +1,5 @@
+declare const fbq: any;
+
 export const sendToPixel = async (eventName: string, eventData: any): Promise<void> => {
   if (typeof fbq !== 'function') {
     console.error('Facebook Pixel not initialized');
