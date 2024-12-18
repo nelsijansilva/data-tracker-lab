@@ -4,7 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { FunnelStepForm } from "./FunnelStepForm";
+import { saveFunnel } from "@/lib/tracking/supabaseClient";
 import type { FunnelStep } from "@/types/tracking";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface FunnelStepsProps {
   steps: FunnelStep[];
@@ -15,6 +17,32 @@ interface FunnelStepsProps {
 export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
   const [funnelName, setFunnelName] = useState("");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const stepsWithoutId = steps.map(({ id, ...step }) => step);
+      await saveFunnel(funnelName, stepsWithoutId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['funnels'] });
+      toast({
+        title: "Success",
+        description: "Funnel saved successfully",
+      });
+      onSave();
+      setFunnelName("");
+      onChange([]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to save funnel",
+        variant: "destructive",
+      });
+      console.error('Error saving funnel:', error);
+    }
+  });
 
   const addStep = () => {
     const newStep: FunnelStep = {
@@ -23,7 +51,8 @@ export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
       path: "",
       event: "",
       selector: "",
-      triggerType: 'pageview'
+      triggerType: 'pageview',
+      orderPosition: steps.length + 1
     };
     onChange([...steps, newStep]);
   };
@@ -58,22 +87,7 @@ export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
       return;
     }
 
-    // Save funnel data to localStorage
-    const funnels = JSON.parse(localStorage.getItem('tracking_funnels') || '{}');
-    const funnelId = Date.now().toString();
-    funnels[funnelId] = {
-      id: funnelId,
-      name: funnelName,
-      steps: steps
-    };
-    localStorage.setItem('tracking_funnels', JSON.stringify(funnels));
-    
-    toast({
-      title: "Success",
-      description: "Funnel saved successfully",
-    });
-    
-    onSave();
+    saveMutation.mutate();
   };
 
   return (
@@ -107,8 +121,12 @@ export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
           <Button onClick={addStep} className="flex-1">
             Add Step
           </Button>
-          <Button onClick={handleSave} className="flex-1">
-            Save Funnel
+          <Button 
+            onClick={handleSave} 
+            className="flex-1"
+            disabled={saveMutation.isPending}
+          >
+            {saveMutation.isPending ? "Saving..." : "Save Funnel"}
           </Button>
         </div>
       </CardContent>

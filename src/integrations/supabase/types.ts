@@ -9,7 +9,98 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      funnel_steps: {
+        Row: {
+          created_at: string
+          event: string
+          funnel_id: string | null
+          id: string
+          name: string
+          order_position: number
+          path: string
+          selector: string | null
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          funnel_id?: string | null
+          id?: string
+          name: string
+          order_position: number
+          path: string
+          selector?: string | null
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          funnel_id?: string | null
+          id?: string
+          name?: string
+          order_position?: number
+          path?: string
+          selector?: string | null
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_steps_funnel_id_fkey"
+            columns: ["funnel_id"]
+            isOneToOne: false
+            referencedRelation: "funnels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funnels: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pixel_configurations: {
+        Row: {
+          api_token: string
+          created_at: string
+          id: string
+          pixel_id: string
+          updated_at: string
+        }
+        Insert: {
+          api_token: string
+          created_at?: string
+          id?: string
+          pixel_id: string
+          updated_at?: string
+        }
+        Update: {
+          api_token?: string
+          created_at?: string
+          id?: string
+          pixel_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

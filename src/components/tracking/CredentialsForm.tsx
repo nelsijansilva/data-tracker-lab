@@ -1,17 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { savePixelConfiguration, getPixelConfiguration } from "@/lib/tracking/supabaseClient";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface CredentialsFormProps {
   onSave: (pixelId: string, apiToken: string) => void;
 }
 
 export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
-  const [pixelId, setPixelId] = useState(() => localStorage.getItem('fb_pixel_id') || '');
-  const [apiToken, setApiToken] = useState(() => localStorage.getItem('fb_api_token') || '');
+  const [pixelId, setPixelId] = useState('');
+  const [apiToken, setApiToken] = useState('');
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: configuration } = useQuery({
+    queryKey: ['pixelConfiguration'],
+    queryFn: getPixelConfiguration
+  });
+
+  useEffect(() => {
+    if (configuration) {
+      setPixelId(configuration.pixelId);
+      setApiToken(configuration.apiToken);
+      onSave(configuration.pixelId, configuration.apiToken);
+    }
+  }, [configuration, onSave]);
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      await savePixelConfiguration(pixelId, apiToken);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pixelConfiguration'] });
+      onSave(pixelId, apiToken);
+      toast({
+        title: "Success",
+        description: "Credentials saved successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to save credentials",
+        variant: "destructive",
+      });
+      console.error('Error saving credentials:', error);
+    }
+  });
 
   const handleSave = () => {
     if (!pixelId || !apiToken) {
@@ -23,9 +61,7 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
       return;
     }
 
-    localStorage.setItem('fb_pixel_id', pixelId);
-    localStorage.setItem('fb_api_token', apiToken);
-    onSave(pixelId, apiToken);
+    saveMutation.mutate();
   };
 
   return (
@@ -59,8 +95,12 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
             />
           </div>
         </div>
-        <Button onClick={handleSave} className="w-full">
-          Save Credentials
+        <Button 
+          onClick={handleSave} 
+          className="w-full"
+          disabled={saveMutation.isPending}
+        >
+          {saveMutation.isPending ? "Saving..." : "Save Credentials"}
         </Button>
       </CardContent>
     </Card>

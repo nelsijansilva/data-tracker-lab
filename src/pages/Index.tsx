@@ -3,7 +3,9 @@ import { Card } from "@/components/ui/card";
 import { CredentialsForm } from "@/components/tracking/CredentialsForm";
 import { FunnelSteps } from "@/components/tracking/FunnelSteps";
 import { ScriptGenerator } from "@/components/tracking/ScriptGenerator";
+import { getFunnels } from "@/lib/tracking/supabaseClient";
 import type { FunnelStep } from "@/types/tracking";
+import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
   const [credentials, setCredentials] = useState({
@@ -11,6 +13,11 @@ const Index = () => {
     apiToken: "",
   });
   const [steps, setSteps] = useState<FunnelStep[]>([]);
+
+  const { data: funnels } = useQuery({
+    queryKey: ['funnels'],
+    queryFn: getFunnels
+  });
 
   const handleCredentialsSave = (pixelId: string, apiToken: string) => {
     setCredentials({ pixelId, apiToken });
@@ -28,8 +35,30 @@ const Index = () => {
             <FunnelSteps 
               steps={steps} 
               onChange={setSteps}
-              onSave={() => {}}
+              onSave={() => setSteps([])}
             />
+
+            {funnels && funnels.length > 0 && (
+              <Card className="p-6">
+                <h2 className="text-2xl font-bold mb-4">Saved Funnels</h2>
+                <div className="space-y-4">
+                  {funnels.map((funnel) => (
+                    <div key={funnel.id} className="border p-4 rounded-lg">
+                      <h3 className="text-xl font-semibold mb-2">{funnel.name}</h3>
+                      <div className="space-y-2">
+                        {funnel.steps.map((step, index) => (
+                          <div key={step.id} className="flex items-center gap-2">
+                            <span className="font-medium">{index + 1}.</span>
+                            <span>{step.name}</span>
+                            <span className="text-gray-500">({step.triggerType})</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             {steps.length > 0 && (
               <ScriptGenerator
