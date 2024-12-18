@@ -48,8 +48,11 @@ export class TrackerCore {
         undefined
       );
 
-      window.fbq('init', this.pixelId);
-      window.fbq('track', 'PageView');
+      // Ensure fbq is defined before calling it
+      if (typeof window.fbq === 'function') {
+        window.fbq('init', this.pixelId);
+        window.fbq('track', 'PageView');
+      }
     }
   }
 
