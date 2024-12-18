@@ -22,6 +22,7 @@ export const ScriptDisplay = ({ script }: ScriptDisplayProps) => {
       <Alert>
         <AlertDescription>
           Copy this script and add it to your website's &lt;head&gt; section to enable tracking.
+          This script will automatically load the tracking functionality and handle all events based on your funnel configuration.
         </AlertDescription>
       </Alert>
       <div className="relative">

@@ -5,163 +5,208 @@ export const generateTrackingScript = (
   apiToken: string, 
   steps: FunnelStep[]
 ): string => {
+  const funnelConfig = {
+    pixelId,
+    steps
+  };
+  
+  // Create a minified version of the configuration
+  const configString = JSON.stringify(funnelConfig);
+  
   return `
-<!-- Facebook Tracking Script -->
+<!-- Facebook Funnel Tracking Script -->
 <script>
 (function() {
-  // Initialize tracking
-  const PIXEL_ID = '${pixelId}';
-  const API_TOKEN = '${apiToken}';
-  const FUNNEL_STEPS = ${JSON.stringify(steps, null, 2)};
-  const API_ENDPOINT = 'https://graph.facebook.com/v17.0/' + PIXEL_ID + '/events';
+  // Load the tracking script
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/gh/your-org/fb-funnel-tracker@latest/dist/tracker.min.js';
+  script.async = true;
+  
+  // Initialize tracker with configuration
+  script.onload = function() {
+    window.FBFunnelTracker.init(${configString});
+  };
+  
+  // Add script to page
+  const firstScript = document.getElementsByTagName('script')[0];
+  firstScript.parentNode.insertBefore(script, firstScript);
+})();
+</script>
+<!-- End Facebook Funnel Tracking Script -->`;
+};
 
-  // Initialize Facebook Pixel
-  !function(f,b,e,v,n,t,s)
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-  n.queue=[];t=b.createElement(e);t.async=!0;
-  t.src=v;s=b.getElementsByTagName(e)[0];
-  s.parentNode.insertBefore(t,s)}(window, document,'script',
-  'https://connect.facebook.net/en_US/fbevents.js');
-
-  fbq('init', PIXEL_ID);
-  fbq('track', 'PageView');
-
-  // Utility functions
-  async function getIpAddress() {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip;
-    } catch (error) {
-      console.error('Error getting IP:', error);
-      return '';
-    }
+export const generateTrackerScript = (steps: FunnelStep[]): string => {
+  return `
+class FBFunnelTracker {
+  static init(config) {
+    this.pixelId = config.pixelId;
+    this.steps = config.steps;
+    this.setupTracking();
   }
 
-  function getFacebookBrowserParams() {
-    return {
-      fbp: document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1] || '',
-      fbc: document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1] || ''
-    };
+  static setupTracking() {
+    // Initialize Facebook Pixel
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    fbq('init', this.pixelId);
+    fbq('track', 'PageView');
+
+    this.setupEventListeners();
   }
 
-  // Track funnel events
-  async function trackFunnelEvent(stepData, eventType = 'custom') {
-    const timestamp = Date.now();
-    const eventId = \`\${timestamp}-\${Math.random().toString(36).substr(2, 9)}\`;
-    const { fbp, fbc } = getFacebookBrowserParams();
+  static setupEventListeners() {
+    // Track page views
+    this.trackPageView(window.location.pathname);
+
+    // Set up click tracking
+    this.setupClickTracking();
+
+    // Set up scroll tracking
+    this.setupScrollTracking();
+
+    // Track SPA navigation
+    this.setupNavigationTracking();
+  }
+
+  static async trackEvent(step, eventType = 'custom') {
+    const eventData = await this.buildEventData(step.event);
     
     // Track with Facebook Pixel
-    fbq('track', stepData.event, {
-      eventID: eventId
-    });
+    fbq('track', step.event, eventData);
 
-    // Prepare data for Conversions API
-    const eventData = {
-      data: [{
-        event_name: stepData.event,
-        event_time: Math.floor(timestamp / 1000),
-        event_id: eventId,
-        event_source_url: window.location.href,
-        action_source: 'website',
-        user_data: {
-          client_user_agent: navigator.userAgent,
-          client_ip_address: await getIpAddress(),
-          fbp,
-          fbc
-        }
-      }]
+    // Track with Conversions API
+    await this.sendToConversionsApi(step.event, eventData);
+  }
+
+  static async buildEventData(eventName) {
+    const [ipData, geoData] = await Promise.all([
+      fetch('https://api.ipify.org?format=json').then(r => r.json()),
+      fetch('https://ipapi.co/json/').then(r => r.json())
+    ]);
+
+    return {
+      event_name: eventName,
+      event_time: Math.floor(Date.now() / 1000),
+      event_id: \`\${Date.now()}-\${Math.random().toString(36).substr(2, 9)}\`,
+      user_data: {
+        client_ip_address: ipData.ip,
+        client_user_agent: navigator.userAgent,
+        fbp: this.getFbp(),
+        fbc: this.getFbc()
+      },
+      custom_data: {
+        country: geoData.country,
+        city: geoData.city,
+        state: geoData.region,
+        zip: geoData.postal
+      }
     };
+  }
 
-    // Send to Conversions API
+  static getFbp() {
+    return document.cookie.split('; ')
+      .find(row => row.startsWith('_fbp='))
+      ?.split('=')[1] || '';
+  }
+
+  static getFbc() {
+    return document.cookie.split('; ')
+      .find(row => row.startsWith('_fbc='))
+      ?.split('=')[1] || '';
+  }
+
+  static async sendToConversionsApi(eventName, eventData) {
+    const endpoint = \`https://graph.facebook.com/v17.0/\${this.pixelId}/events\`;
+    
     try {
-      const response = await fetch(API_ENDPOINT, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': \`Bearer \${API_TOKEN}\`
+          'Authorization': \`Bearer \${this.apiToken}\`
         },
-        body: JSON.stringify(eventData)
+        body: JSON.stringify({
+          data: [eventData]
+        })
       });
 
       if (!response.ok) {
         throw new Error(\`HTTP error! status: \${response.status}\`);
       }
-      
-      console.log('Event tracked successfully:', stepData.event);
     } catch (error) {
       console.error('Error sending to Conversions API:', error);
     }
   }
 
-  // Track page views
-  function trackPageView(path) {
-    const pageViewSteps = FUNNEL_STEPS.filter(s => s.triggerType === 'pageview' && s.path === path);
-    pageViewSteps.forEach(step => trackFunnelEvent(step, 'pageview'));
+  static trackPageView(path) {
+    const pageViewSteps = this.steps.filter(s => 
+      s.triggerType === 'pageview' && s.path === path
+    );
+    pageViewSteps.forEach(step => this.trackEvent(step, 'pageview'));
   }
 
-  // Set up click event listeners
-  function setupClickListeners() {
-    const clickSteps = FUNNEL_STEPS.filter(s => s.triggerType === 'click' && s.selector);
+  static setupClickTracking() {
+    const clickSteps = this.steps.filter(s => s.triggerType === 'click');
     clickSteps.forEach(step => {
       document.querySelectorAll(step.selector).forEach(element => {
-        element.addEventListener('click', () => trackFunnelEvent(step, 'click'));
+        element.addEventListener('click', () => this.trackEvent(step, 'click'));
       });
     });
   }
 
-  // Set up scroll event listeners
-  function setupScrollListeners() {
-    const scrollSteps = FUNNEL_STEPS.filter(s => s.triggerType === 'scroll' && s.selector);
-    let scrollEvents = new Set();
+  static setupScrollTracking() {
+    const scrollSteps = this.steps.filter(s => s.triggerType === 'scroll');
+    const observedElements = new Set();
 
     scrollSteps.forEach(step => {
       const elements = document.querySelectorAll(step.selector);
       elements.forEach(element => {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting && !scrollEvents.has(step.id)) {
-                trackFunnelEvent(step, 'scroll');
-                scrollEvents.add(step.id);
-              }
-            });
-          },
-          { threshold: 0.5 }
-        );
-        observer.observe(element);
+        if (!observedElements.has(element)) {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  this.trackEvent(step, 'scroll');
+                  observer.unobserve(entry.target);
+                }
+              });
+            },
+            { threshold: 0.5 }
+          );
+          observer.observe(element);
+          observedElements.add(element);
+        }
       });
     });
   }
 
-  // Track initial page load
-  trackPageView(window.location.pathname);
-  setupClickListeners();
-  setupScrollListeners();
+  static setupNavigationTracking() {
+    let lastPath = window.location.pathname;
+    const observer = new MutationObserver(() => {
+      const currentPath = window.location.pathname;
+      if (currentPath !== lastPath) {
+        lastPath = currentPath;
+        this.trackPageView(currentPath);
+        this.setupClickTracking();
+        this.setupScrollTracking();
+      }
+    });
 
-  // Track navigation changes (for SPAs)
-  let lastPath = window.location.pathname;
-  const observer = new MutationObserver(() => {
-    const currentPath = window.location.pathname;
-    if (currentPath !== lastPath) {
-      lastPath = currentPath;
-      trackPageView(currentPath);
-      setupClickListeners();
-      setupScrollListeners();
-    }
-  });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  }
+}
 
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
-})();
-</script>
-<noscript>
-  <img height="1" width="1" style="display:none"
-       src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"/>
-</noscript>
-<!-- End Facebook Tracking Script -->`;
+// Make FBFunnelTracker available globally
+window.FBFunnelTracker = FBFunnelTracker;
+`;
 };
