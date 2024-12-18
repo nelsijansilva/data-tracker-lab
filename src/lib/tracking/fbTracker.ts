@@ -18,6 +18,17 @@ interface TrackingData {
   customParameters?: Record<string, any>;
 }
 
+// Declare the Facebook Pixel type
+declare global {
+  interface Window {
+    fbq: (
+      type: string,
+      eventName: string,
+      params?: Record<string, any>
+    ) => void;
+  }
+}
+
 class FacebookTracker {
   private pixelId: string;
   private apiToken: string;
