@@ -11,7 +11,7 @@ interface FunnelStep {
   path: string;
   event: string;
   selector?: string;
-  triggerType: 'pageview' | 'click';
+  triggerType: 'pageview' | 'click' | 'scroll';
 }
 
 const Index = () => {
