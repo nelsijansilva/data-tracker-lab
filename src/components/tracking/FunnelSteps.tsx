@@ -7,28 +7,59 @@ import { FunnelStepForm } from "./FunnelStepForm";
 import { saveFunnel } from "@/lib/tracking/supabaseClient";
 import type { FunnelStep } from "@/types/tracking";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FunnelStepsProps {
   steps: FunnelStep[];
   onChange: (steps: FunnelStep[]) => void;
   onSave: () => void;
+  editingFunnelId?: string | null;
 }
 
-export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
+export const FunnelSteps = ({ steps, onChange, onSave, editingFunnelId }: FunnelStepsProps) => {
   const [funnelName, setFunnelName] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const stepsWithoutId = steps.map(({ id, ...step }) => step);
-      await saveFunnel(funnelName, stepsWithoutId);
+      if (editingFunnelId) {
+        // Delete existing steps
+        await supabase
+          .from('funnel_steps')
+          .delete()
+          .eq('funnel_id', editingFunnelId);
+        
+        // Update funnel name
+        await supabase
+          .from('funnels')
+          .update({ name: funnelName })
+          .eq('id', editingFunnelId);
+        
+        // Insert new steps
+        const stepsWithFunnelId = steps.map((step, index) => ({
+          funnel_id: editingFunnelId,
+          name: step.name,
+          path: step.path,
+          event: step.event,
+          selector: step.selector,
+          trigger_type: step.triggerType,
+          order_position: index + 1
+        }));
+
+        await supabase
+          .from('funnel_steps')
+          .insert(stepsWithFunnelId);
+      } else {
+        const stepsWithoutId = steps.map(({ id, ...step }) => step);
+        await saveFunnel(funnelName, stepsWithoutId);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['funnels'] });
       toast({
         title: "Success",
-        description: "Funnel saved successfully",
+        description: `Funnel ${editingFunnelId ? 'updated' : 'saved'} successfully`,
       });
       onSave();
       setFunnelName("");
@@ -37,7 +68,7 @@ export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to save funnel",
+        description: `Failed to ${editingFunnelId ? 'update' : 'save'} funnel`,
         variant: "destructive",
       });
       console.error('Error saving funnel:', error);
@@ -93,7 +124,7 @@ export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Funnel Configuration</CardTitle>
+        <CardTitle>{editingFunnelId ? 'Edit Funnel' : 'Create New Funnel'}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -126,7 +157,7 @@ export const FunnelSteps = ({ steps, onChange, onSave }: FunnelStepsProps) => {
             className="flex-1"
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : "Save Funnel"}
+            {saveMutation.isPending ? "Saving..." : (editingFunnelId ? "Update Funnel" : "Save Funnel")}
           </Button>
         </div>
       </CardContent>
