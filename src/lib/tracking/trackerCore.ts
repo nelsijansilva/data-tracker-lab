@@ -8,7 +8,7 @@ export const initializePixel = (pixelId: string) => {
   if (typeof window === 'undefined') return;
 
   // Initialize Facebook Pixel
-  !(function(f: any, b: any, e: any, v: any, n: any, t: any, s: any) {
+  (function(f: any, b: any, e: any, v: any, n: any, t: any, s: any) {
     if (f.fbq) return;
     n = f.fbq = function() {
       n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
@@ -34,14 +34,14 @@ export const initializePixel = (pixelId: string) => {
   );
 
   // Initialize the pixel with the provided ID
-  if (window.fbq) {
+  if (typeof window.fbq === 'function') {
     window.fbq('init', pixelId);
     window.fbq('track', 'PageView');
   }
 };
 
 export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
-  if (typeof window === 'undefined' || !window.fbq) return;
+  if (typeof window === 'undefined' || typeof window.fbq !== 'function') return;
   
   window.fbq('track', eventName, parameters);
 };
