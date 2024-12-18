@@ -2,9 +2,12 @@ import { buildEventData } from './eventBuilder';
 import { sendToPixel } from './pixelSender';
 import { sendToConversionsApi } from './conversionsApi';
 
+// Use the existing type from facebook.d.ts
+import type { FacebookPixelTrack } from '@/types/facebook';
+
 declare global {
   interface Window {
-    fbq: Function;
+    fbq: FacebookPixelTrack;
     _fbq: any;
   }
 }
@@ -53,10 +56,8 @@ export class TrackerCore {
       );
 
       // Initialize pixel after ensuring fbq is defined
-      if (typeof window.fbq === 'function') {
-        window.fbq('init', this.pixelId);
-        window.fbq('track', 'PageView');
-      }
+      window.fbq('init', this.pixelId);
+      window.fbq('track', 'PageView');
     }
   }
 
