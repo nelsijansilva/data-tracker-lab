@@ -9,6 +9,8 @@ interface FunnelStep {
   name: string;
   path: string;
   event: string;
+  selector?: string;
+  triggerType: 'pageview' | 'click';
 }
 
 interface ScriptGeneratorProps {
@@ -30,7 +32,7 @@ export const ScriptGenerator = ({ pixelId, apiToken, backendUrl, steps }: Script
   // Initialize tracking
   const PIXEL_ID = '${pixelId}';
   const BACKEND_URL = '${backendUrl}';
-  const FUNNEL_STEPS = ${JSON.stringify(steps)};
+  const FUNNEL_STEPS = ${JSON.stringify(steps, null, 2)};
 
   // Initialize Facebook Pixel
   !function(f,b,e,v,n,t,s)
@@ -46,33 +48,48 @@ export const ScriptGenerator = ({ pixelId, apiToken, backendUrl, steps }: Script
   fbq('track', 'PageView');
 
   // Track funnel steps
-  function trackFunnelStep(path) {
-    const step = FUNNEL_STEPS.find(s => s.path === path);
-    if (step) {
-      // Track with Facebook Pixel
-      fbq('track', step.event);
+  function trackFunnelEvent(stepData, eventType = 'custom') {
+    // Track with Facebook Pixel
+    fbq('track', stepData.event);
 
-      // Send to backend
-      fetch(BACKEND_URL + '/track', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          pixelId: PIXEL_ID,
-          event: step.event,
-          stepName: step.name,
-          path: step.path,
-          timestamp: new Date().toISOString(),
-          url: window.location.href,
-          userAgent: navigator.userAgent,
-        }),
-      }).catch(console.error);
-    }
+    // Send to backend
+    fetch(BACKEND_URL + '/track', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        pixelId: PIXEL_ID,
+        event: stepData.event,
+        stepName: stepData.name,
+        path: stepData.path,
+        eventType: eventType,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+      }),
+    }).catch(console.error);
+  }
+
+  // Track page views
+  function trackPageView(path) {
+    const pageViewSteps = FUNNEL_STEPS.filter(s => s.triggerType === 'pageview' && s.path === path);
+    pageViewSteps.forEach(step => trackFunnelEvent(step, 'pageview'));
+  }
+
+  // Set up click event listeners
+  function setupClickListeners() {
+    const clickSteps = FUNNEL_STEPS.filter(s => s.triggerType === 'click' && s.selector);
+    clickSteps.forEach(step => {
+      document.querySelectorAll(step.selector).forEach(element => {
+        element.addEventListener('click', () => trackFunnelEvent(step, 'click'));
+      });
+    });
   }
 
   // Track initial page load
-  trackFunnelStep(window.location.pathname);
+  trackPageView(window.location.pathname);
+  setupClickListeners();
 
   // Track navigation changes
   let lastPath = window.location.pathname;
@@ -80,7 +97,8 @@ export const ScriptGenerator = ({ pixelId, apiToken, backendUrl, steps }: Script
     const currentPath = window.location.pathname;
     if (currentPath !== lastPath) {
       lastPath = currentPath;
-      trackFunnelStep(currentPath);
+      trackPageView(currentPath);
+      setupClickListeners(); // Re-setup click listeners after navigation
     }
   });
 
