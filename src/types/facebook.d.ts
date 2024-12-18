@@ -1,11 +1,6 @@
-interface Window {
-  fbq: FacebookPixelTrack;
-  _fbq: any;
-}
-
 type FacebookPixelTrack = {
   (action: 'init', pixelId: string): void;
-  (action: 'track', eventName: string, params?: Record<string, any>, customData?: Record<string, any>): void;
+  (action: 'track', eventName: string, params?: Record<string, any>): void;
   callMethod?: Function;
   queue?: any[];
   push?: Function;
@@ -13,4 +8,11 @@ type FacebookPixelTrack = {
   version?: string;
 };
 
-declare const fbq: FacebookPixelTrack;
+declare global {
+  interface Window {
+    fbq: FacebookPixelTrack;
+    _fbq: any;
+  }
+}
+
+export {};
