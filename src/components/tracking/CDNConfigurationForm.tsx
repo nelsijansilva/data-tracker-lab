@@ -42,8 +42,10 @@ export const CDNConfigurationForm = () => {
               - Configure as seguintes opções:\n
                 * Cache Level: Bypass\n
                 * SSL: Flexible\n
-                * Security Level: Medium\n
+                * Edge Cache TTL: 4 hours\n
                 * Browser Cache TTL: 4 hours\n
+                * Browser Integrity Check: Off\n
+                * Cache Deception Armor: Off\n
           6. Em Rules > Transform Rules, crie uma nova regra:\n
             - Nome: CORS for Tracking\n
             - Quando: Hostname é ${subdomain}\n
