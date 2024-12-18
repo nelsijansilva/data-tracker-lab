@@ -50,6 +50,7 @@ export const CDNConfiguration = () => {
             - Nome: ${subdomain.split('.')[0]}\n
             - Destino: ${window.location.hostname}\n
             - Proxy status: Proxied (laranja)\n
+            - TTL: Auto\n
           4. Em SSL/TLS, certifique-se que está como "Flexible"\n
           5. Em Rules > Page Rules, adicione:\n
             - URL: ${subdomain}/*\n
@@ -95,18 +96,12 @@ export const CDNConfiguration = () => {
 
   const verifyMutation = useMutation({
     mutationFn: async (subdomain: string) => {
-      try {
-        // Usando um Edge Function para contornar o CORS
-        const { data, error } = await supabase.functions.invoke('verify-cdn', {
-          body: { url: `https://${subdomain}` }
-        });
-        
-        if (error) throw error;
-        return data.isValid;
-      } catch (error) {
-        console.error('Verification error:', error);
-        return false;
-      }
+      const { data, error } = await supabase.functions.invoke('verify-cdn', {
+        body: { url: `https://${subdomain}` }
+      });
+      
+      if (error) throw error;
+      return data.isValid;
     },
     onSuccess: (isValid, subdomain) => {
       toast({
@@ -115,6 +110,14 @@ export const CDNConfiguration = () => {
           ? `O registro CNAME para ${subdomain} está configurado corretamente`
           : `Não foi possível verificar o registro CNAME para ${subdomain}. Por favor, verifique suas configurações no Cloudflare`,
         variant: isValid ? "default" : "destructive",
+      });
+    },
+    onError: (error) => {
+      console.error('Error verifying CDN:', error);
+      toast({
+        title: "Erro na Verificação",
+        description: "Ocorreu um erro ao verificar a configuração do CDN. Por favor, tente novamente.",
+        variant: "destructive",
       });
     }
   });
@@ -166,8 +169,9 @@ export const CDNConfiguration = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => handleVerify(config.subdomain)}
+                    disabled={verifyMutation.isPending}
                   >
-                    <RefreshCw className="h-4 w-4 mr-1" />
+                    <RefreshCw className={`h-4 w-4 mr-1 ${verifyMutation.isPending ? 'animate-spin' : ''}`} />
                     Verificar
                   </Button>
                   <Button
