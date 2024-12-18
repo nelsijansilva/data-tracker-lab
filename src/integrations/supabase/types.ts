@@ -125,6 +125,27 @@ export type Database = {
         }
         Relationships: []
       }
+      tracking_requests: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+          timestamp: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+          timestamp?: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
