@@ -47,12 +47,37 @@ export const FunnelSteps = ({ steps, onChange, onSave, editingFunnelId }: Funnel
           order_position: index + 1
         }));
 
-        await supabase
+        const { error: stepsError } = await supabase
           .from('funnel_steps')
           .insert(stepsWithFunnelId);
+
+        if (stepsError) throw stepsError;
       } else {
-        const stepsWithoutId = steps.map(({ id, ...step }) => step);
-        await saveFunnel(funnelName, stepsWithoutId);
+        // Primeiro cria o funnel para obter o ID
+        const { data: funnel, error: funnelError } = await supabase
+          .from('funnels')
+          .insert([{ name: funnelName }])
+          .select()
+          .single();
+
+        if (funnelError) throw funnelError;
+
+        // Depois insere os steps com o funnel_id correto
+        const stepsWithFunnelId = steps.map((step, index) => ({
+          funnel_id: funnel.id,
+          name: step.name,
+          path: step.path,
+          event: step.event,
+          selector: step.selector,
+          trigger_type: step.triggerType,
+          order_position: index + 1
+        }));
+
+        const { error: stepsError } = await supabase
+          .from('funnel_steps')
+          .insert(stepsWithFunnelId);
+
+        if (stepsError) throw stepsError;
       }
     },
     onSuccess: () => {
