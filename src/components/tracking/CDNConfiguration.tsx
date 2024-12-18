@@ -101,16 +101,33 @@ export const CDNConfiguration = () => {
       });
       
       if (error) throw error;
-      return data.isValid;
+      return data;
     },
-    onSuccess: (isValid, subdomain) => {
-      toast({
-        title: isValid ? "Conexão Verificada" : "Falha na Verificação",
-        description: isValid 
-          ? `O registro CNAME para ${subdomain} está configurado corretamente`
-          : `Não foi possível verificar o registro CNAME para ${subdomain}. Por favor, verifique suas configurações no Cloudflare`,
-        variant: isValid ? "default" : "destructive",
-      });
+    onSuccess: (response, subdomain) => {
+      const { isValid, details } = response;
+      
+      if (isValid) {
+        toast({
+          title: "Conexão Verificada",
+          description: `O domínio ${subdomain} está configurado corretamente e passando pelo Cloudflare.
+            ${details.cfRay ? `\nCF-Ray: ${details.cfRay}` : ''}
+            ${details.cfCache ? `\nCache Status: ${details.cfCache}` : ''}`,
+        });
+      } else {
+        let errorMessage = `Não foi possível verificar a configuração para ${subdomain}.`;
+        
+        if (!details.isAccessible) {
+          errorMessage += "\nO domínio não está acessível. Verifique se o registro CNAME foi propagado.";
+        } else if (!details.isCloudflareEnabled) {
+          errorMessage += "\nO domínio está acessível mas não está passando pelo Cloudflare. Verifique se o Proxy está ativado (ícone laranja).";
+        }
+        
+        toast({
+          title: "Falha na Verificação",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     },
     onError: (error) => {
       console.error('Error verifying CDN:', error);
