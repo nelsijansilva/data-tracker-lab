@@ -48,8 +48,8 @@ export class TrackerCore {
         undefined
       );
 
-      fbq('init', this.pixelId);
-      fbq('track', 'PageView');
+      window.fbq('init', this.pixelId);
+      window.fbq('track', 'PageView');
     }
   }
 
