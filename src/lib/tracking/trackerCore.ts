@@ -1,73 +1,47 @@
-import { buildEventData } from './eventBuilder';
-import { sendToPixel } from './pixelSender';
-import { sendToConversionsApi } from './conversionsApi';
-
-// Use the existing type from facebook.d.ts
-import type { FacebookPixelTrack } from '@/types/facebook';
-
 declare global {
   interface Window {
-    fbq: FacebookPixelTrack;
-    _fbq: any;
+    fbq: (type: string, eventName: string, params?: Record<string, any>) => void;
   }
 }
 
-export class TrackerCore {
-  private static instance: TrackerCore;
-  private pixelId: string;
-  private steps: any[];
+export const initializePixel = (pixelId: string) => {
+  if (typeof window === 'undefined') return;
 
-  private constructor(pixelId: string, steps: any[]) {
-    this.pixelId = pixelId;
-    this.steps = steps;
-    this.initFacebookPixel();
+  // Initialize Facebook Pixel
+  !(function(f: any, b: any, e: any, v: any, n: any, t: any, s: any) {
+    if (f.fbq) return;
+    n = f.fbq = function() {
+      n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+    };
+    if (!f._fbq) f._fbq = n;
+    n.push = n;
+    n.loaded = !0;
+    n.version = '2.0';
+    n.queue = [];
+    t = b.createElement(e);
+    t.async = !0;
+    t.src = v;
+    s = b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t, s);
+  })(
+    window,
+    document,
+    'script',
+    'https://connect.facebook.net/en_US/fbevents.js',
+    undefined,
+    undefined,
+    undefined
+  );
+
+  // Initialize the pixel with the provided ID
+  if (window.fbq) {
+    window.fbq('init', pixelId);
+    window.fbq('track', 'PageView');
   }
+};
 
-  static init(pixelId: string, steps: any[]): TrackerCore {
-    if (!TrackerCore.instance) {
-      TrackerCore.instance = new TrackerCore(pixelId, steps);
-    }
-    return TrackerCore.instance;
-  }
-
-  private initFacebookPixel(): void {
-    // Initialize Facebook Pixel
-    if (typeof window.fbq === 'undefined') {
-      ((f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) => {
-        if (f.fbq) return;
-        n = f.fbq = function() {
-          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-        };
-        if (!f._fbq) f._fbq = n;
-        n.push = n;
-        n.loaded = true;
-        n.version = '2.0';
-        n.queue = [];
-        t = b.createElement(e);
-        t.async = true;
-        t.src = v;
-        s = b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t, s);
-      })(
-        window,
-        document,
-        'script',
-        'https://connect.facebook.net/en_US/fbevents.js'
-      );
-
-      // Initialize pixel after ensuring fbq is defined
-      window.fbq('init', this.pixelId);
-      window.fbq('track', 'PageView');
-    }
-  }
-
-  async trackEvent(eventName: string, data: any = {}): Promise<void> {
-    const eventData = await buildEventData(eventName, data);
-    
-    // Send to Facebook Pixel
-    await sendToPixel(eventName, eventData);
-    
-    // Send to Conversions API
-    await sendToConversionsApi(this.pixelId, eventName, eventData);
-  }
-}
+export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
+  if (typeof window === 'undefined' || !window.fbq) return;
+  
+  window.fbq('track', eventName, parameters);
+};
