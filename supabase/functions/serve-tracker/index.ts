@@ -3,10 +3,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, Origin',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Content-Type': 'application/javascript',
   'Cache-Control': 'public, max-age=14400', // 4 hours cache
+  'Cross-Origin-Resource-Policy': 'cross-origin',
+  'Cross-Origin-Embedder-Policy': 'credentialless'
 };
 
 serve(async (req) => {
@@ -65,6 +67,7 @@ serve(async (req) => {
         n.queue=[];
         t=b.createElement(e);
         t.async=!0;
+        t.crossOrigin="anonymous";
         t.src=v;
         s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)
@@ -115,9 +118,6 @@ serve(async (req) => {
   `;
 
   return new Response(script, {
-    headers: {
-      ...corsHeaders,
-      'Content-Type': 'application/javascript',
-    }
+    headers: corsHeaders
   });
 });
