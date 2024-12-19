@@ -13,6 +13,8 @@ export interface FacebookPixel {
   event_test_code: string | null;
 }
 
+type PixelFormData = Omit<FacebookPixel, 'id'>;
+
 export const PixelConfigForm = () => {
   const [editingPixel, setEditingPixel] = useState<FacebookPixel | null>(null);
   const { toast } = useToast();
@@ -31,7 +33,7 @@ export const PixelConfigForm = () => {
     }
   });
 
-  const handleSubmit = async (pixelData: Partial<FacebookPixel>) => {
+  const handleSubmit = async (pixelData: PixelFormData) => {
     try {
       if (editingPixel) {
         const { error } = await supabase

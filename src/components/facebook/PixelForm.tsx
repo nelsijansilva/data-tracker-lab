@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { FacebookPixel } from "./PixelConfigForm";
+
+type PixelFormData = Omit<FacebookPixel, 'id'>;
 
 interface PixelFormProps {
   editingPixel: FacebookPixel | null;
-  onSubmit: (data: Partial<FacebookPixel>) => Promise<void>;
+  onSubmit: (data: PixelFormData) => Promise<void>;
   onCancel: () => void;
 }
 
