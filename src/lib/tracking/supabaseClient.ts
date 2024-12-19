@@ -2,14 +2,34 @@ import { supabase } from "@/integrations/supabase/client";
 import type { FunnelStep, Funnel, PixelConfiguration } from "@/types/tracking";
 
 export const savePixelConfiguration = async (pixelId: string, apiToken: string) => {
-  const { data, error } = await supabase
+  // Primeiro, vamos verificar se já existe uma configuração
+  const { data: existingConfig } = await supabase
     .from('pixel_configurations')
-    .insert([{ pixel_id: pixelId, api_token: apiToken }])
-    .select()
+    .select('*')
     .single();
 
-  if (error) throw error;
-  return data;
+  if (existingConfig) {
+    // Se existe, atualiza
+    const { data, error } = await supabase
+      .from('pixel_configurations')
+      .update({ pixel_id: pixelId, api_token: apiToken })
+      .eq('id', existingConfig.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } else {
+    // Se não existe, cria uma nova
+    const { data, error } = await supabase
+      .from('pixel_configurations')
+      .insert([{ pixel_id: pixelId, api_token: apiToken }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
 };
 
 export const getPixelConfiguration = async () => {
@@ -19,6 +39,7 @@ export const getPixelConfiguration = async () => {
     .maybeSingle();
 
   if (error) throw error;
+  
   return data ? {
     id: data.id,
     pixelId: data.pixel_id,
