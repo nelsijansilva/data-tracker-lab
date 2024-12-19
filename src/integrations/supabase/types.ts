@@ -323,6 +323,69 @@ export type Database = {
         }
         Relationships: []
       }
+      tracking_events: {
+        Row: {
+          ad_id: string | null
+          adset_id: string | null
+          campaign_id: string | null
+          custom_data: Json | null
+          domain: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          path: string
+          placement: string | null
+          referrer: string | null
+          timestamp: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          ad_id?: string | null
+          adset_id?: string | null
+          campaign_id?: string | null
+          custom_data?: Json | null
+          domain: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          path: string
+          placement?: string | null
+          referrer?: string | null
+          timestamp?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          ad_id?: string | null
+          adset_id?: string | null
+          campaign_id?: string | null
+          custom_data?: Json | null
+          domain?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          path?: string
+          placement?: string | null
+          referrer?: string | null
+          timestamp?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
       tracking_requests: {
         Row: {
           created_at: string
