@@ -24,6 +24,11 @@ export const MetricValue: React.FC<MetricValueProps> = ({ value, metric }) => {
 
   // Para valores numéricos, formatar adequadamente
   if (typeof value === 'number') {
+    // Para CPM, mostrar sempre 2 casas decimais (movido para primeira condição)
+    if (metric.field.toLowerCase().includes('cpm')) {
+      return <span>{value.toFixed(2)}</span>;
+    }
+    
     // Para percentuais (CTR e taxas), sempre mostrar 2 casas decimais
     if (metric.field.includes('ctr') || metric.field.includes('rate')) {
       return <span>{(value * 100).toFixed(2)}%</span>;
@@ -37,11 +42,6 @@ export const MetricValue: React.FC<MetricValueProps> = ({ value, metric }) => {
       metric.field.includes('budget')
     ) {
       return <span>R$ {value.toFixed(2)}</span>;
-    }
-    
-    // Para CPM, mostrar sempre 2 casas decimais
-    if (metric.field.includes('cpm')) {
-      return <span>{value.toFixed(2)}</span>;
     }
     
     // Para números inteiros (impressions, clicks), usar separador de milhares
