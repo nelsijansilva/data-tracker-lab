@@ -1,5 +1,5 @@
 import * as React from "react";
-import { CalendarIcon, Check } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { addDays, endOfMonth, startOfMonth, format, startOfDay, endOfDay, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
@@ -11,12 +11,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
 
 interface DateRangePickerProps {
   value: DateRange;
@@ -33,6 +27,7 @@ export function DateRangePicker({
 
   const presets = [
     {
+      id: 'today',
       label: 'Hoje',
       getValue: () => ({
         from: startOfDay(new Date()),
@@ -40,6 +35,7 @@ export function DateRangePicker({
       }),
     },
     {
+      id: 'yesterday',
       label: 'Ontem',
       getValue: () => ({
         from: startOfDay(subDays(new Date(), 1)),
@@ -47,6 +43,7 @@ export function DateRangePicker({
       }),
     },
     {
+      id: 'last7',
       label: 'Últimos 7 dias',
       getValue: () => ({
         from: subDays(new Date(), 6),
@@ -54,6 +51,7 @@ export function DateRangePicker({
       }),
     },
     {
+      id: 'last14',
       label: 'Últimos 14 dias',
       getValue: () => ({
         from: subDays(new Date(), 13),
@@ -61,6 +59,7 @@ export function DateRangePicker({
       }),
     },
     {
+      id: 'last30',
       label: 'Últimos 30 dias',
       getValue: () => ({
         from: subDays(new Date(), 29),
@@ -68,6 +67,7 @@ export function DateRangePicker({
       }),
     },
     {
+      id: 'thisMonth',
       label: 'Este mês',
       getValue: () => ({
         from: startOfMonth(new Date()),
@@ -75,6 +75,7 @@ export function DateRangePicker({
       }),
     },
     {
+      id: 'allTime',
       label: 'Todo período',
       getValue: () => ({
         from: subDays(new Date(), 365),
@@ -112,37 +113,33 @@ export function DateRangePicker({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="space-y-4 p-4">
-            <Command shouldFilter={false}>
-              <CommandGroup heading="Períodos predefinidos">
-                {presets.map((preset) => (
-                  <CommandItem
-                    key={preset.label}
-                    value={preset.label}
-                    onSelect={() => {
-                      onChange(preset.getValue());
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        JSON.stringify(value) === JSON.stringify(preset.getValue())
-                          ? "opacity-100"
-                          : "opacity-0"
-                      )}
-                    />
-                    {preset.label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </Command>
+            <div className="flex flex-col gap-2">
+              {presets.map((preset) => (
+                <Button
+                  key={preset.id}
+                  variant="outline"
+                  className="justify-start text-left font-normal"
+                  onClick={() => {
+                    onChange(preset.getValue());
+                    setOpen(false);
+                  }}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </div>
             <div className="border-t pt-4">
               <Calendar
                 initialFocus
                 mode="range"
                 defaultMonth={value?.from}
                 selected={value}
-                onSelect={onChange}
+                onSelect={(newValue) => {
+                  onChange(newValue || { from: undefined, to: undefined });
+                  if (newValue?.from && newValue?.to) {
+                    setOpen(false);
+                  }
+                }}
                 numberOfMonths={2}
                 locale={ptBR}
               />

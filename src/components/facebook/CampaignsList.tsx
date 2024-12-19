@@ -23,9 +23,9 @@ export const CampaignsList = () => {
   });
   
   const { data: campaigns, isLoading, error } = useQuery({
-    queryKey: ['campaigns', selectedMetrics, dateRange],
+    queryKey: ['campaigns', selectedMetrics, dateRange?.from, dateRange?.to],
     queryFn: () => fetchCampaigns(selectedMetrics, dateRange),
-    retry: false
+    enabled: !!dateRange?.from && !!dateRange?.to,
   });
 
   if (isLoading) return <div>Carregando campanhas...</div>;
@@ -57,7 +57,6 @@ export const CampaignsList = () => {
   const calculateMetricValue = (campaign: any, metric: Metric) => {
     if (!metric.formula) {
       if (Array.isArray(campaign[metric.field])) {
-        // Handle array responses (like actions, website_purchase_roas)
         return campaign[metric.field][0]?.value || 0;
       }
       return campaign[metric.field];
