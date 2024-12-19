@@ -11,14 +11,30 @@ import { MetricValue } from "@/components/facebook/MetricValue";
 interface AdSetsListProps {
   dateRange: DateRange;
   selectedAccountId?: string;
+  onTabChange?: (value: string) => void;
 }
 
-export const AdSetsList = ({ dateRange, selectedAccountId }: AdSetsListProps) => {
+export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSetsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const { selectedCampaignId } = useCampaignStore();
   const [selectedAdSetId, setSelectedAdSetId] = React.useState<string | null>(null);
+  const [lastClickTime, setLastClickTime] = React.useState<number>(0);
 
   const { data: adSets, isLoading, error } = useAdSets(selectedMetrics, dateRange, selectedAccountId, selectedCampaignId);
+
+  const handleRowClick = (adSetId: string) => {
+    const currentTime = new Date().getTime();
+    const timeDiff = currentTime - lastClickTime;
+    
+    if (timeDiff < 300) { // Double click detected (within 300ms)
+      setSelectedAdSetId(adSetId);
+      onTabChange?.('ads'); // Navigate to ads tab
+    } else {
+      setSelectedAdSetId(adSetId === selectedAdSetId ? null : adSetId);
+    }
+    
+    setLastClickTime(currentTime);
+  };
 
   if (isLoading) return <div className="text-gray-400">Carregando conjuntos de anúncios...</div>;
   
@@ -59,8 +75,12 @@ export const AdSetsList = ({ dateRange, selectedAccountId }: AdSetsListProps) =>
           {adSets.map((adSet: any) => (
             <TableRow 
               key={adSet.id}
-              className="cursor-pointer transition-colors border-gray-700 hover:bg-[#2f3850]"
-              onClick={() => setSelectedAdSetId(adSet.id === selectedAdSetId ? null : adSet.id)}
+              className={`cursor-pointer transition-colors border-gray-700 ${
+                selectedAdSetId === adSet.id 
+                  ? "bg-[#3b82f6]/10" 
+                  : "hover:bg-[#2f3850]"
+              }`}
+              onClick={() => handleRowClick(adSet.id)}
             >
               {selectedMetrics.map((metric) => (
                 <TableCell key={metric.id} className="text-gray-400">

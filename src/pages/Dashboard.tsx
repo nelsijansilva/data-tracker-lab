@@ -203,6 +203,7 @@ const Dashboard = () => {
               <AdSetsList 
                 dateRange={dateRange}
                 selectedAccountId={selectedAccountId === 'any' ? undefined : selectedAccountId}
+                onTabChange={handleTabChange}
               />
             </div>
           </TabsContent>
