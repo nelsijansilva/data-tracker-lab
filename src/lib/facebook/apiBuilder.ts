@@ -2,6 +2,7 @@ import { DateRange } from "react-day-picker";
 import type { Metric } from "@/components/facebook/MetricSelector";
 
 const ensureActPrefix = (accountId: string) => {
+  // Remove act_ if it exists and add it back to ensure consistent format
   const cleanId = accountId.replace('act_', '');
   return `act_${cleanId}`;
 };
@@ -16,7 +17,7 @@ export const buildCampaignsEndpoint = (accountId: string, selectedMetrics: Metri
       .map(metric => metric.field)
       .join(',');
 
-    endpoint += `&level=campaign&insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
+    endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
   }
 
   return endpoint;
@@ -32,7 +33,7 @@ export const buildAdSetsEndpoint = (accountId: string, campaignId: string | null
       .map(metric => metric.field)
       .join(',');
 
-    endpoint += `&level=adset&insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
+    endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
   }
 
   if (campaignId) {
@@ -52,7 +53,7 @@ export const buildAdsEndpoint = (accountId: string, adSetId: string | null, sele
       .map(metric => metric.field)
       .join(',');
 
-    endpoint += `&level=ad&insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
+    endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
   }
 
   if (adSetId) {
