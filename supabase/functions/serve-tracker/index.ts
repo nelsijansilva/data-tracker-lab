@@ -6,9 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Content-Type': 'application/javascript',
+  'Cache-Control': 'no-cache, no-store, must-revalidate',
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -105,10 +107,5 @@ serve(async (req) => {
     })();
   `;
 
-  return new Response(script, { 
-    headers: {
-      ...corsHeaders,
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-    } 
-  });
+  return new Response(script, { headers: corsHeaders });
 });
