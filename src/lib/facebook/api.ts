@@ -23,13 +23,16 @@ export const fetchFacebookData = async (endpoint: string, accessToken: string) =
     const data = await response.json();
     
     if (!response.ok) {
+      const error: any = new Error(data.error?.message || 'Erro na API do Facebook');
+      error.code = data.error?.code;
+      
       if (data.error?.code === 17) {
-        throw new Error('User request limit reached');
+        error.message = 'Limite de requisições atingido. Por favor, aguarde alguns segundos e tente novamente.';
+      } else if (data.error?.code === 100) {
+        error.message = `Permissões insuficientes do Facebook. Por favor, verifique se seu token de acesso tem as permissões necessárias: ${REQUIRED_PERMISSIONS.join(', ')}`;
       }
-      if (data.error?.code === 100) {
-        throw new Error(`Permissões insuficientes do Facebook. Por favor, verifique se seu token de acesso tem as permissões necessárias: ${REQUIRED_PERMISSIONS.join(', ')}`);
-      }
-      throw new Error(`Erro na API do Facebook: ${data.error?.message || 'Erro desconhecido'}`);
+      
+      throw error;
     }
 
     return data;
@@ -172,6 +175,10 @@ export const fetchAds = async () => {
       `${account_id}/ads?fields=name,status,preview_url,adset`,
       access_token
     );
+
+    if (!response.data) {
+      throw new Error('Nenhum anúncio encontrado');
+    }
 
     return response.data;
   } catch (error: any) {
