@@ -33,21 +33,24 @@ export const fetchCampaigns = async () => {
   const credentials = await getFacebookCredentials();
   const { account_id, access_token } = credentials;
 
-  // First, fetch basic campaign data
   const response = await fetchFacebookData(
-    `${account_id}/campaigns?fields=name,status,objective,insights{spend,impressions,clicks}`,
+    `${account_id}/campaigns?fields=name,status,objective,insights{spend,impressions,clicks,ctr,cpc,cpm,cost_per_inline_link_click,cost_per_inline_post_engagement}`,
     access_token
   );
 
-  // Process the response to combine campaign data with insights
   return response.data.map((campaign: any) => ({
     id: campaign.id,
     name: campaign.name,
     status: campaign.status,
     objective: campaign.objective,
-    spend: campaign.insights?.data?.[0]?.spend || '0',
+    spend: parseFloat(campaign.insights?.data?.[0]?.spend || '0'),
     impressions: campaign.insights?.data?.[0]?.impressions || 0,
-    clicks: campaign.insights?.data?.[0]?.clicks || 0
+    clicks: campaign.insights?.data?.[0]?.clicks || 0,
+    ctr: campaign.insights?.data?.[0]?.ctr || 0,
+    cpc: campaign.insights?.data?.[0]?.cpc || 0,
+    cpm: campaign.insights?.data?.[0]?.cpm || 0,
+    cost_per_inline_link_click: campaign.insights?.data?.[0]?.cost_per_inline_link_click || 0,
+    cost_per_inline_post_engagement: campaign.insights?.data?.[0]?.cost_per_inline_post_engagement || 0
   }));
 };
 
