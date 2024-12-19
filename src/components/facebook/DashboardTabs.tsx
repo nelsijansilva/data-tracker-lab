@@ -23,27 +23,16 @@ export const DashboardTabs = ({
   campaignStatus,
   selectedAccountId
 }: DashboardTabsProps) => {
-  // Handle ResizeObserver errors and notifications
+  // Handle ResizeObserver errors
   useEffect(() => {
-    // Create a more comprehensive error handler
-    const handleError = (event: ErrorEvent | Event) => {
-      if (event instanceof ErrorEvent) {
-        if (event.message.includes('ResizeObserver')) {
-          // Prevent the error from propagating
-          event.stopImmediatePropagation();
-          return false;
-        }
+    const handleError = (event: ErrorEvent) => {
+      if (event.message.includes('ResizeObserver')) {
+        event.stopImmediatePropagation();
       }
     };
 
-    // Handle both error and ResizeObserver-specific events
-    window.addEventListener('error', handleError, true);
-    window.addEventListener('ResizeObserver-notify', handleError, true);
-
-    return () => {
-      window.removeEventListener('error', handleError, true);
-      window.removeEventListener('ResizeObserver-notify', handleError, true);
-    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
   }, []);
 
   return (
