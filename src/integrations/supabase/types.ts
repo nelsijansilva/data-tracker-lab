@@ -210,7 +210,7 @@ export type Database = {
       facebook_pixels: {
         Row: {
           created_at: string
-          event_test_code: string
+          event_test_code: string | null
           id: string
           pixel_id: string
           pixel_name: string
@@ -219,7 +219,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          event_test_code: string
+          event_test_code?: string | null
           id?: string
           pixel_id: string
           pixel_name: string
@@ -228,7 +228,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          event_test_code?: string
+          event_test_code?: string | null
           id?: string
           pixel_id?: string
           pixel_name?: string

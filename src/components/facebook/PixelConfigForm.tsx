@@ -7,14 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
-interface PixelConfig {
-  id: string;
-  pixel_name: string;
-  pixel_id: string;
-  pixel_token: string;
-  event_test_code: string;
-}
-
 export const PixelConfigForm = () => {
   const [pixelName, setPixelName] = useState("");
   const [pixelId, setPixelId] = useState("");
@@ -34,7 +26,7 @@ export const PixelConfigForm = () => {
             pixel_name: pixelName,
             pixel_id: pixelId,
             pixel_token: pixelToken,
-            event_test_code: eventTestCode,
+            event_test_code: eventTestCode || null,
           }
         ]);
 
@@ -115,14 +107,13 @@ export const PixelConfigForm = () => {
           </div>
           <div>
             <label htmlFor="eventTestCode" className="block text-sm font-medium mb-1">
-              Código de Teste de Eventos
+              Código de Teste de Eventos (opcional)
             </label>
             <Textarea
               id="eventTestCode"
               placeholder="Digite o código de teste de eventos"
               value={eventTestCode}
               onChange={(e) => setEventTestCode(e.target.value)}
-              required
             />
           </div>
           <div className="flex gap-4">

@@ -179,7 +179,7 @@ export interface FacebookPixelsTable {
     pixel_name: string
     pixel_id: string
     pixel_token: string
-    event_test_code: string
+    event_test_code: string | null
     created_at: string
     updated_at: string
   }
@@ -188,7 +188,7 @@ export interface FacebookPixelsTable {
     pixel_name: string
     pixel_id: string
     pixel_token: string
-    event_test_code: string
+    event_test_code?: string | null
     created_at?: string
     updated_at?: string
   }
@@ -197,7 +197,7 @@ export interface FacebookPixelsTable {
     pixel_name?: string
     pixel_id?: string
     pixel_token?: string
-    event_test_code?: string
+    event_test_code?: string | null
     created_at?: string
     updated_at?: string
   }
