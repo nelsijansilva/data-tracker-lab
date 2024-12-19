@@ -24,11 +24,23 @@ serve(async (req) => {
     });
   }
 
-  // Get domain from request
   const url = new URL(req.url);
+  const pixelId = url.searchParams.get('pixel_id');
+  const eventTestCode = url.searchParams.get('event_test_code');
   const domain = url.searchParams.get('domain') || url.headers.get('referer') || 'unknown';
   
-  console.log('Processing request for domain:', domain);
+  console.log('Processing request:', {
+    pixelId,
+    eventTestCode,
+    domain
+  });
+
+  if (!pixelId) {
+    return new Response('Pixel ID is required', { 
+      status: 400,
+      headers: corsHeaders
+    });
+  }
 
   // Initialize Supabase client with anon key
   const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
@@ -39,7 +51,13 @@ serve(async (req) => {
     // Log tracking request
     await supabase
       .from('tracking_requests')
-      .insert([{ domain, timestamp: new Date().toISOString() }]);
+      .insert([{
+        domain,
+        url: url.toString(),
+        user_agent: req.headers.get('user-agent'),
+        language: req.headers.get('accept-language'),
+        timestamp: new Date().toISOString()
+      }]);
 
     console.log('Logged tracking request for domain:', domain);
   } catch (error) {
@@ -48,81 +66,83 @@ serve(async (req) => {
   }
 
   const script = `
-    !function(){
-      var e=window.pixelId;
-      if(!e) {
-        console.error("Facebook Pixel ID not found");
-        return;
+    !function(f,b,e,v,n,t,s) {
+      if(f.fbq)return;
+      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;
+      n.push=n;
+      n.loaded=!0;
+      n.version='2.0';
+      n.queue=[];
+      t=b.createElement(e);
+      t.async=!0;
+      t.src=v;
+      s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+
+    window.pixelId = '${pixelId}';
+    ${eventTestCode ? `window.eventTestCode = '${eventTestCode}';` : ''}
+
+    fbq('init', '${pixelId}'${eventTestCode ? `, { 
+      external_id: '${eventTestCode}'
+    }` : ''});
+
+    fbq('track', 'PageView', {
+      source: 'lovable-tracker',
+      domain: '${domain}',
+      timestamp: new Date().toISOString()
+    });
+
+    // Track page changes
+    var currentPath = window.location.pathname;
+    var observer = new MutationObserver(function() {
+      var newPath = window.location.pathname;
+      if (newPath !== currentPath) {
+        currentPath = newPath;
+        console.log("Tracking page view:", newPath);
+        fbq('track', 'PageView', {
+          source: 'lovable-tracker',
+          path: newPath,
+          title: document.title,
+          domain: window.location.hostname,
+          timestamp: new Date().toISOString()
+        });
       }
+    });
 
-      console.log("Initializing Facebook Pixel with ID:", e);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
 
-      // Initialize Facebook Pixel
-      !function(f,b,e,v,n,t,s) {
-        if(f.fbq)return;
-        n=f.fbq=function(){
-          n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)
-        };
-        if(!f._fbq)f._fbq=n;
-        n.push=n;
-        n.loaded=!0;
-        n.version='2.0';
-        n.queue=[];
-        t=b.createElement(e);
-        t.async=!0;
-        t.src=v;
-        s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)
-      }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    // Track clicks
+    document.addEventListener('click', function(event) {
+      var target = event.target;
+      if (target && target.tagName) {
+        console.log("Tracking click event:", {
+          element: target.tagName.toLowerCase(),
+          path: window.location.pathname,
+          text: target.textContent?.trim() || ''
+        });
+        
+        fbq('trackCustom', 'Click', {
+          source: 'lovable-tracker',
+          element: target.tagName.toLowerCase(),
+          path: window.location.pathname,
+          text: target.textContent?.trim() || '',
+          domain: window.location.hostname,
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
 
-      // Initialize pixel with ID
-      fbq('init', e);
-      fbq('track', 'PageView', {
-        domain: '${domain}',
-        timestamp: new Date().toISOString()
-      });
-
-      // Track page changes
-      var currentPath = window.location.pathname;
-      var observer = new MutationObserver(function() {
-        var newPath = window.location.pathname;
-        if (newPath !== currentPath) {
-          currentPath = newPath;
-          console.log("Tracking page view:", newPath);
-          fbq('trackCustom', 'PageView', {
-            path: newPath,
-            title: document.title,
-            domain: window.location.hostname
-          });
-        }
-      });
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-
-      // Track clicks
-      document.addEventListener('click', function(event) {
-        var target = event.target;
-        if (target && target.tagName) {
-          console.log("Tracking click event:", {
-            element: target.tagName.toLowerCase(),
-            path: window.location.pathname,
-            text: target.textContent?.trim() || ''
-          });
-          
-          fbq('trackCustom', 'Click', {
-            element: target.tagName.toLowerCase(),
-            path: window.location.pathname,
-            text: target.textContent?.trim() || '',
-            domain: window.location.hostname
-          });
-        }
-      });
-
-      console.log('[FB Tracker] Initialized successfully for domain:', '${domain}');
-    }();
+    console.log('[FB Tracker] Initialized successfully:', {
+      pixelId: '${pixelId}',
+      domain: '${domain}',
+      ${eventTestCode ? `eventTestCode: '${eventTestCode}',` : ''}
+      timestamp: new Date().toISOString()
+    });
   `;
 
   return new Response(script, { 
