@@ -7,7 +7,7 @@ import { startOfMonth, endOfMonth } from "date-fns";
 import { DashboardTabs } from "@/components/facebook/DashboardTabs";
 import { DashboardFilters } from "@/components/facebook/DashboardFilters";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 type CampaignStatus = 'all' | 'active' | 'paused';
@@ -49,14 +49,24 @@ const Dashboard = () => {
       <div className="border-b border-primary/20 bg-hacker-darker">
         <div className="container mx-auto py-4 px-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-primary neon-text">Data Tracker</h1>
-          <Button 
-            variant="ghost" 
-            className="cyber-button"
-            onClick={handleLogout}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex gap-4">
+            <Button 
+              variant="ghost" 
+              className="cyber-button"
+              onClick={() => navigate('/pixel-config')}
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Configurar Pixel
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="cyber-button"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </div>
 
