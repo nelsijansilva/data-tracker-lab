@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { generateCDNScript } from "@/lib/tracking/trackingScript";
@@ -24,15 +23,15 @@ export const ScriptGenerator = ({ pixelId, apiToken, steps }: ScriptGeneratorPro
     onSuccess: (script) => {
       setTrackingScript(script);
       toast({
-        title: "Script Generated",
-        description: "Tracking script has been generated successfully",
+        title: "Script Gerado",
+        description: "O script de rastreamento foi gerado com sucesso",
       });
     },
     onError: (error) => {
       console.error('Error generating script:', error);
       toast({
-        title: "Error",
-        description: "Failed to generate tracking script",
+        title: "Erro",
+        description: "Falha ao gerar o script de rastreamento",
         variant: "destructive",
       });
     }
@@ -41,18 +40,25 @@ export const ScriptGenerator = ({ pixelId, apiToken, steps }: ScriptGeneratorPro
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tracking Script</CardTitle>
+        <CardTitle>Script de Rastreamento</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button 
-          onClick={() => generateMutation.mutate()} 
-          className="w-full"
-          disabled={generateMutation.isPending}
-        >
-          {generateMutation.isPending ? "Generating..." : "Generate Script"}
-        </Button>
-        
-        {trackingScript && <ScriptDisplay script={trackingScript} />}
+        {trackingScript ? (
+          <ScriptDisplay 
+            script={trackingScript} 
+            onGenerate={() => generateMutation.mutate()}
+          />
+        ) : (
+          <div className="flex justify-center">
+            <Button 
+              onClick={() => generateMutation.mutate()} 
+              className="w-full max-w-md"
+              disabled={generateMutation.isPending}
+            >
+              {generateMutation.isPending ? "Gerando..." : "Gerar Script"}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
