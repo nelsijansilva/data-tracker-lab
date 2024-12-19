@@ -2,6 +2,7 @@ export type FacebookMetricMapping = {
   field: string;
   apiField?: string;
   isInsightMetric?: boolean;
+  level?: 'account' | 'campaign' | 'adset' | 'ad';
 };
 
 export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
@@ -11,19 +12,19 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   objective: { field: 'objective', isInsightMetric: false },
   
   // Valid insight metrics for campaigns
-  spend: { field: 'spend', isInsightMetric: true },
-  impressions: { field: 'impressions', isInsightMetric: true },
-  clicks: { field: 'clicks', isInsightMetric: true },
-  cpc: { field: 'cpc', isInsightMetric: true },
-  ctr: { field: 'ctr', isInsightMetric: true },
-  cpm: { field: 'cpm', isInsightMetric: true },
-  reach: { field: 'reach', isInsightMetric: true },
-  frequency: { field: 'frequency', isInsightMetric: true },
-  cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true },
-  unique_clicks: { field: 'unique_clicks', isInsightMetric: true },
-  unique_ctr: { field: 'unique_ctr', isInsightMetric: true },
-  actions: { field: 'actions', isInsightMetric: true },
-  cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true }
+  spend: { field: 'spend', isInsightMetric: true, level: 'campaign' },
+  impressions: { field: 'impressions', isInsightMetric: true, level: 'campaign' },
+  clicks: { field: 'clicks', isInsightMetric: true, level: 'campaign' },
+  cpc: { field: 'cpc', isInsightMetric: true, level: 'campaign' },
+  ctr: { field: 'ctr', isInsightMetric: true, level: 'campaign' },
+  cpm: { field: 'cpm', isInsightMetric: true, level: 'campaign' },
+  reach: { field: 'reach', isInsightMetric: true, level: 'campaign' },
+  frequency: { field: 'frequency', isInsightMetric: true, level: 'campaign' },
+  cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true, level: 'campaign' },
+  unique_clicks: { field: 'unique_clicks', isInsightMetric: true, level: 'campaign' },
+  unique_ctr: { field: 'unique_ctr', isInsightMetric: true, level: 'campaign' },
+  actions: { field: 'actions', isInsightMetric: true, level: 'campaign' },
+  cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true, level: 'campaign' }
 };
 
 export const getMetricMapping = (field: string): FacebookMetricMapping => {
