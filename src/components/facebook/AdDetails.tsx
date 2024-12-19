@@ -15,12 +15,10 @@ interface AdDetailsProps {
 }
 
 const AD_FORMATS = [
+  { value: "RIGHT_COLUMN_STANDARD", label: "Right Column" },
   { value: "DESKTOP_FEED_STANDARD", label: "Desktop Feed" },
   { value: "MOBILE_FEED_STANDARD", label: "Mobile Feed" },
-  { value: "INSTAGRAM_STANDARD", label: "Instagram Feed" },
-  { value: "INSTAGRAM_STORY", label: "Instagram Story" },
-  { value: "INSTAGRAM_REELS", label: "Instagram Reels" },
-  { value: "INSTAGRAM_EXPLORE_GRID_HOME", label: "Instagram Explore" },
+  { value: "FACEBOOK_STORY_MOBILE", label: "Facebook Story" },
 ];
 
 export const AdDetails = ({ ad, isOpen, onClose }: AdDetailsProps) => {
