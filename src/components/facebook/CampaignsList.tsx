@@ -40,6 +40,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
 
   const filteredCampaigns = campaigns?.filter(campaign => {
     const matchesStatus = campaignStatus === 'all' || campaign.status.toLowerCase() === campaignStatus;
+    // Aqui está a correção: comparamos com o ID da conta do Facebook, não com o UUID do banco
     const matchesAccount = !selectedAccountId || campaign.account_id === selectedAccountId;
     return matchesStatus && matchesAccount;
   });
