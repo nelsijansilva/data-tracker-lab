@@ -53,7 +53,7 @@ serve(async (req) => {
 
   const script = `
     (function() {
-      // Create and append Facebook Pixel base code
+      // Create Facebook Pixel base code script
       var fbPixelScript = document.createElement('script');
       fbPixelScript.innerHTML = \`
         !function(f,b,e,v,n,t,s) {
@@ -73,57 +73,33 @@ serve(async (req) => {
       \`;
       document.head.appendChild(fbPixelScript);
 
-      // Initialize pixel with test code if available
-      if (typeof fbq === 'undefined') {
-        console.warn('[FB Pixel] fbq not defined yet, waiting...');
-        var initAttempts = 0;
-        var initInterval = setInterval(function() {
-          if (typeof fbq !== 'undefined') {
-            clearInterval(initInterval);
-            initializePixel();
-          } else if (initAttempts >= 10) {
-            clearInterval(initInterval);
-            console.error('[FB Pixel] Failed to initialize after 10 attempts');
-          }
-          initAttempts++;
-        }, 500);
-      } else {
-        initializePixel();
-      }
+      // Create and append the Facebook Pixel init script
+      var fbInitScript = document.createElement('script');
+      fbInitScript.innerHTML = \`
+        fbq('init', '${pixelId}'${eventTestCode ? `, { external_id: '${eventTestCode}' }` : ''});
+        fbq('track', 'PageView', {
+          source: 'lovable-tracker',
+          domain: '${domain}',
+          timestamp: new Date().toISOString()
+        });
+        console.log('[FB Pixel] Initialized:', {
+          pixelId: '${pixelId}',
+          domain: '${domain}',
+          ${eventTestCode ? `eventTestCode: '${eventTestCode}',` : ''}
+          timestamp: new Date().toISOString()
+        });
+      \`;
+      document.head.appendChild(fbInitScript);
 
-      function initializePixel() {
-        try {
-          ${eventTestCode 
-            ? `fbq('init', '${pixelId}', { external_id: '${eventTestCode}' });`
-            : `fbq('init', '${pixelId}');`
-          }
-          
-          fbq('track', 'PageView', {
-            source: 'lovable-tracker',
-            domain: '${domain}',
-            timestamp: new Date().toISOString()
-          });
-
-          console.log('[FB Pixel] Initialized:', {
-            pixelId: '${pixelId}',
-            domain: '${domain}',
-            ${eventTestCode ? `eventTestCode: '${eventTestCode}',` : ''}
-            timestamp: new Date().toISOString()
-          });
-
-          // Add noscript fallback
-          var noscript = document.createElement('noscript');
-          var img = document.createElement('img');
-          img.height = 1;
-          img.width = 1;
-          img.style.display = 'none';
-          img.src = 'https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1';
-          noscript.appendChild(img);
-          document.body.appendChild(noscript);
-        } catch (error) {
-          console.error('[FB Pixel] Initialization error:', error);
-        }
-      }
+      // Add noscript fallback
+      var noscript = document.createElement('noscript');
+      var img = document.createElement('img');
+      img.height = 1;
+      img.width = 1;
+      img.style.display = 'none';
+      img.src = 'https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1';
+      noscript.appendChild(img);
+      document.body.appendChild(noscript);
     })();
   `;
 
