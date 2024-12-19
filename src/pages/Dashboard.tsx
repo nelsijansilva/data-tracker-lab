@@ -1,21 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, ArrowUp, ArrowDown, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CampaignsList } from "@/components/facebook/CampaignsList";
-import { AccountsList } from "@/components/facebook/AccountsList";
-import { CustomMetricsDashboard } from "@/components/facebook/CustomMetricsDashboard";
 import { supabase } from "@/integrations/supabase/client";
-import { useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const Dashboard = () => {
-  const location = useLocation();
   const [activeTab, setActiveTab] = useState("campaigns");
-  
-  useEffect(() => {
-    if (location.state?.defaultTab) {
-      setActiveTab(location.state.defaultTab);
-    }
-  }, [location.state]);
+  const [showAlert, setShowAlert] = useState(true);
 
   const { data: hasCredentials, isLoading } = useQuery({
     queryKey: ['fbCredentials'],
@@ -35,58 +30,127 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-4 flex items-center justify-center">
+      <div className="flex items-center justify-center h-screen">
         <p>Carregando...</p>
       </div>
     );
   }
 
+  const tabs = [
+    { id: 'accounts', label: 'Contas', icon: <Settings className="w-4 h-4" /> },
+    { id: 'campaigns', label: 'Campanhas', icon: <ArrowUp className="w-4 h-4" /> },
+    { id: 'adsets', label: 'Conjuntos', icon: <ArrowDown className="w-4 h-4" /> },
+    { id: 'ads', label: 'Anúncios', icon: <RefreshCw className="w-4 h-4" /> },
+  ];
+
   return (
-    <div className="h-screen bg-background">
-      <div className="border-b">
-        <div className="container mx-auto py-4">
-          <h1 className="text-2xl font-bold">Facebook Ads Manager</h1>
+    <div className="min-h-screen bg-[#1a1f2e] text-white">
+      {/* Navigation */}
+      <nav className="border-b border-gray-700">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex space-x-8">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 px-4 py-2 font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? 'text-[#3b82f6] border-b-2 border-[#3b82f6]'
+                      : 'text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      </nav>
 
-      <div className="container mx-auto py-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <div className="border-b">
-            <TabsList className="w-full justify-start gap-4 h-12">
-              <TabsTrigger value="accounts" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Contas
-              </TabsTrigger>
-              {hasCredentials && (
-                <>
-                  <TabsTrigger value="campaigns" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    Campanhas
-                  </TabsTrigger>
-                  <TabsTrigger value="custom-metrics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    Métricas Personalizadas
-                  </TabsTrigger>
-                </>
-              )}
-            </TabsList>
+      {/* Main Content */}
+      <div className="container mx-auto py-6 space-y-6">
+        {/* Alert */}
+        {showAlert && (
+          <Alert className="bg-[#2a2f3d] border-none text-orange-400">
+            <AlertDescription className="flex justify-between items-center">
+              <div>
+                <p className="font-medium">Filtro de Período de Visualização</p>
+                <p className="text-sm mt-1">
+                  Exibimos apenas campanhas com gastos ou criadas no período selecionado. Se não encontrar alguma campanha, ajuste o intervalo de datas.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAlert(false)}
+                className="text-orange-400 hover:text-orange-300"
+              >
+                ×
+              </button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Filters */}
+        <div className="grid grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Nome da Campanha
+            </label>
+            <Input
+              placeholder="Filtrar por nome"
+              className="bg-[#2a2f3d] border-gray-700 text-white"
+            />
           </div>
-
-          <div className="p-4 h-full border rounded-lg">
-            <TabsContent value="accounts">
-              <AccountsList />
-            </TabsContent>
-
-            {hasCredentials && (
-              <>
-                <TabsContent value="campaigns">
-                  <CampaignsList />
-                </TabsContent>
-
-                <TabsContent value="custom-metrics">
-                  <CustomMetricsDashboard />
-                </TabsContent>
-              </>
-            )}
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Status da Campanha
+            </label>
+            <Select>
+              <SelectTrigger className="bg-[#2a2f3d] border-gray-700 text-white">
+                <SelectValue placeholder="Qualquer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Qualquer</SelectItem>
+                <SelectItem value="active">Ativo</SelectItem>
+                <SelectItem value="paused">Pausado</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </Tabs>
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Período de Visualização
+            </label>
+            <Select>
+              <SelectTrigger className="bg-[#2a2f3d] border-gray-700 text-white">
+                <SelectValue placeholder="Hoje" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="yesterday">Ontem</SelectItem>
+                <SelectItem value="last7days">Últimos 7 dias</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Conta de Anúncio
+            </label>
+            <Select>
+              <SelectTrigger className="bg-[#2a2f3d] border-gray-700 text-white">
+                <SelectValue placeholder="Qualquer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Qualquer</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Campaigns List */}
+        <div className="bg-[#2a2f3d] rounded-lg p-4">
+          <CampaignsList />
+        </div>
       </div>
     </div>
   );

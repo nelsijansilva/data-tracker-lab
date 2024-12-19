@@ -1,23 +1,21 @@
-import { addDays } from "date-fns";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
+import React, { useState } from "react";
+import { DateRange } from "react-day-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
-import { useState } from "react";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { MetricValue } from "@/components/facebook/MetricValue";
 import { calculateMetricValue } from "@/utils/metricCalculations";
 import { CampaignDetails } from "@/components/facebook/CampaignDetails";
 import { cn } from "@/lib/utils";
-import type { DateRange } from "react-day-picker";
 
 export const CampaignsList = () => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   
-  const [dateRange, setDateRange] = useState<DateRange>({
-    from: addDays(new Date(), -30),
+  const [dateRange] = useState<DateRange>({
+    from: new Date(),
     to: new Date(),
   });
 
@@ -27,74 +25,93 @@ export const CampaignsList = () => {
     setSelectedCampaignId(campaignId === selectedCampaignId ? null : campaignId);
   };
 
-  if (isLoading) return <div>Carregando campanhas...</div>;
+  if (isLoading) return <div className="text-gray-400">Carregando campanhas...</div>;
   
   if (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar campanhas';
     return (
       <Alert variant="destructive" className="mb-4">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Erro ao carregar campanhas</AlertTitle>
-        <AlertDescription className="mt-2">
-          {errorMessage}
-          {errorMessage.includes('permissões') && (
-            <div className="mt-2">
-              <p className="font-semibold">Como resolver:</p>
-              <ol className="list-decimal ml-4 mt-1">
-                <li>Acesse as configurações do seu aplicativo no Facebook Developers</li>
-                <li>Verifique se as permissões ads_read, ads_management e read_insights estão ativas</li>
-                <li>Gere um novo token de acesso com as permissões necessárias</li>
-                <li>Atualize o token de acesso nas configurações da conta</li>
-              </ol>
-            </div>
-          )}
+        <AlertDescription>
+          {error instanceof Error ? error.message : 'Erro ao carregar campanhas'}
         </AlertDescription>
       </Alert>
     );
   }
 
+  if (!campaigns?.length) {
+    return (
+      <div className="text-center py-8 text-gray-400">
+        <p>Nenhuma campanha encontrada no período selecionado.</p>
+        <p className="text-sm mt-2">Por que as campanhas não estão aparecendo?</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-end items-center gap-4">
-        <DateRangePicker
-          value={dateRange}
-          onChange={setDateRange}
-        />
-      </div>
-
       <Table>
         <TableHeader>
-          <TableRow>
-            {selectedMetrics.map((metric) => (
-              <TableHead key={metric.id}>{metric.name}</TableHead>
-            ))}
+          <TableRow className="border-gray-700">
+            <TableHead className="text-gray-400">STATUS</TableHead>
+            <TableHead className="text-gray-400">CAMPANHA</TableHead>
+            <TableHead className="text-gray-400">ORÇAMENTO</TableHead>
+            <TableHead className="text-gray-400">VENDAS</TableHead>
+            <TableHead className="text-gray-400">CPA</TableHead>
+            <TableHead className="text-gray-400">GASTOS</TableHead>
+            <TableHead className="text-gray-400">FATURAMENTO</TableHead>
+            <TableHead className="text-gray-400">LUCRO</TableHead>
+            <TableHead className="text-gray-400">ROAS</TableHead>
+            <TableHead className="text-gray-400">MARGEM</TableHead>
+            <TableHead className="text-gray-400">ROI</TableHead>
+            <TableHead className="text-gray-400">IC</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {campaigns?.map((campaign: any) => (
-            <>
+            <React.Fragment key={campaign.id}>
               <TableRow 
-                key={campaign.id}
                 className={cn(
-                  "cursor-pointer transition-colors",
+                  "cursor-pointer transition-colors border-gray-700",
                   selectedCampaignId === campaign.id 
-                    ? "bg-primary/10 hover:bg-primary/15" 
-                    : "hover:bg-muted/50"
+                    ? "bg-[#3b82f6]/10" 
+                    : "hover:bg-[#2f3850]"
                 )}
                 onClick={() => handleRowClick(campaign.id)}
               >
-                {selectedMetrics.map((metric) => (
-                  <TableCell key={`${campaign.id}-${metric.id}`}>
-                    <MetricValue 
-                      value={calculateMetricValue(campaign, metric)} 
-                      metric={metric}
-                    />
-                  </TableCell>
-                ))}
+                <TableCell className="text-gray-400">{campaign.status}</TableCell>
+                <TableCell className="text-gray-400">{campaign.name}</TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.budget} metric={{ field: 'budget' }} />
+                </TableCell>
+                <TableCell className="text-gray-400">{campaign.sales || 0}</TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.cpa} metric={{ field: 'cpa' }} />
+                </TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.spend} metric={{ field: 'spend' }} />
+                </TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.revenue} metric={{ field: 'revenue' }} />
+                </TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.profit} metric={{ field: 'profit' }} />
+                </TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.roas} metric={{ field: 'roas' }} />
+                </TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.margin} metric={{ field: 'margin' }} />
+                </TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.roi} metric={{ field: 'roi' }} />
+                </TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.ic} metric={{ field: 'ic' }} />
+                </TableCell>
               </TableRow>
               {selectedCampaignId === campaign.id && (
                 <TableRow>
-                  <TableCell colSpan={selectedMetrics.length}>
+                  <TableCell colSpan={12}>
                     <CampaignDetails 
                       campaignId={campaign.id}
                       dateRange={dateRange}
@@ -103,7 +120,7 @@ export const CampaignsList = () => {
                   </TableCell>
                 </TableRow>
               )}
-            </>
+            </React.Fragment>
           ))}
         </TableBody>
       </Table>
