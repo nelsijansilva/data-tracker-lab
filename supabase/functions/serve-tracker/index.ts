@@ -6,7 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Content-Type': 'application/javascript',
-  'Cache-Control': 'public, max-age=14400', // 4 hours cache
 };
 
 serve(async (req) => {
@@ -66,91 +65,54 @@ serve(async (req) => {
   }
 
   const script = `
-    // Initialize Facebook Pixel
-    !function(f,b,e,v,n,t,s) {
-      if(f.fbq)return;
-      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;
-      n.push=n;
-      n.loaded=!0;
-      n.version='2.0';
-      n.queue=[];
-      t=b.createElement(e);
-      t.async=!0;
-      t.src=v;
-      s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)
-    }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    // Ensure fbq is not already defined
+    if (typeof fbq === 'undefined') {
+      !function(f,b,e,v,n,t,s) {
+        if(f.fbq)return;
+        n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;
+        n.push=n;
+        n.loaded=!0;
+        n.version='2.0';
+        n.queue=[];
+        t=b.createElement(e);
+        t.async=!0;
+        t.src=v;
+        s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)
+      }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
-    // Store pixel configuration
-    window.pixelId = '${pixelId}';
-    ${eventTestCode ? `window.eventTestCode = '${eventTestCode}';` : ''}
+      // Store pixel configuration
+      window.pixelId = '${pixelId}';
+      ${eventTestCode ? `window.eventTestCode = '${eventTestCode}';` : ''}
 
-    // Initialize pixel with test code if available
-    fbq('init', '${pixelId}'${eventTestCode ? `, {
-      external_id: '${eventTestCode}'
-    }` : ''});
+      // Initialize pixel with test code if available
+      fbq('init', '${pixelId}'${eventTestCode ? `, {
+        external_id: '${eventTestCode}'
+      }` : ''});
 
-    // Track PageView event
-    fbq('track', 'PageView', {
-      source: 'lovable-tracker',
-      domain: '${domain}',
-      timestamp: new Date().toISOString()
-    });
+      // Track PageView event
+      fbq('track', 'PageView', {
+        source: 'lovable-tracker',
+        domain: '${domain}',
+        timestamp: new Date().toISOString()
+      });
 
-    // Debug logging
-    console.log('[FB Pixel] Initialized:', {
-      pixelId: '${pixelId}',
-      domain: '${domain}',
-      ${eventTestCode ? `eventTestCode: '${eventTestCode}',` : ''}
-      timestamp: new Date().toISOString()
-    });
+      // Debug logging
+      console.log('[FB Pixel] Initialized:', {
+        pixelId: '${pixelId}',
+        domain: '${domain}',
+        ${eventTestCode ? `eventTestCode: '${eventTestCode}',` : ''}
+        timestamp: new Date().toISOString()
+      });
 
-    // Track page changes for SPAs
-    let currentPath = window.location.pathname;
-    const observer = new MutationObserver(function() {
-      const newPath = window.location.pathname;
-      if (newPath !== currentPath) {
-        currentPath = newPath;
-        console.log("[FB Pixel] Tracking page view:", newPath);
-        fbq('track', 'PageView', {
-          source: 'lovable-tracker',
-          path: newPath,
-          title: document.title,
-          domain: window.location.hostname,
-          timestamp: new Date().toISOString()
-        });
-      }
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-
-    // Track click events
-    document.addEventListener('click', function(event) {
-      const target = event.target;
-      if (target && target.tagName) {
-        console.log("[FB Pixel] Tracking click:", {
-          element: target.tagName.toLowerCase(),
-          text: target.textContent?.trim() || ''
-        });
-        
-        fbq('trackCustom', 'Click', {
-          source: 'lovable-tracker',
-          element: target.tagName.toLowerCase(),
-          text: target.textContent?.trim() || '',
-          domain: window.location.hostname,
-          timestamp: new Date().toISOString()
-        });
-      }
-    });
-
-    // Add noscript fallback
-    const noscript = document.createElement('noscript');
-    noscript.innerHTML = '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />';
-    document.body.appendChild(noscript);
+      // Add noscript fallback
+      const noscript = document.createElement('noscript');
+      noscript.innerHTML = '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />';
+      document.body.appendChild(noscript);
+    } else {
+      console.log('[FB Pixel] Already initialized');
+    }
   `;
 
   return new Response(script, { 
