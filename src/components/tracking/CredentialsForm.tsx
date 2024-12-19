@@ -18,16 +18,15 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
 
   const { data: configuration } = useQuery({
     queryKey: ['pixelConfiguration'],
-    queryFn: getPixelConfiguration
-  });
-
-  useEffect(() => {
-    if (configuration) {
-      setPixelId(configuration.pixelId);
-      setApiToken(configuration.apiToken);
-      onSave(configuration.pixelId, configuration.apiToken);
+    queryFn: getPixelConfiguration,
+    onSuccess: (data) => {
+      if (data && !pixelId && !apiToken) {
+        setPixelId(data.pixelId);
+        setApiToken(data.apiToken);
+        onSave(data.pixelId, data.apiToken);
+      }
     }
-  }, [configuration, onSave]);
+  });
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -37,14 +36,14 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
       queryClient.invalidateQueries({ queryKey: ['pixelConfiguration'] });
       onSave(pixelId, apiToken);
       toast({
-        title: "Success",
-        description: "Credentials saved successfully",
+        title: "Sucesso",
+        description: "Credenciais salvas com sucesso",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to save credentials",
+        title: "Erro",
+        description: "Falha ao salvar credenciais",
         variant: "destructive",
       });
       console.error('Error saving credentials:', error);
@@ -54,8 +53,8 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
   const handleSave = () => {
     if (!pixelId || !apiToken) {
       toast({
-        title: "Missing Credentials",
-        description: "Please enter both Pixel ID and API Token",
+        title: "Credenciais Faltando",
+        description: "Por favor, insira o Pixel ID e o Token da API",
         variant: "destructive",
       });
       return;
@@ -67,7 +66,7 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Facebook Credentials</CardTitle>
+        <CardTitle>Credenciais do Facebook</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -79,7 +78,7 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
               id="pixelId"
               value={pixelId}
               onChange={(e) => setPixelId(e.target.value)}
-              placeholder="Enter your Facebook Pixel ID"
+              placeholder="Digite seu Facebook Pixel ID"
             />
           </div>
           <div className="space-y-2">
@@ -91,7 +90,7 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
               type="password"
               value={apiToken}
               onChange={(e) => setApiToken(e.target.value)}
-              placeholder="Enter your Facebook API Token"
+              placeholder="Digite seu Facebook API Token"
             />
           </div>
         </div>
@@ -100,7 +99,7 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
           className="w-full"
           disabled={saveMutation.isPending}
         >
-          {saveMutation.isPending ? "Saving..." : "Save Credentials"}
+          {saveMutation.isPending ? "Salvando..." : "Salvar Credenciais"}
         </Button>
       </CardContent>
     </Card>

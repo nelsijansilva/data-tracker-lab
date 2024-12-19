@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button"; // Re-added Button import
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { generateCDNScript } from "@/lib/tracking/trackingScript";
@@ -19,6 +19,9 @@ export const ScriptGenerator = ({ pixelId, apiToken, steps }: ScriptGeneratorPro
 
   const generateMutation = useMutation({
     mutationFn: async () => {
+      if (!pixelId) {
+        throw new Error("Pixel ID é necessário para gerar o script");
+      }
       return generateCDNScript(pixelId);
     },
     onSuccess: (script) => {
@@ -32,16 +35,16 @@ export const ScriptGenerator = ({ pixelId, apiToken, steps }: ScriptGeneratorPro
       console.error('Error generating script:', error);
       toast({
         title: "Erro",
-        description: "Falha ao gerar o script de rastreamento",
+        description: error instanceof Error ? error.message : "Falha ao gerar o script de rastreamento",
         variant: "destructive",
       });
     }
   });
 
   return (
-    <Card>
+    <Card className="bg-[#2a2f3d] border-gray-700">
       <CardHeader>
-        <CardTitle>Script de Rastreamento</CardTitle>
+        <CardTitle className="text-gray-200">Script de Rastreamento</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {trackingScript ? (
@@ -53,7 +56,7 @@ export const ScriptGenerator = ({ pixelId, apiToken, steps }: ScriptGeneratorPro
           <div className="flex justify-center">
             <Button 
               onClick={() => generateMutation.mutate()} 
-              className="w-full max-w-md"
+              className="w-full max-w-md bg-blue-600 hover:bg-blue-700"
               disabled={generateMutation.isPending}
             >
               {generateMutation.isPending ? "Gerando..." : "Gerar Script"}
