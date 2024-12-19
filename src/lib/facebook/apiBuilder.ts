@@ -54,8 +54,7 @@ export const buildAdsEndpoint = (
   const fields = buildFieldsParameter(metricFields);
   const insightFields = buildInsightsFieldsParameter(metricFields);
   
-  // Removing duplicate fields and ensuring each field appears only once
-  let endpoint = `${accountId}/ads?fields=name,status,preview_url,creative{id,name,title,body,object_story_spec{link_data{message,link,caption,description,image_url}},asset_feed_spec{bodies,descriptions,titles,videos,images}}`;
+  let endpoint = `${accountId}/ads?fields=name,status,creative{id,name,title,body,object_story_spec{link_data{message,link,caption,description,image_url}},asset_feed_spec{bodies,descriptions,titles,videos,images}}`;
 
   if (insightFields && dateRange?.from && dateRange?.to) {
     endpoint += `,insights.time_range({"since":"${format(dateRange.from, 'yyyy-MM-dd')}","until":"${format(dateRange.to, 'yyyy-MM-dd')}"}).fields(${insightFields})`;
@@ -66,4 +65,8 @@ export const buildAdsEndpoint = (
   }
 
   return endpoint;
+};
+
+export const buildAdPreviewEndpoint = (adId: string, adFormat: string = "DESKTOP_FEED_STANDARD"): string => {
+  return `${adId}/previews?ad_format=${adFormat}`;
 };
