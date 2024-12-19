@@ -29,8 +29,6 @@ export function DateRangePicker({
   onChange,
   className,
 }: DateRangePickerProps) {
-  const [isPresetOpen, setIsPresetOpen] = React.useState(false);
-
   const presets = [
     {
       label: 'Hoje',
@@ -113,14 +111,11 @@ export function DateRangePicker({
         <PopoverContent className="w-auto p-0" align="start">
           <div className="space-y-4 p-4">
             <Command className="rounded-lg border shadow-md">
-              <CommandGroup>
+              <CommandGroup heading="Períodos predefinidos">
                 {presets.map((preset) => (
                   <CommandItem
                     key={preset.label}
-                    onSelect={() => {
-                      onChange(preset.getValue());
-                      setIsPresetOpen(false);
-                    }}
+                    onSelect={() => onChange(preset.getValue())}
                   >
                     <Check
                       className={cn(
