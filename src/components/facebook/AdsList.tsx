@@ -18,24 +18,11 @@ export const AdsList = ({ dateRange, selectedAccountId }: AdsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const { selectedAdSetId } = useAdSetStore();
   const [selectedAdId, setSelectedAdId] = React.useState<string | null>(null);
-  const [lastClickTime, setLastClickTime] = React.useState<number>(0);
-  const [showDetails, setShowDetails] = React.useState(false);
-  const [selectedAd, setSelectedAd] = React.useState<any>(null);
 
   const { data: ads, isLoading, error } = useAds(selectedMetrics, dateRange, selectedAccountId, selectedAdSetId);
 
   const handleRowClick = (ad: any) => {
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastClickTime;
-    
-    if (timeDiff < 300) { // Double click detected (within 300ms)
-      setSelectedAd(ad);
-      setShowDetails(true);
-    } else {
-      setSelectedAdId(ad.id === selectedAdId ? null : ad.id);
-    }
-    
-    setLastClickTime(currentTime);
+    setSelectedAdId(ad.id === selectedAdId ? null : ad.id);
   };
 
   if (isLoading) return <div className="text-gray-400">Carregando anúncios...</div>;
@@ -93,12 +80,6 @@ export const AdsList = ({ dateRange, selectedAccountId }: AdsListProps) => {
           ))}
         </TableBody>
       </Table>
-
-      <AdDetails 
-        ad={selectedAd}
-        isOpen={showDetails}
-        onClose={() => setShowDetails(false)}
-      />
     </div>
   );
 };
