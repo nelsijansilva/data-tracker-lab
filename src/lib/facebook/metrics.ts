@@ -5,12 +5,12 @@ export type FacebookMetricMapping = {
 };
 
 export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
-  // Métricas básicas não-insight
+  // Basic non-insight metrics
   name: { field: 'name', isInsightMetric: false },
   status: { field: 'status', isInsightMetric: false },
   objective: { field: 'objective', isInsightMetric: false },
   
-  // Métricas de insights válidas
+  // Valid insight metrics for campaigns
   spend: { field: 'spend', isInsightMetric: true },
   impressions: { field: 'impressions', isInsightMetric: true },
   clicks: { field: 'clicks', isInsightMetric: true },
