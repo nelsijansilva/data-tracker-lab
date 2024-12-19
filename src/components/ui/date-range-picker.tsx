@@ -1,24 +1,14 @@
 import * as React from "react";
 import { CalendarIcon } from "lucide-react";
-import { addDays, endOfMonth, startOfMonth, format, startOfDay, endOfDay, subDays } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DateRangePresets, presets } from "./date-picker/DateRangePresets";
+import { TimeInputs } from "./date-picker/TimeInputs";
 
 interface DateRangePickerProps {
   value: DateRange;
@@ -36,62 +26,16 @@ export function DateRangePicker({
   const [fromTime, setFromTime] = React.useState("00:00");
   const [toTime, setToTime] = React.useState("23:59");
 
-  const presets = [
-    {
-      id: 'today',
-      label: 'Hoje',
-      getValue: () => ({
-        from: startOfDay(new Date()),
-        to: endOfDay(new Date())
-      }),
-    },
-    {
-      id: 'yesterday',
-      label: 'Ontem',
-      getValue: () => ({
-        from: startOfDay(subDays(new Date(), 1)),
-        to: endOfDay(subDays(new Date(), 1))
-      }),
-    },
-    {
-      id: 'last7',
-      label: 'Últimos 7 dias',
-      getValue: () => ({
-        from: subDays(new Date(), 6),
-        to: new Date()
-      }),
-    },
-    {
-      id: 'thisMonth',
-      label: 'Esse mês',
-      getValue: () => ({
-        from: startOfMonth(new Date()),
-        to: endOfMonth(new Date())
-      }),
-    },
-    {
-      id: 'lastMonth',
-      label: 'Mês passado',
-      getValue: () => ({
-        from: startOfMonth(subDays(new Date(), 30)),
-        to: endOfMonth(subDays(new Date(), 30))
-      }),
-    },
-    {
-      id: 'custom',
-      label: 'Personalizado',
-      getValue: () => value,
-    },
-  ];
-
   const handlePresetChange = (presetId: string) => {
     setSelectedPreset(presetId);
     const preset = presets.find(p => p.id === presetId);
     if (preset) {
       const range = preset.getValue();
-      onChange(range);
-      if (presetId !== 'custom') {
-        setIsOpen(false);
+      if (range) {
+        onChange(range);
+        if (presetId !== 'custom') {
+          setIsOpen(false);
+        }
       }
     }
   };
@@ -137,7 +81,7 @@ export function DateRangePicker({
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal bg-[#2a2f3d] border-gray-700 text-white",
+              "w-full justify-start text-left font-normal bg-[#2a2f3d] border-gray-700 text-white hover:bg-[#3b4252]",
               !value && "text-muted-foreground"
             )}
           >
@@ -156,21 +100,13 @@ export function DateRangePicker({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Select value={selectedPreset} onValueChange={handlePresetChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecione um período predefinido" />
-            </SelectTrigger>
-            <SelectContent>
-              {presets.map((preset) => (
-                <SelectItem key={preset.id} value={preset.id}>
-                  {preset.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
+        <PopoverContent className="w-auto p-0 bg-[#2a2f3d] border-gray-700" align="start">
           <div className="p-4 space-y-4">
+            <DateRangePresets
+              value={selectedPreset}
+              onChange={handlePresetChange}
+            />
+
             <Calendar
               initialFocus
               mode="range"
@@ -179,28 +115,15 @@ export function DateRangePicker({
               onSelect={handleDateRangeChange}
               numberOfMonths={2}
               locale={ptBR}
+              className="bg-[#2a2f3d] text-white rounded-md"
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-gray-500 mb-1 block">Horário inicial</label>
-                <Input
-                  type="time"
-                  value={fromTime}
-                  onChange={(e) => handleTimeChange(e.target.value, 'from')}
-                  className="bg-[#2a2f3d] border-gray-700 text-white"
-                />
-              </div>
-              <div>
-                <label className="text-sm text-gray-500 mb-1 block">Horário final</label>
-                <Input
-                  type="time"
-                  value={toTime}
-                  onChange={(e) => handleTimeChange(e.target.value, 'to')}
-                  className="bg-[#2a2f3d] border-gray-700 text-white"
-                />
-              </div>
-            </div>
+            <TimeInputs
+              fromTime={fromTime}
+              toTime={toTime}
+              onFromTimeChange={(time) => handleTimeChange(time, 'from')}
+              onToTimeChange={(time) => handleTimeChange(time, 'to')}
+            />
           </div>
         </PopoverContent>
       </Popover>
