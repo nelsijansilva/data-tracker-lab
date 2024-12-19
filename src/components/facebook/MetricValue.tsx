@@ -39,6 +39,11 @@ export const MetricValue: React.FC<MetricValueProps> = ({ value, metric }) => {
       return <span>R$ {value.toFixed(2)}</span>;
     }
     
+    // Para CPM, mostrar sempre 2 casas decimais
+    if (metric.field.includes('cpm')) {
+      return <span>{value.toFixed(2)}</span>;
+    }
+    
     // Para números inteiros (impressions, clicks), usar separador de milhares
     if (Number.isInteger(value)) {
       return <span>{value.toLocaleString()}</span>;
