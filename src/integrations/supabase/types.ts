@@ -207,6 +207,35 @@ export type Database = {
           },
         ]
       }
+      selected_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          metric_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "selected_metrics_metric_id_fkey"
+            columns: ["metric_id"]
+            isOneToOne: false
+            referencedRelation: "custom_metrics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -15,16 +15,6 @@ export type Metric = {
   formula?: string;
 };
 
-// Define default metrics that should be selected
-const DEFAULT_METRIC_FIELDS = [
-  'spend',
-  'impressions',
-  'clicks',
-  'ctr',
-  'cpc',
-  'reach'
-];
-
 interface MetricSelectorProps {
   selectedMetrics: Metric[];
   onMetricsChange: (metrics: Metric[]) => void;
@@ -38,7 +28,8 @@ export const MetricSelector = ({
     metrics,
     addMetric,
     deleteMetric,
-    fetchMetrics
+    fetchMetrics,
+    loadPersistedMetrics
   } = useMetricsStore();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,20 +38,13 @@ export const MetricSelector = ({
   const [showAddForm, setShowAddForm] = useState(false);
 
   useEffect(() => {
-    const initializeDefaultMetrics = async () => {
+    const initializeMetrics = async () => {
       await fetchMetrics();
-      
-      // Only set default metrics if no metrics are currently selected
-      if (selectedMetrics.length === 0 && metrics.length > 0) {
-        const defaultMetrics = metrics.filter(metric => 
-          DEFAULT_METRIC_FIELDS.includes(metric.field)
-        );
-        onMetricsChange(defaultMetrics);
-      }
+      await loadPersistedMetrics();
     };
 
-    initializeDefaultMetrics();
-  }, [fetchMetrics, metrics, onMetricsChange, selectedMetrics.length]);
+    initializeMetrics();
+  }, [fetchMetrics, loadPersistedMetrics]);
 
   const handleToggleMetric = (metric: Metric) => {
     const isSelected = selectedMetrics.some((m) => m.id === metric.id);
