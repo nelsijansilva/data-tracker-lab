@@ -12,11 +12,11 @@ export const buildCampaignsEndpoint = (accountId: string, selectedMetrics: Metri
   let endpoint = `${formattedAccountId}/campaigns?fields=name,status`;
 
   if (dateRange?.from && dateRange?.to) {
-    const insights = buildInsightsFieldsParameter(selectedMetrics.map(m => m.field));
+    const insights = buildInsightsFieldsParameter(selectedMetrics.map(m => m.field), 'campaign');
     
     if (insights) {
       endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"})`;
-      endpoint += `.level(campaign)`;  // Add campaign level
+      endpoint += `.level(campaign)`;
       endpoint += `.fields(${insights})`;
     }
   }
@@ -29,12 +29,13 @@ export const buildAdSetsEndpoint = (accountId: string, campaignId: string | null
   let endpoint = `${formattedAccountId}/adsets?fields=name,status`;
 
   if (dateRange?.from && dateRange?.to) {
-    const insights = selectedMetrics
-      .filter(metric => !['name', 'status'].includes(metric.field))
-      .map(metric => metric.field)
-      .join(',');
-
-    endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
+    const insights = buildInsightsFieldsParameter(selectedMetrics.map(m => m.field), 'adset');
+    
+    if (insights) {
+      endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"})`;
+      endpoint += `.level(adset)`;
+      endpoint += `.fields(${insights})`;
+    }
   }
 
   if (campaignId) {
@@ -49,12 +50,13 @@ export const buildAdsEndpoint = (accountId: string, adSetId: string | null, sele
   let endpoint = `${formattedAccountId}/ads?fields=name,status,creative{id,name,title,body,object_story_spec{link_data{message,link,caption,description,image_url}},asset_feed_spec{bodies,descriptions,titles,videos,images}}`;
 
   if (dateRange?.from && dateRange?.to) {
-    const insights = selectedMetrics
-      .filter(metric => !['name', 'status', 'preview_url'].includes(metric.field))
-      .map(metric => metric.field)
-      .join(',');
-
-    endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
+    const insights = buildInsightsFieldsParameter(selectedMetrics.map(m => m.field), 'ad');
+    
+    if (insights) {
+      endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"})`;
+      endpoint += `.level(ad)`;
+      endpoint += `.fields(${insights})`;
+    }
   }
 
   if (adSetId) {

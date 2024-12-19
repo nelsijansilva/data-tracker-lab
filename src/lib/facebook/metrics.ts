@@ -45,10 +45,14 @@ export const buildFieldsParameter = (metrics: string[]): string => {
   return [...new Set(basicFields)].join(',');
 };
 
-export const buildInsightsFieldsParameter = (metrics: string[]): string => {
+export const buildInsightsFieldsParameter = (metrics: string[], level?: 'account' | 'campaign' | 'adset' | 'ad'): string => {
   const insightFields = metrics
     .map(field => getMetricMapping(field))
-    .filter(mapping => mapping.isInsightMetric)
+    .filter(mapping => {
+      if (!mapping.isInsightMetric) return false;
+      if (level && mapping.level && mapping.level !== level) return false;
+      return true;
+    })
     .map(mapping => mapping.field);
 
   return [...new Set(insightFields)].join(',');
