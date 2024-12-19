@@ -29,6 +29,8 @@ export function DateRangePicker({
   onChange,
   className,
 }: DateRangePickerProps) {
+  const [open, setOpen] = React.useState(false);
+
   const presets = [
     {
       label: 'Hoje',
@@ -83,7 +85,7 @@ export function DateRangePicker({
 
   return (
     <div className={cn("grid gap-2", className)}>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             id="date"
@@ -110,12 +112,16 @@ export function DateRangePicker({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="space-y-4 p-4">
-            <Command className="rounded-lg border shadow-md">
+            <Command>
               <CommandGroup heading="Períodos predefinidos">
                 {presets.map((preset) => (
                   <CommandItem
                     key={preset.label}
-                    onSelect={() => onChange(preset.getValue())}
+                    value={preset.label}
+                    onSelect={() => {
+                      onChange(preset.getValue());
+                      setOpen(false);
+                    }}
                   >
                     <Check
                       className={cn(
