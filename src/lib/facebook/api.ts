@@ -29,23 +29,26 @@ export const getFacebookCredentials = async (accountId?: string) => {
 
 export const fetchFacebookData = async (endpoint: string, accessToken: string) => {
   try {
-    console.log('Making Facebook API request to:', `${FB_BASE_URL}/${endpoint}`);
+    const url = `${FB_BASE_URL}/${endpoint}`;
+    console.log('Making Facebook API request to:', url);
     
-    const response = await fetch(`${FB_BASE_URL}/${endpoint}`, {
+    const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       mode: 'cors',
+      credentials: 'omit'
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      console.error('Facebook API error response:', data);
-      handleFacebookError(data);
+      const errorData = await response.json();
+      console.error('Facebook API error response:', errorData);
+      handleFacebookError(errorData);
     }
 
+    const data = await response.json();
     return data;
   } catch (error: any) {
     console.error('Facebook API request failed:', error);
@@ -58,7 +61,10 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
     const credentials = await getFacebookCredentials(selectedAccountId);
     const { account_id, access_token } = credentials;
 
-    const endpoint = buildCampaignsEndpoint(account_id, selectedMetrics, dateRange);
+    // Remove any existing 'act_' prefix to prevent duplication
+    const cleanAccountId = account_id.replace('act_', '');
+    
+    const endpoint = buildCampaignsEndpoint(cleanAccountId, selectedMetrics, dateRange);
     console.log("Fetching campaigns with endpoint:", endpoint);
     
     const response = await fetchFacebookData(endpoint, access_token);
@@ -100,7 +106,10 @@ export const fetchAdSets = async (campaignId: string | null, selectedMetrics: Me
     const credentials = await getFacebookCredentials();
     const { account_id, access_token } = credentials;
 
-    const endpoint = buildAdSetsEndpoint(account_id, campaignId, selectedMetrics, dateRange);
+    // Remove any existing 'act_' prefix to prevent duplication
+    const cleanAccountId = account_id.replace('act_', '');
+    
+    const endpoint = buildAdSetsEndpoint(cleanAccountId, campaignId, selectedMetrics, dateRange);
     console.log("Fetching ad sets with endpoint:", endpoint);
     
     const response = await fetchFacebookData(endpoint, access_token);
@@ -141,7 +150,10 @@ export const fetchAds = async (adSetId: string | null, selectedMetrics: Metric[]
     const credentials = await getFacebookCredentials();
     const { account_id, access_token } = credentials;
 
-    const endpoint = buildAdsEndpoint(account_id, adSetId, selectedMetrics, dateRange);
+    // Remove any existing 'act_' prefix to prevent duplication
+    const cleanAccountId = account_id.replace('act_', '');
+    
+    const endpoint = buildAdsEndpoint(cleanAccountId, adSetId, selectedMetrics, dateRange);
     console.log("Fetching ads with endpoint:", endpoint);
     
     const response = await fetchFacebookData(endpoint, access_token);
