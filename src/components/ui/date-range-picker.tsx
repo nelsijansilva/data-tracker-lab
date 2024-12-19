@@ -112,7 +112,7 @@ export function DateRangePicker({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="space-y-4 p-4">
-            <Command>
+            <Command shouldFilter={false}>
               <CommandGroup heading="Períodos predefinidos">
                 {presets.map((preset) => (
                   <CommandItem
