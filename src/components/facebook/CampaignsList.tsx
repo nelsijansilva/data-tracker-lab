@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useMetricsStore } from "@/stores/metricsStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import type { Metric } from "@/components/facebook/MetricSelector";
 
 export const CampaignsList = () => {
