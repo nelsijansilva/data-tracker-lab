@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,19 +16,20 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: configuration } = useQuery({
+  // Query for fetching pixel configuration
+  const { data: configuration, isLoading } = useQuery({
     queryKey: ['pixelConfiguration'],
-    queryFn: getPixelConfiguration,
-    meta: {
-      onSuccess: (data) => {
-        if (data && !pixelId && !apiToken) {
-          setPixelId(data.pixelId);
-          setApiToken(data.apiToken);
-          onSave(data.pixelId, data.apiToken);
-        }
-      }
-    }
+    queryFn: getPixelConfiguration
   });
+
+  // Effect to update form when configuration is loaded
+  useEffect(() => {
+    if (configuration) {
+      setPixelId(configuration.pixelId);
+      setApiToken(configuration.apiToken);
+      onSave(configuration.pixelId, configuration.apiToken);
+    }
+  }, [configuration, onSave]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -64,6 +65,18 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
 
     saveMutation.mutate();
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center">
+            Carregando...
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
