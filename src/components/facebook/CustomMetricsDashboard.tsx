@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricSelector } from "./MetricSelector";
 import { useMetricsStore } from "@/stores/metricsStore";
@@ -5,7 +6,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 export const CustomMetricsDashboard = () => {
-  const { selectedMetrics, setSelectedMetrics } = useMetricsStore();
+  const { selectedMetrics, setSelectedMetrics, fetchMetrics } = useMetricsStore();
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [fetchMetrics]);
 
   return (
     <div className="space-y-4">

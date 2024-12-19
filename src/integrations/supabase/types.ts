@@ -33,6 +33,33 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_metrics: {
+        Row: {
+          created_at: string
+          field: string
+          id: string
+          is_custom: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          field: string
+          id?: string
+          is_custom?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          field?: string
+          id?: string
+          is_custom?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       facebook_ad_accounts: {
         Row: {
           access_token: string
