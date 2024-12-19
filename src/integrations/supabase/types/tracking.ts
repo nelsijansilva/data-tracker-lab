@@ -1,33 +1,33 @@
 export interface TrackingRequestsTable {
   Row: {
-    domain: string
     id: string
+    domain: string
+    user_agent: string | null
     language: string | null
     latitude: number | null
     longitude: number | null
-    timestamp: string
     url: string | null
-    user_agent: string | null
+    timestamp: string
   }
   Insert: {
-    domain: string
     id?: string
+    domain: string
+    user_agent?: string | null
     language?: string | null
     latitude?: number | null
     longitude?: number | null
-    timestamp?: string
     url?: string | null
-    user_agent?: string | null
+    timestamp?: string
   }
   Update: {
-    domain?: string
     id?: string
+    domain?: string
+    user_agent?: string | null
     language?: string | null
     latitude?: number | null
     longitude?: number | null
-    timestamp?: string
     url?: string | null
-    user_agent?: string | null
+    timestamp?: string
   }
   Relationships: []
 }

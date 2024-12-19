@@ -1,24 +1,24 @@
 export interface ProfilesTable {
   Row: {
+    id: string
+    username: string | null
     avatar_url: string | null
     created_at: string
-    id: string
     updated_at: string
-    username: string | null
   }
   Insert: {
+    id: string
+    username?: string | null
     avatar_url?: string | null
     created_at?: string
-    id: string
     updated_at?: string
-    username?: string | null
   }
   Update: {
+    id?: string
+    username?: string | null
     avatar_url?: string | null
     created_at?: string
-    id?: string
     updated_at?: string
-    username?: string | null
   }
   Relationships: []
 }

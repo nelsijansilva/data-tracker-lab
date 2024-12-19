@@ -1,26 +1,26 @@
 export interface CustomMetricsTable {
   Row: {
-    created_at: string
-    field: string
     id: string
-    is_custom: boolean | null
     name: string
+    field: string
+    is_custom: boolean | null
+    created_at: string
     updated_at: string
   }
   Insert: {
-    created_at?: string
-    field: string
     id?: string
-    is_custom?: boolean | null
     name: string
+    field: string
+    is_custom?: boolean | null
+    created_at?: string
     updated_at?: string
   }
   Update: {
-    created_at?: string
-    field?: string
     id?: string
-    is_custom?: boolean | null
     name?: string
+    field?: string
+    is_custom?: boolean | null
+    created_at?: string
     updated_at?: string
   }
   Relationships: []
@@ -28,21 +28,21 @@ export interface CustomMetricsTable {
 
 export interface SelectedMetricsTable {
   Row: {
-    created_at: string
     id: string
     metric_id: string
+    created_at: string
     updated_at: string
   }
   Insert: {
-    created_at?: string
     id?: string
     metric_id: string
+    created_at?: string
     updated_at?: string
   }
   Update: {
-    created_at?: string
     id?: string
     metric_id?: string
+    created_at?: string
     updated_at?: string
   }
   Relationships: [

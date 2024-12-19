@@ -1,3 +1,14 @@
+import { CustomMetricsTable, SelectedMetricsTable } from './metrics';
+import {
+  FacebookAdAccountsTable,
+  FacebookAdSetsTable,
+  FacebookAdsTable,
+  FacebookCampaignsTable,
+  FacebookPixelsTable
+} from './facebook';
+import { ProfilesTable } from './profiles';
+import { TrackingRequestsTable } from './tracking';
+
 export type Json =
   | string
   | number
