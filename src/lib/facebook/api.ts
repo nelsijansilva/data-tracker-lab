@@ -3,7 +3,7 @@ import type { Metric } from "@/components/facebook/MetricSelector";
 import type { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 
-const FB_API_VERSION = 'v21.0';
+const FB_API_VERSION = 'v18.0'; // Downgrading to a more stable version
 const FB_BASE_URL = `https://graph.facebook.com/${FB_API_VERSION}`;
 
 const REQUIRED_PERMISSIONS = [
@@ -14,30 +14,44 @@ const REQUIRED_PERMISSIONS = [
 
 export const fetchFacebookData = async (endpoint: string, accessToken: string) => {
   try {
+    console.log('Making Facebook API request to:', `${FB_BASE_URL}/${endpoint}`);
+    
     const response = await fetch(`${FB_BASE_URL}/${endpoint}`, {
       headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
     });
 
-    const data = await response.json();
-    
     if (!response.ok) {
+      const data = await response.json();
+      console.error('Facebook API error response:', data);
+      
       const error: any = new Error(data.error?.message || 'Erro na API do Facebook');
       error.code = data.error?.code;
+      error.status = response.status;
       
       if (data.error?.code === 17) {
         error.message = 'Limite de requisições atingido. Por favor, aguarde alguns segundos e tente novamente.';
       } else if (data.error?.code === 100) {
         error.message = `Permissões insuficientes do Facebook. Por favor, verifique se seu token de acesso tem as permissões necessárias: ${REQUIRED_PERMISSIONS.join(', ')}`;
+      } else if (data.error?.code === 190) {
+        error.message = 'Token de acesso inválido ou expirado. Por favor, atualize suas credenciais.';
+      } else if (!response.ok) {
+        error.message = `Erro na API do Facebook: ${data.error?.message || 'Erro desconhecido'}`;
       }
       
       throw error;
     }
 
+    const data = await response.json();
     return data;
   } catch (error: any) {
-    console.error('Facebook API error:', error);
+    console.error('Facebook API request failed:', error);
+    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      throw new Error('Não foi possível conectar à API do Facebook. Por favor, verifique sua conexão com a internet e tente novamente.');
+    }
     throw error;
   }
 };
@@ -49,8 +63,16 @@ export const getFacebookCredentials = async () => {
     .limit(1)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error fetching Facebook credentials:', error);
+    throw new Error('Erro ao buscar credenciais do Facebook. Por favor, configure sua conta primeiro.');
+  }
   if (!data) throw new Error('Nenhuma conta do Facebook configurada');
+  
+  if (!data.access_token) {
+    throw new Error('Token de acesso do Facebook não encontrado. Por favor, configure suas credenciais.');
+  }
+  
   return data;
 };
 
@@ -100,7 +122,6 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
         budget_remaining: campaign.budget_remaining
       };
 
-      // Adiciona dados de insights se disponíveis
       if (campaign.insights?.data?.[0]) {
         const insights = campaign.insights.data[0];
         selectedMetrics.forEach(metric => {
