@@ -52,23 +52,13 @@ const buildInsightsFields = (metrics: Metric[], dateRange?: DateRange) => {
   const basicFields = ['name', 'status', 'objective', 'daily_budget', 'lifetime_budget', 'budget_remaining'];
   const insightsFields = metrics
     .filter(metric => !basicFields.includes(metric.field))
-    .map(metric => metric.field)
-    .filter(field => !field.includes('budget')); // Remove budget-related fields from insights
+    .map(metric => metric.field);
 
   let fields = basicFields.join(',');
   
-  // Only add insights if there are valid insights fields
-  if (insightsFields.length > 0) {
-    fields += `,insights{${insightsFields.join(',')}}`;
-  }
-  
-  // Add time range if provided
-  if (dateRange?.from && dateRange?.to) {
-    const timeRange = {
-      since: format(dateRange.from, 'yyyy-MM-dd'),
-      until: format(dateRange.to, 'yyyy-MM-dd'),
-    };
-    fields += `&time_range=${JSON.stringify(timeRange)}`;
+  // Only add insights if there are valid insights fields and a date range
+  if (insightsFields.length > 0 && dateRange?.from && dateRange?.to) {
+    fields += `,insights.time_range({"since":"${format(dateRange.from, 'yyyy-MM-dd')}","until":"${format(dateRange.to, 'yyyy-MM-dd')}"}).fields(${insightsFields.join(',')})`;
   }
   
   return fields;
@@ -105,11 +95,7 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
         const insights = campaign.insights.data[0];
         selectedMetrics.forEach(metric => {
           if (!['name', 'status', 'objective', 'daily_budget', 'lifetime_budget', 'budget_remaining'].includes(metric.field)) {
-            if (Array.isArray(insights[metric.field])) {
-              result[metric.field] = insights[metric.field][0]?.value || 0;
-            } else {
-              result[metric.field] = insights[metric.field] || 0;
-            }
+            result[metric.field] = insights[metric.field] || 0;
           }
         });
       }
