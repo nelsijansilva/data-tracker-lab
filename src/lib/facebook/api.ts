@@ -6,6 +6,12 @@ import { format } from "date-fns";
 const FB_API_VERSION = 'v21.0';
 const FB_BASE_URL = `https://graph.facebook.com/${FB_API_VERSION}`;
 
+const REQUIRED_PERMISSIONS = [
+  'ads_read',
+  'ads_management',
+  'read_insights'
+];
+
 export const fetchFacebookData = async (endpoint: string, accessToken: string) => {
   try {
     const response = await fetch(`${FB_BASE_URL}/${endpoint}`, {
@@ -14,15 +20,16 @@ export const fetchFacebookData = async (endpoint: string, accessToken: string) =
       }
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      if (errorData.error?.code === 100) {
-        throw new Error("Permissões insuficientes do Facebook. Por favor, verifique se seu token de acesso tem as permissões necessárias: ads_read, ads_management, read_insights");
+      if (data.error?.code === 100) {
+        throw new Error(`Permissões insuficientes do Facebook. Por favor, verifique se seu token de acesso tem as permissões necessárias: ${REQUIRED_PERMISSIONS.join(', ')}`);
       }
-      throw new Error(`Erro na API do Facebook: ${errorData.error?.message || 'Erro desconhecido'}`);
+      throw new Error(`Erro na API do Facebook: ${data.error?.message || 'Erro desconhecido'}`);
     }
 
-    return response.json();
+    return data;
   } catch (error: any) {
     console.error('Facebook API error:', error);
     throw new Error(error.message || 'Erro ao acessar a API do Facebook');
@@ -37,6 +44,7 @@ export const getFacebookCredentials = async () => {
     .single();
 
   if (error) throw error;
+  if (!data) throw new Error('Nenhuma conta do Facebook configurada');
   return data;
 };
 
@@ -68,6 +76,10 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
     console.log("Fetching campaigns with fields:", fields);
     
     const response = await fetchFacebookData(endpoint, access_token);
+    
+    if (!response.data) {
+      throw new Error('Nenhuma campanha encontrada');
+    }
 
     return response.data.map((campaign: any) => {
       const result: any = {
@@ -94,7 +106,7 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
     });
   } catch (error: any) {
     console.error('Error fetching campaigns:', error);
-    throw new Error(error.message || 'Erro ao buscar campanhas');
+    throw error;
   }
 };
 
@@ -111,7 +123,7 @@ export const fetchAdSets = async () => {
     return response.data;
   } catch (error: any) {
     console.error('Error fetching ad sets:', error);
-    throw new Error(error.message || 'Erro ao buscar conjuntos de anúncios');
+    throw error;
   }
 };
 
@@ -128,6 +140,6 @@ export const fetchAds = async () => {
     return response.data;
   } catch (error: any) {
     console.error('Error fetching ads:', error);
-    throw new Error(error.message || 'Erro ao buscar anúncios');
+    throw error;
   }
 };

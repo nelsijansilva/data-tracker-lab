@@ -1,14 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampaigns } from "@/lib/facebook/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { MetricSelector, type Metric } from "./MetricSelector";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const CampaignsList = () => {
   const [selectedMetrics, setSelectedMetrics] = useState<Metric[]>([
@@ -25,17 +24,31 @@ export const CampaignsList = () => {
   
   const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ['campaigns', selectedMetrics, dateRange],
-    queryFn: () => fetchCampaigns(selectedMetrics, dateRange)
+    queryFn: () => fetchCampaigns(selectedMetrics, dateRange),
+    retry: false
   });
 
   if (isLoading) return <div>Carregando campanhas...</div>;
   
   if (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar campanhas';
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" className="mb-4">
         <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          {error instanceof Error ? error.message : 'Erro ao carregar campanhas'}
+        <AlertTitle>Erro ao carregar campanhas</AlertTitle>
+        <AlertDescription className="mt-2">
+          {errorMessage}
+          {errorMessage.includes('permissões') && (
+            <div className="mt-2">
+              <p className="font-semibold">Como resolver:</p>
+              <ol className="list-decimal ml-4 mt-1">
+                <li>Acesse as configurações do seu aplicativo no Facebook Developers</li>
+                <li>Verifique se as permissões ads_read, ads_management e read_insights estão ativas</li>
+                <li>Gere um novo token de acesso com as permissões necessárias</li>
+                <li>Atualize o token de acesso nas configurações da conta</li>
+              </ol>
+            </div>
+          )}
         </AlertDescription>
       </Alert>
     );
