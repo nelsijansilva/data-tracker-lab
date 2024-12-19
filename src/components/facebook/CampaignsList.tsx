@@ -47,6 +47,19 @@ export const CampaignsList = () => {
     );
   }
 
+  const metrics = {
+    budget: { id: 'budget', name: 'Orçamento', field: 'budget' },
+    sales: { id: 'sales', name: 'Vendas', field: 'sales' },
+    cpa: { id: 'cpa', name: 'CPA', field: 'cpa' },
+    spend: { id: 'spend', name: 'Gastos', field: 'spend' },
+    revenue: { id: 'revenue', name: 'Faturamento', field: 'revenue' },
+    profit: { id: 'profit', name: 'Lucro', field: 'profit' },
+    roas: { id: 'roas', name: 'ROAS', field: 'roas' },
+    margin: { id: 'margin', name: 'Margem', field: 'margin' },
+    roi: { id: 'roi', name: 'ROI', field: 'roi' },
+    ic: { id: 'ic', name: 'IC', field: 'ic' }
+  };
+
   return (
     <div className="space-y-4">
       <Table>
@@ -81,32 +94,34 @@ export const CampaignsList = () => {
                 <TableCell className="text-gray-400">{campaign.status}</TableCell>
                 <TableCell className="text-gray-400">{campaign.name}</TableCell>
                 <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.budget} metric={{ field: 'budget' }} />
-                </TableCell>
-                <TableCell className="text-gray-400">{campaign.sales || 0}</TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.cpa} metric={{ field: 'cpa' }} />
+                  <MetricValue value={campaign.budget} metric={metrics.budget} />
                 </TableCell>
                 <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.spend} metric={{ field: 'spend' }} />
+                  <MetricValue value={campaign.sales} metric={metrics.sales} />
                 </TableCell>
                 <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.revenue} metric={{ field: 'revenue' }} />
+                  <MetricValue value={campaign.cpa} metric={metrics.cpa} />
                 </TableCell>
                 <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.profit} metric={{ field: 'profit' }} />
+                  <MetricValue value={campaign.spend} metric={metrics.spend} />
                 </TableCell>
                 <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.roas} metric={{ field: 'roas' }} />
+                  <MetricValue value={campaign.revenue} metric={metrics.revenue} />
                 </TableCell>
                 <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.margin} metric={{ field: 'margin' }} />
+                  <MetricValue value={campaign.profit} metric={metrics.profit} />
                 </TableCell>
                 <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.roi} metric={{ field: 'roi' }} />
+                  <MetricValue value={campaign.roas} metric={metrics.roas} />
                 </TableCell>
                 <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.ic} metric={{ field: 'ic' }} />
+                  <MetricValue value={campaign.margin} metric={metrics.margin} />
+                </TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.roi} metric={metrics.roi} />
+                </TableCell>
+                <TableCell className="text-gray-400">
+                  <MetricValue value={campaign.ic} metric={metrics.ic} />
                 </TableCell>
               </TableRow>
               {selectedCampaignId === campaign.id && (
