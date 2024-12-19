@@ -30,11 +30,11 @@ export const AdDetails = ({ ad, isOpen, onClose }: AdDetailsProps) => {
 
   useEffect(() => {
     const fetchPreview = async () => {
-      if (!ad?.id) return;
+      if (!ad?.id || !ad?.account_access_token) return;
       
       try {
         const endpoint = buildAdPreviewEndpoint(ad.id, selectedFormat);
-        const response = await fetchFacebookData(endpoint, ad.access_token);
+        const response = await fetchFacebookData(endpoint, ad.account_access_token);
         
         if (response.data?.[0]?.body) {
           setPreviewHtml(response.data[0].body);
@@ -43,7 +43,7 @@ export const AdDetails = ({ ad, isOpen, onClose }: AdDetailsProps) => {
         console.error('Error fetching ad preview:', error);
         toast({
           title: "Error",
-          description: "Failed to load ad preview. Please try again.",
+          description: "Failed to load ad preview. Please verify your Facebook access token.",
           variant: "destructive",
         });
       }
