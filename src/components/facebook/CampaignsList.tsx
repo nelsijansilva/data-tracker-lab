@@ -4,18 +4,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
-import { useCampaignStore } from "@/stores/campaignStore";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { MetricValue } from "@/components/facebook/MetricValue";
 import { calculateMetricValue } from "@/utils/metricCalculations";
+import { CampaignDetails } from "@/components/facebook/CampaignDetails";
 import type { DateRange } from "react-day-picker";
 
 export const CampaignsList = () => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
-  const setSelectedCampaignId = useCampaignStore(state => state.setSelectedCampaignId);
-  const navigate = useNavigate();
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   
   const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
@@ -25,8 +23,7 @@ export const CampaignsList = () => {
   const { data: campaigns, isLoading, error } = useCampaigns(selectedMetrics, dateRange);
 
   const handleRowClick = (campaignId: string) => {
-    setSelectedCampaignId(campaignId);
-    navigate('/dashboard', { state: { defaultTab: 'adsets' } });
+    setSelectedCampaignId(campaignId === selectedCampaignId ? null : campaignId);
   };
 
   if (isLoading) return <div>Carregando campanhas...</div>;
@@ -74,20 +71,33 @@ export const CampaignsList = () => {
         </TableHeader>
         <TableBody>
           {campaigns?.map((campaign: any) => (
-            <TableRow 
-              key={campaign.id}
-              className="cursor-pointer hover:bg-muted/50"
-              onClick={() => handleRowClick(campaign.id)}
-            >
-              {selectedMetrics.map((metric) => (
-                <TableCell key={`${campaign.id}-${metric.id}`}>
-                  <MetricValue 
-                    value={calculateMetricValue(campaign, metric)} 
-                    metric={metric}
-                  />
-                </TableCell>
-              ))}
-            </TableRow>
+            <>
+              <TableRow 
+                key={campaign.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleRowClick(campaign.id)}
+              >
+                {selectedMetrics.map((metric) => (
+                  <TableCell key={`${campaign.id}-${metric.id}`}>
+                    <MetricValue 
+                      value={calculateMetricValue(campaign, metric)} 
+                      metric={metric}
+                    />
+                  </TableCell>
+                ))}
+              </TableRow>
+              {selectedCampaignId === campaign.id && (
+                <TableRow>
+                  <TableCell colSpan={selectedMetrics.length}>
+                    <CampaignDetails 
+                      campaignId={campaign.id}
+                      dateRange={dateRange}
+                      selectedMetrics={selectedMetrics}
+                    />
+                  </TableCell>
+                </TableRow>
+              )}
+            </>
           ))}
         </TableBody>
       </Table>

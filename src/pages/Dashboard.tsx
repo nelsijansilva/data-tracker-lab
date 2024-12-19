@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignsList } from "@/components/facebook/CampaignsList";
-import { AdSetsList } from "@/components/facebook/AdSetsList";
-import { AdsList } from "@/components/facebook/AdsList";
 import { AccountsList } from "@/components/facebook/AccountsList";
 import { CustomMetricsDashboard } from "@/components/facebook/CustomMetricsDashboard";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,12 +62,6 @@ const Dashboard = () => {
                   <TabsTrigger value="campaigns" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     Campanhas
                   </TabsTrigger>
-                  <TabsTrigger value="adsets" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    Conjuntos de Anúncios
-                  </TabsTrigger>
-                  <TabsTrigger value="ads" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    Anúncios
-                  </TabsTrigger>
                   <TabsTrigger value="custom-metrics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     Métricas Personalizadas
                   </TabsTrigger>
@@ -98,14 +90,6 @@ const Dashboard = () => {
                   <>
                     <TabsContent value="campaigns">
                       <CampaignsList />
-                    </TabsContent>
-
-                    <TabsContent value="adsets">
-                      <AdSetsList />
-                    </TabsContent>
-
-                    <TabsContent value="ads">
-                      <AdsList />
                     </TabsContent>
 
                     <TabsContent value="custom-metrics">
