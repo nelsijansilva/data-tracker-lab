@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
 import { addDays } from "date-fns";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
+import { useState } from "react";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { MetricValue } from "@/components/facebook/MetricValue";
 import { calculateMetricValue } from "@/utils/metricCalculations";
@@ -65,16 +65,16 @@ export const CampaignsList = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nome</TableHead>
-            {selectedMetrics.filter(metric => metric.field !== 'name').map((metric) => (
+            {selectedMetrics.map((metric) => (
               <TableHead key={metric.id}>{metric.name}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {campaigns?.map((campaign) => (
-            <React.Fragment key={campaign.id}>
+          {campaigns?.map((campaign: any) => (
+            <>
               <TableRow 
+                key={campaign.id}
                 className={cn(
                   "cursor-pointer transition-colors",
                   selectedCampaignId === campaign.id 
@@ -83,8 +83,7 @@ export const CampaignsList = () => {
                 )}
                 onClick={() => handleRowClick(campaign.id)}
               >
-                <TableCell>{campaign.name}</TableCell>
-                {selectedMetrics.filter(metric => metric.field !== 'name').map((metric) => (
+                {selectedMetrics.map((metric) => (
                   <TableCell key={`${campaign.id}-${metric.id}`}>
                     <MetricValue 
                       value={calculateMetricValue(campaign, metric)} 
@@ -95,7 +94,7 @@ export const CampaignsList = () => {
               </TableRow>
               {selectedCampaignId === campaign.id && (
                 <TableRow>
-                  <TableCell colSpan={selectedMetrics.length + 1}>
+                  <TableCell colSpan={selectedMetrics.length}>
                     <CampaignDetails 
                       campaignId={campaign.id}
                       dateRange={dateRange}
@@ -104,12 +103,10 @@ export const CampaignsList = () => {
                   </TableCell>
                 </TableRow>
               )}
-            </React.Fragment>
+            </>
           ))}
         </TableBody>
       </Table>
     </div>
   );
 };
-
-export default CampaignsList;
