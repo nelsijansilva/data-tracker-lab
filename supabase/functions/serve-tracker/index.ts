@@ -23,7 +23,7 @@ serve(async (req) => {
   const url = new URL(req.url);
   const pixelId = url.searchParams.get('pixel_id');
   const eventTestCode = url.searchParams.get('event_test_code');
-  const domain = url.searchParams.get('domain') || url.headers.get('referer') || 'unknown';
+  const domain = 'tracker.easelifeperformance.com';
   
   if (!pixelId) {
     return new Response('Pixel ID is required', { 
