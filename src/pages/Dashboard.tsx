@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignsList } from "@/components/facebook/CampaignsList";
 import { AdSetsList } from "@/components/facebook/AdSetsList";
 import { AdsList } from "@/components/facebook/AdsList";
-import { AccountCredentialsForm } from "@/components/facebook/AccountCredentialsForm";
+import { AccountsList } from "@/components/facebook/AccountsList";
 import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
@@ -22,7 +22,7 @@ const Dashboard = () => {
   if (!hasCredentials) {
     return (
       <div className="container mx-auto p-8">
-        <AccountCredentialsForm />
+        <AccountsList />
       </div>
     );
   }
@@ -31,17 +31,29 @@ const Dashboard = () => {
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold mb-8">Facebook Ads Dashboard</h1>
       
-      <Tabs defaultValue="campaigns" className="space-y-4">
+      <Tabs defaultValue="accounts" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-          <TabsTrigger value="adsets">Ad Sets</TabsTrigger>
-          <TabsTrigger value="ads">Ads</TabsTrigger>
+          <TabsTrigger value="accounts">Contas</TabsTrigger>
+          <TabsTrigger value="campaigns">Campanhas</TabsTrigger>
+          <TabsTrigger value="adsets">Conjuntos de Anúncios</TabsTrigger>
+          <TabsTrigger value="ads">Anúncios</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="accounts">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciar Contas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AccountsList />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="campaigns">
           <Card>
             <CardHeader>
-              <CardTitle>Campaigns</CardTitle>
+              <CardTitle>Campanhas</CardTitle>
             </CardHeader>
             <CardContent>
               <CampaignsList />
@@ -52,7 +64,7 @@ const Dashboard = () => {
         <TabsContent value="adsets">
           <Card>
             <CardHeader>
-              <CardTitle>Ad Sets</CardTitle>
+              <CardTitle>Conjuntos de Anúncios</CardTitle>
             </CardHeader>
             <CardContent>
               <AdSetsList />
@@ -63,7 +75,7 @@ const Dashboard = () => {
         <TabsContent value="ads">
           <Card>
             <CardHeader>
-              <CardTitle>Ads</CardTitle>
+              <CardTitle>Anúncios</CardTitle>
             </CardHeader>
             <CardContent>
               <AdsList />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,38 +6,76 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-export const AccountCredentialsForm = () => {
+interface AccountCredentialsFormProps {
+  initialData?: {
+    id: string;
+    account_id: string;
+    access_token: string;
+  };
+  onSuccess?: () => void;
+}
+
+export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCredentialsFormProps) => {
   const [accountId, setAccountId] = useState("");
   const [accessToken, setAccessToken] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    if (initialData) {
+      setAccountId(initialData.account_id.replace('act_', ''));
+      setAccessToken(initialData.access_token);
+    }
+  }, [initialData]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const { error } = await supabase
-        .from('facebook_ad_accounts')
-        .insert([
-          {
+      if (initialData) {
+        // Update existing account
+        const { error } = await supabase
+          .from('facebook_ad_accounts')
+          .update({
             account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
             access_token: accessToken,
-          }
-        ]);
+          })
+          .eq('id', initialData.id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Facebook Ads credentials saved successfully",
-      });
+        toast({
+          title: "Sucesso",
+          description: "Credenciais atualizadas com sucesso",
+        });
+      } else {
+        // Create new account
+        const { error } = await supabase
+          .from('facebook_ad_accounts')
+          .insert([
+            {
+              account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
+              access_token: accessToken,
+            }
+          ]);
 
-      queryClient.invalidateQueries({ queryKey: ['fbCredentials'] });
+        if (error) throw error;
+
+        toast({
+          title: "Sucesso",
+          description: "Credenciais salvas com sucesso",
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['fbAccounts'] });
+      setAccountId("");
+      setAccessToken("");
+      onSuccess?.();
     } catch (error) {
       console.error('Error saving credentials:', error);
       toast({
-        title: "Error",
-        description: "Failed to save credentials",
+        title: "Erro",
+        description: "Erro ao salvar credenciais",
         variant: "destructive",
       });
     }
@@ -46,17 +84,19 @@ export const AccountCredentialsForm = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Connect Facebook Ads Account</CardTitle>
+        <CardTitle>
+          {initialData ? "Editar Conta do Facebook Ads" : "Conectar Conta do Facebook Ads"}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="accountId" className="block text-sm font-medium mb-1">
-              Account ID
+              ID da Conta
             </label>
             <Input
               id="accountId"
-              placeholder="Enter your account ID (with or without act_ prefix)"
+              placeholder="Digite o ID da conta (com ou sem prefixo act_)"
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
               required
@@ -64,18 +104,20 @@ export const AccountCredentialsForm = () => {
           </div>
           <div>
             <label htmlFor="accessToken" className="block text-sm font-medium mb-1">
-              Access Token
+              Token de Acesso
             </label>
             <Input
               id="accessToken"
               type="password"
-              placeholder="Enter your access token"
+              placeholder="Digite o token de acesso"
               value={accessToken}
               onChange={(e) => setAccessToken(e.target.value)}
               required
             />
           </div>
-          <Button type="submit">Connect Account</Button>
+          <Button type="submit">
+            {initialData ? "Atualizar Conta" : "Conectar Conta"}
+          </Button>
         </form>
       </CardContent>
     </Card>
