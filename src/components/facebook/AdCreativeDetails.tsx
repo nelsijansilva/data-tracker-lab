@@ -37,26 +37,21 @@ export const AdCreativeDetails = ({ creative }: AdCreativeDetailsProps) => {
   }
 
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="w-full space-y-2"
-    >
-      <CollapsibleTrigger asChild>
-        <Button
-          variant="ghost"
-          className="w-full flex justify-between items-center py-2 hover:bg-gray-700/50"
-        >
-          <span className="text-sm font-medium text-gray-400">Creative Details</span>
-          {isOpen ? (
-            <ChevronUp className="h-4 w-4 text-gray-400" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-          )}
-        </Button>
-      </CollapsibleTrigger>
+    <div className="w-full space-y-2">
+      <Button
+        variant="ghost"
+        className="w-full flex justify-between items-center py-2 hover:bg-gray-700/50"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className="text-sm font-medium text-gray-400">Creative Details</span>
+        {isOpen ? (
+          <ChevronUp className="h-4 w-4 text-gray-400" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-gray-400" />
+        )}
+      </Button>
       
-      <CollapsibleContent className="space-y-4">
+      {isOpen && (
         <ScrollArea className="max-h-[400px] rounded-md border border-gray-700 bg-gray-800/50">
           <div className="space-y-4 p-4">
             {title && (
@@ -113,7 +108,7 @@ export const AdCreativeDetails = ({ creative }: AdCreativeDetailsProps) => {
             )}
           </div>
         </ScrollArea>
-      </CollapsibleContent>
-    </Collapsible>
+      )}
+    </div>
   );
 };
