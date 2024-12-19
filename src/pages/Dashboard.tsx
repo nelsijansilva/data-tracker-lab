@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignsList } from "@/components/facebook/CampaignsList";
 import { AdSetsList } from "@/components/facebook/AdSetsList";
@@ -8,8 +7,19 @@ import { AccountsList } from "@/components/facebook/AccountsList";
 import { CustomMetricsDashboard } from "@/components/facebook/CustomMetricsDashboard";
 import { supabase } from "@/integrations/supabase/client";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Dashboard = () => {
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState("campaigns");
+  
+  useEffect(() => {
+    if (location.state?.defaultTab) {
+      setActiveTab(location.state.defaultTab);
+    }
+  }, [location.state]);
+
   const { data: hasCredentials, isLoading } = useQuery({
     queryKey: ['fbCredentials'],
     queryFn: async () => {
@@ -43,7 +53,7 @@ const Dashboard = () => {
       </div>
 
       <div className="container mx-auto py-4">
-        <Tabs defaultValue="campaigns" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <div className="border-b">
             <TabsList className="w-full justify-start gap-4 h-12">
               <TabsTrigger value="accounts" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">

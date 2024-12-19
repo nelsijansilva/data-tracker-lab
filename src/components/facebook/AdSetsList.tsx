@@ -1,26 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchAdSets } from "@/lib/facebook/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DollarSign } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
-import { addDays } from "date-fns";
 import { useMetricsStore } from "@/stores/metricsStore";
+import { useCampaignStore } from "@/stores/campaignStore";
+import { addDays } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import type { Metric } from "@/components/facebook/MetricSelector";
 
 export const AdSetsList = () => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
-  const defaultDateRange = {
+  const selectedCampaignId = useCampaignStore(state => state.selectedCampaignId);
+  
+  const defaultDateRange: DateRange = {
     from: addDays(new Date(), -30),
     to: new Date(),
   };
 
   const { data: adSets, isLoading, error } = useQuery({
-    queryKey: ['adSets', selectedMetrics, defaultDateRange?.from, defaultDateRange?.to],
-    queryFn: () => fetchAdSets(null, selectedMetrics, defaultDateRange),
+    queryKey: ['adSets', selectedCampaignId, selectedMetrics, defaultDateRange?.from, defaultDateRange?.to],
+    queryFn: () => fetchAdSets(selectedCampaignId, selectedMetrics, defaultDateRange),
     enabled: selectedMetrics.length > 0,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     retry: (failureCount, error: any) => {
-      // Don't retry on rate limit errors
       if (error?.message?.includes('User request limit reached')) {
         return false;
       }
@@ -48,50 +51,27 @@ export const AdSetsList = () => {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Nome</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Campanha</TableHead>
-          <TableHead>Orçamento Diário</TableHead>
-          <TableHead>Orçamento Total</TableHead>
-          <TableHead>Orçamento Restante</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {adSets?.map((adSet: any) => (
-          <TableRow key={adSet.id}>
-            <TableCell>{adSet.name}</TableCell>
-            <TableCell>{adSet.status}</TableCell>
-            <TableCell>{adSet.campaign?.name}</TableCell>
-            <TableCell>
-              {adSet.daily_budget && (
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  {(adSet.daily_budget / 100).toFixed(2)}
-                </div>
-              )}
-            </TableCell>
-            <TableCell>
-              {adSet.lifetime_budget && (
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  {(adSet.lifetime_budget / 100).toFixed(2)}
-                </div>
-              )}
-            </TableCell>
-            <TableCell>
-              {adSet.budget_remaining && (
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  {(adSet.budget_remaining / 100).toFixed(2)}
-                </div>
-              )}
-            </TableCell>
+    <div className="space-y-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {selectedMetrics.map((metric) => (
+              <TableHead key={metric.id}>{metric.name}</TableHead>
+            ))}
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {adSets?.map((adSet: any) => (
+            <TableRow key={adSet.id}>
+              {selectedMetrics.map((metric) => (
+                <TableCell key={`${adSet.id}-${metric.id}`}>
+                  {adSet[metric.field]}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
