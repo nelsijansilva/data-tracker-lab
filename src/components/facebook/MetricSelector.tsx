@@ -50,18 +50,21 @@ export const MetricSelector = ({
 
   const handleAddCustomMetric = async () => {
     if (newMetricName && newMetricField) {
-      const newMetric = await addMetric({
-        name: newMetricName,
-        field: newMetricField,
-        isCustom: true,
-      });
+      try {
+        await addMetric({
+          name: newMetricName,
+          field: newMetricField,
+          isCustom: true,
+        });
 
-      setNewMetricName('');
-      setNewMetricField('');
-      setShowAddForm(false);
+        // Fetch updated metrics after adding
+        await fetchMetrics();
 
-      if (newMetric) {
-        onMetricsChange([...selectedMetrics, newMetric]);
+        setNewMetricName('');
+        setNewMetricField('');
+        setShowAddForm(false);
+      } catch (error) {
+        console.error('Error adding custom metric:', error);
       }
     }
   };
