@@ -48,15 +48,17 @@ export const getFacebookCredentials = async () => {
 };
 
 const buildInsightsFields = (metrics: Metric[], dateRange?: DateRange) => {
-  // Separate basic fields from insights fields
+  // Campos básicos que não precisam de insights
   const basicFields = ['name', 'status', 'objective', 'daily_budget', 'lifetime_budget', 'budget_remaining'];
+  
+  // Campos que precisam de insights (métricas que variam com o tempo)
   const insightsFields = metrics
     .filter(metric => !basicFields.includes(metric.field))
     .map(metric => metric.field);
 
   let fields = basicFields.join(',');
   
-  // Only add insights if there are valid insights fields and a date range
+  // Adiciona campos de insights com o período específico
   if (insightsFields.length > 0 && dateRange?.from && dateRange?.to) {
     fields += `,insights.time_range({"since":"${format(dateRange.from, 'yyyy-MM-dd')}","until":"${format(dateRange.to, 'yyyy-MM-dd')}"}).fields(${insightsFields.join(',')})`;
   }
@@ -91,6 +93,7 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
         budget_remaining: campaign.budget_remaining
       };
 
+      // Adiciona dados de insights se disponíveis
       if (campaign.insights?.data?.[0]) {
         const insights = campaign.insights.data[0];
         selectedMetrics.forEach(metric => {
