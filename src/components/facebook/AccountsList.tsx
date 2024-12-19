@@ -11,6 +11,8 @@ interface Account {
   id: string;
   account_id: string;
   access_token: string;
+  app_id: string;
+  app_secret: string;
 }
 
 export const AccountsList = () => {
@@ -97,6 +99,9 @@ export const AccountsList = () => {
                 >
                   <div>
                     <p className="font-medium">ID da Conta: {account.account_id}</p>
+                    <p className="text-sm text-gray-500">
+                      App ID: {account.app_id}
+                    </p>
                     <p className="text-sm text-gray-500">
                       Token: {account.access_token.substring(0, 20)}...
                     </p>

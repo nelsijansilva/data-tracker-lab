@@ -11,6 +11,8 @@ interface AccountCredentialsFormProps {
     id: string;
     account_id: string;
     access_token: string;
+    app_id: string;
+    app_secret: string;
   };
   onSuccess?: () => void;
 }
@@ -18,6 +20,8 @@ interface AccountCredentialsFormProps {
 export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCredentialsFormProps) => {
   const [accountId, setAccountId] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [appId, setAppId] = useState("");
+  const [appSecret, setAppSecret] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -25,6 +29,8 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
     if (initialData) {
       setAccountId(initialData.account_id.replace('act_', ''));
       setAccessToken(initialData.access_token);
+      setAppId(initialData.app_id);
+      setAppSecret(initialData.app_secret);
     }
   }, [initialData]);
 
@@ -39,6 +45,8 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
           .update({
             account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
             access_token: accessToken,
+            app_id: appId,
+            app_secret: appSecret,
           })
           .eq('id', initialData.id);
 
@@ -56,6 +64,8 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
             {
               account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
               access_token: accessToken,
+              app_id: appId,
+              app_secret: appSecret,
             }
           ]);
 
@@ -70,6 +80,8 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
       queryClient.invalidateQueries({ queryKey: ['fbAccounts'] });
       setAccountId("");
       setAccessToken("");
+      setAppId("");
+      setAppSecret("");
       onSuccess?.();
     } catch (error) {
       console.error('Error saving credentials:', error);
@@ -99,6 +111,31 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
               placeholder="Digite o ID da conta (com ou sem prefixo act_)"
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="appId" className="block text-sm font-medium mb-1">
+              App ID
+            </label>
+            <Input
+              id="appId"
+              placeholder="Digite o ID do aplicativo do Facebook"
+              value={appId}
+              onChange={(e) => setAppId(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="appSecret" className="block text-sm font-medium mb-1">
+              App Secret
+            </label>
+            <Input
+              id="appSecret"
+              type="password"
+              placeholder="Digite o App Secret do aplicativo"
+              value={appSecret}
+              onChange={(e) => setAppSecret(e.target.value)}
               required
             />
           </div>
