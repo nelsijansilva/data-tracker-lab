@@ -54,7 +54,7 @@ const buildInsightsFields = (metrics: Metric[]) => {
     .filter(metric => !basicFields.includes(metric.field))
     .map(metric => metric.field);
   
-  return [...basicFields, `insights{${insightsFields.join(',')}}`].join(',');
+  return [...basicFields, `insights.time_range(since,until){${insightsFields.join(',')}}`].join(',');
 };
 
 export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: DateRange) => {
@@ -74,6 +74,7 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
     }
 
     console.log("Fetching campaigns with fields:", fields);
+    console.log("Time range:", dateRange);
     
     const response = await fetchFacebookData(endpoint, access_token);
     
