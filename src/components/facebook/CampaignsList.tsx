@@ -65,16 +65,16 @@ export const CampaignsList = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            {selectedMetrics.map((metric) => (
+            <TableHead>Nome</TableHead>
+            {selectedMetrics.filter(metric => metric.field !== 'name').map((metric) => (
               <TableHead key={metric.id}>{metric.name}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {campaigns?.map((campaign: any) => (
-            <>
+          {campaigns?.map((campaign) => (
+            <React.Fragment key={campaign.id}>
               <TableRow 
-                key={campaign.id}
                 className={cn(
                   "cursor-pointer transition-colors",
                   selectedCampaignId === campaign.id 
@@ -83,7 +83,8 @@ export const CampaignsList = () => {
                 )}
                 onClick={() => handleRowClick(campaign.id)}
               >
-                {selectedMetrics.map((metric) => (
+                <TableCell>{campaign.name}</TableCell>
+                {selectedMetrics.filter(metric => metric.field !== 'name').map((metric) => (
                   <TableCell key={`${campaign.id}-${metric.id}`}>
                     <MetricValue 
                       value={calculateMetricValue(campaign, metric)} 
@@ -94,7 +95,7 @@ export const CampaignsList = () => {
               </TableRow>
               {selectedCampaignId === campaign.id && (
                 <TableRow>
-                  <TableCell colSpan={selectedMetrics.length}>
+                  <TableCell colSpan={selectedMetrics.length + 1}>
                     <CampaignDetails 
                       campaignId={campaign.id}
                       dateRange={dateRange}
@@ -103,7 +104,7 @@ export const CampaignsList = () => {
                   </TableCell>
                 </TableRow>
               )}
-            </>
+            </React.Fragment>
           ))}
         </TableBody>
       </Table>
