@@ -8,7 +8,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, X } from "lucide-react";
+import { Plus, X, GripVertical } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export type Metric = {
   id: string;
@@ -108,9 +124,54 @@ interface MetricSelectorProps {
   onMetricsChange: (metrics: Metric[]) => void;
 }
 
+const SortableMetric = ({ metric, onRemove }: { metric: Metric; onRemove: () => void }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: metric.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 bg-secondary p-2 rounded-md group"
+    >
+      <button
+        className="cursor-grab opacity-50 group-hover:opacity-100 transition-opacity"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <span>{metric.name}</span>
+      <button
+        onClick={onRemove}
+        className="text-muted-foreground hover:text-foreground ml-auto"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+};
+
 export const MetricSelector = ({ selectedMetrics, onMetricsChange }: MetricSelectorProps) => {
   const [customMetricName, setCustomMetricName] = useState("");
   const [customMetricFormula, setCustomMetricFormula] = useState("");
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const addMetric = (metricId: string) => {
     const metric = DEFAULT_METRICS.find(m => m.id === metricId);
@@ -138,6 +199,17 @@ export const MetricSelector = ({ selectedMetrics, onMetricsChange }: MetricSelec
     }
   };
 
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      const oldIndex = selectedMetrics.findIndex((metric) => metric.id === active.id);
+      const newIndex = selectedMetrics.findIndex((metric) => metric.id === over.id);
+
+      onMetricsChange(arrayMove(selectedMetrics, oldIndex, newIndex));
+    }
+  };
+
   return (
     <div className="space-y-4 p-4 border rounded-lg">
       <h3 className="text-lg font-semibold">Personalizar Métricas</h3>
@@ -161,18 +233,25 @@ export const MetricSelector = ({ selectedMetrics, onMetricsChange }: MetricSelec
 
       <div className="space-y-2">
         <h4 className="text-sm font-medium">Métricas Selecionadas</h4>
-        <div className="flex flex-wrap gap-2">
-          {selectedMetrics.map(metric => (
-            <div key={metric.id} className="flex items-center gap-2 bg-secondary p-2 rounded-md">
-              <span>{metric.name}</span>
-              <button
-                onClick={() => removeMetric(metric.id)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+        <div className="flex flex-col gap-2">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={selectedMetrics.map(m => m.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {selectedMetrics.map(metric => (
+                <SortableMetric
+                  key={metric.id}
+                  metric={metric}
+                  onRemove={() => removeMetric(metric.id)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         </div>
       </div>
 
