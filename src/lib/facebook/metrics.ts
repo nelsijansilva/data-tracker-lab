@@ -12,19 +12,17 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   objective: { field: 'objective', isInsightMetric: false },
   
   // Valid insight metrics with appropriate levels
-  spend: { field: 'spend', isInsightMetric: true, level: 'campaign' },
-  impressions: { field: 'impressions', isInsightMetric: true, level: 'campaign' },
-  clicks: { field: 'clicks', isInsightMetric: true, level: 'campaign' },
-  cpc: { field: 'cpc', isInsightMetric: true, level: 'campaign' },
-  ctr: { field: 'ctr', isInsightMetric: true, level: 'campaign' },
-  cpm: { field: 'cpm', isInsightMetric: true, level: 'campaign' },
-  reach: { field: 'reach', isInsightMetric: true, level: 'campaign' },
-  frequency: { field: 'frequency', isInsightMetric: true, level: 'campaign' },
-  cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true, level: 'campaign' },
-  unique_clicks: { field: 'unique_clicks', isInsightMetric: true, level: 'campaign' },
-  unique_ctr: { field: 'unique_ctr', isInsightMetric: true, level: 'campaign' },
-  actions: { field: 'actions', isInsightMetric: true, level: 'campaign' },
-  cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true, level: 'campaign' }
+  spend: { field: 'spend', isInsightMetric: true, level: 'adset' },
+  impressions: { field: 'impressions', isInsightMetric: true, level: 'adset' },
+  clicks: { field: 'clicks', isInsightMetric: true, level: 'adset' },
+  cpc: { field: 'cpc', isInsightMetric: true, level: 'adset' },
+  ctr: { field: 'ctr', isInsightMetric: true, level: 'adset' },
+  cpm: { field: 'cpm', isInsightMetric: true, level: 'adset' },
+  reach: { field: 'reach', isInsightMetric: true, level: 'adset' },
+  frequency: { field: 'frequency', isInsightMetric: true, level: 'adset' },
+  cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true, level: 'adset' },
+  unique_clicks: { field: 'unique_clicks', isInsightMetric: true, level: 'adset' },
+  unique_ctr: { field: 'unique_ctr', isInsightMetric: true, level: 'adset' }
 };
 
 export const getMetricMapping = (field: string): FacebookMetricMapping => {
