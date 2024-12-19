@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { DateRange } from "react-day-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
+import { useCampaignStore } from "@/stores/campaignStore";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { MetricValue } from "@/components/facebook/MetricValue";
 import { CampaignDetails } from "@/components/facebook/CampaignDetails";
@@ -17,7 +18,7 @@ interface CampaignsListProps {
 
 export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccountId }: CampaignsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const { selectedCampaignId, setSelectedCampaignId } = useCampaignStore();
 
   const { data: campaigns, isLoading, error } = useCampaigns(selectedMetrics, dateRange, selectedAccountId);
 

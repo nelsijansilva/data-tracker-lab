@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { DateRange } from "react-day-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Layers } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
+import { useCampaignStore } from "@/stores/campaignStore";
 import { useAdSets } from "@/hooks/useAdSets";
 import { MetricValue } from "@/components/facebook/MetricValue";
 
@@ -14,9 +15,10 @@ interface AdSetsListProps {
 
 export const AdSetsList = ({ dateRange, selectedAccountId }: AdSetsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
-  const [selectedAdSetId, setSelectedAdSetId] = useState<string | null>(null);
+  const { selectedCampaignId } = useCampaignStore();
+  const [selectedAdSetId, setSelectedAdSetId] = React.useState<string | null>(null);
 
-  const { data: adSets, isLoading, error } = useAdSets(selectedMetrics, dateRange, selectedAccountId);
+  const { data: adSets, isLoading, error } = useAdSets(selectedMetrics, dateRange, selectedAccountId, selectedCampaignId);
 
   if (isLoading) return <div className="text-gray-400">Carregando conjuntos de anúncios...</div>;
   

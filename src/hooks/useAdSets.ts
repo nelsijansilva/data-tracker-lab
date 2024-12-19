@@ -6,11 +6,12 @@ import { fetchAdSets } from "@/lib/facebook/api";
 export const useAdSets = (
   selectedMetrics: Metric[], 
   dateRange: DateRange,
-  selectedAccountId?: string
+  selectedAccountId?: string,
+  campaignId?: string | null
 ) => {
   return useQuery({
-    queryKey: ['adSets', selectedMetrics, dateRange?.from, dateRange?.to, selectedAccountId],
-    queryFn: () => fetchAdSets(null, selectedMetrics, dateRange),
+    queryKey: ['adSets', selectedMetrics, dateRange?.from, dateRange?.to, selectedAccountId, campaignId],
+    queryFn: () => fetchAdSets(campaignId, selectedMetrics, dateRange),
     enabled: !!dateRange?.from && !!dateRange?.to && selectedMetrics.length > 0,
   });
 };
