@@ -1,110 +1,80 @@
 import { create } from 'zustand';
-import { type Metric } from '@/components/facebook/MetricSelector';
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+
+export type Metric = {
+  id: string;
+  name: string;
+  field: string;
+  isCustom?: boolean;
+};
 
 interface MetricsState {
   metrics: Metric[];
   selectedMetrics: Metric[];
   setSelectedMetrics: (metrics: Metric[]) => void;
-  deleteMetric: (id: string) => Promise<void>;
-  addMetric: (metric: Omit<Metric, 'id'>) => Promise<void>;
   fetchMetrics: () => Promise<void>;
+  initializeDefaultMetrics: () => Promise<void>;
 }
 
-export const useMetricsStore = create<MetricsState>((set) => ({
+const DEFAULT_METRIC_FIELDS = [
+  'spend',
+  'impressions',
+  'clicks',
+  'ctr',
+  'cpc',
+  'reach'
+];
+
+export const useMetricsStore = create<MetricsState>((set, get) => ({
   metrics: [],
   selectedMetrics: [],
-  
   setSelectedMetrics: (metrics) => set({ selectedMetrics: metrics }),
   
   fetchMetrics: async () => {
     try {
       const { data, error } = await supabase
         .from('custom_metrics')
-        .select('*')
-        .order('created_at', { ascending: true });
+        .select('*');
 
-      if (error) {
-        console.error('Error fetching metrics:', error);
-        toast.error('Erro ao carregar métricas: ' + error.message);
-        return;
-      }
+      if (error) throw error;
 
-      if (!data) {
-        console.log('No metrics found');
-        set({ metrics: [] });
-        return;
-      }
-
-      const metrics = data.map(m => ({
-        id: m.id,
-        name: m.name,
-        field: m.field,
-        isCustom: m.is_custom
+      const formattedMetrics = data.map(metric => ({
+        id: metric.id,
+        name: metric.name,
+        field: metric.field,
+        isCustom: metric.is_custom
       }));
 
-      set({ metrics });
-    } catch (err) {
-      console.error('Unexpected error fetching metrics:', err);
-      toast.error('Erro inesperado ao carregar métricas');
+      set({ metrics: formattedMetrics });
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
     }
   },
 
-  deleteMetric: async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('custom_metrics')
-        .delete()
-        .eq('id', id);
+  initializeDefaultMetrics: async () => {
+    const { selectedMetrics } = get();
+    
+    // Only initialize if no metrics are selected
+    if (selectedMetrics.length === 0) {
+      try {
+        const { data, error } = await supabase
+          .from('custom_metrics')
+          .select('*')
+          .in('field', DEFAULT_METRIC_FIELDS);
 
-      if (error) {
-        toast.error('Erro ao deletar métrica: ' + error.message);
-        console.error('Error deleting metric:', error);
-        return;
-      }
+        if (error) throw error;
 
-      toast.success('Métrica deletada com sucesso');
-      set(state => ({
-        metrics: state.metrics.filter(m => m.id !== id),
-        selectedMetrics: state.selectedMetrics.filter(m => m.id !== id)
-      }));
-    } catch (err) {
-      console.error('Unexpected error deleting metric:', err);
-      toast.error('Erro inesperado ao deletar métrica');
-    }
-  },
-
-  addMetric: async (metric: Omit<Metric, 'id'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('custom_metrics')
-        .insert([{
+        const defaultMetrics = data.map(metric => ({
+          id: metric.id,
           name: metric.name,
           field: metric.field,
-          is_custom: metric.isCustom || false
-        }])
-        .select()
-        .single();
+          isCustom: metric.is_custom
+        }));
 
-      if (error) {
-        toast.error('Erro ao adicionar métrica: ' + error.message);
-        console.error('Error adding metric:', error);
-        return;
+        set({ selectedMetrics: defaultMetrics });
+      } catch (error) {
+        console.error('Error initializing default metrics:', error);
       }
-
-      toast.success('Métrica adicionada com sucesso');
-      set(state => ({
-        metrics: [...state.metrics, {
-          id: data.id,
-          name: data.name,
-          field: data.field,
-          isCustom: data.is_custom
-        }]
-      }));
-    } catch (err) {
-      console.error('Unexpected error adding metric:', err);
-      toast.error('Erro inesperado ao adicionar métrica');
     }
   }
 }));

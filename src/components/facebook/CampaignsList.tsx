@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { DateRange } from "react-day-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -18,8 +18,13 @@ interface CampaignsListProps {
 
 export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccountId, onTabChange }: CampaignsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
+  const initializeDefaultMetrics = useMetricsStore(state => state.initializeDefaultMetrics);
   const { selectedCampaignId, setSelectedCampaignId } = useCampaignStore();
   const [lastClickTime, setLastClickTime] = React.useState<number>(0);
+
+  useEffect(() => {
+    initializeDefaultMetrics();
+  }, [initializeDefaultMetrics]);
 
   const { data: campaigns, isLoading, error } = useCampaigns(selectedMetrics, dateRange, selectedAccountId);
 
