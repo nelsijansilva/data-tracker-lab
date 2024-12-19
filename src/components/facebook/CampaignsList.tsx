@@ -13,16 +13,28 @@ interface CampaignsListProps {
   dateRange: DateRange;
   campaignStatus?: 'all' | 'active' | 'paused';
   selectedAccountId?: string;
+  onTabChange?: (value: string) => void;
 }
 
-export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccountId }: CampaignsListProps) => {
+export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccountId, onTabChange }: CampaignsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const { selectedCampaignId, setSelectedCampaignId } = useCampaignStore();
+  const [lastClickTime, setLastClickTime] = React.useState<number>(0);
 
   const { data: campaigns, isLoading, error } = useCampaigns(selectedMetrics, dateRange, selectedAccountId);
 
   const handleRowClick = (campaignId: string) => {
-    setSelectedCampaignId(campaignId === selectedCampaignId ? null : campaignId);
+    const currentTime = new Date().getTime();
+    const timeDiff = currentTime - lastClickTime;
+    
+    if (timeDiff < 300) { // Double click detected (within 300ms)
+      setSelectedCampaignId(campaignId);
+      onTabChange?.('adsets'); // Navigate to adsets tab
+    } else {
+      setSelectedCampaignId(campaignId === selectedCampaignId ? null : campaignId);
+    }
+    
+    setLastClickTime(currentTime);
   };
 
   if (isLoading) return <div className="text-gray-400">Carregando campanhas...</div>;

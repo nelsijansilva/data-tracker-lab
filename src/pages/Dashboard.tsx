@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [showAlert, setShowAlert] = useState(true);
   const [campaignStatus, setCampaignStatus] = useState<CampaignStatus>('all');
   const [selectedAccountId, setSelectedAccountId] = useState<string>('any');
+  const [activeTab, setActiveTab] = useState('campaigns');
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(),
     to: new Date(),
@@ -35,6 +36,10 @@ const Dashboard = () => {
       return data || [];
     }
   });
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
 
   const renderFilters = () => (
     <div className="grid grid-cols-4 gap-4">
@@ -118,7 +123,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#1a1f2e] text-white">
-      <Tabs defaultValue="campaigns" className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <nav className="border-b border-gray-700">
           <div className="container mx-auto">
             <TabsList className="h-16 bg-transparent">
@@ -186,6 +191,7 @@ const Dashboard = () => {
                 dateRange={dateRange} 
                 campaignStatus={campaignStatus}
                 selectedAccountId={selectedAccountId === 'any' ? undefined : selectedAccountId}
+                onTabChange={handleTabChange}
               />
             </div>
           </TabsContent>
