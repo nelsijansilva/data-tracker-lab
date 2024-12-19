@@ -2,7 +2,6 @@ import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { AdPreview } from "./AdPreview";
 import { AdCreativeDetails } from "./AdCreativeDetails";
 
 interface AdDetailsProps {
@@ -34,14 +33,8 @@ export const AdDetails = ({ ad, isOpen, onClose }: AdDetailsProps) => {
 
           <Separator className="border-gray-700" />
 
-          {/* Ad Preview */}
-          <AdPreview ad={ad} />
-
-          <Separator className="border-gray-700" />
-
           {/* Creative Details */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-400">Creative Details</h3>
             <AdCreativeDetails creative={ad.creative} />
           </div>
         </div>

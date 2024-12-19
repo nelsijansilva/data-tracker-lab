@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface AdCreativeDetailsProps {
   creative: any;
@@ -15,7 +14,6 @@ export const AdCreativeDetails = ({ creative }: AdCreativeDetailsProps) => {
 
   let title = creative.title;
   let body = creative.body;
-  let imageUrl = null;
   let message = null;
   let description = null;
   let link = null;
@@ -24,7 +22,6 @@ export const AdCreativeDetails = ({ creative }: AdCreativeDetailsProps) => {
     const linkData = creative.object_story_spec.link_data;
     message = linkData.message;
     description = linkData.description;
-    imageUrl = linkData.image_url;
     link = linkData.link;
   }
 
@@ -33,7 +30,6 @@ export const AdCreativeDetails = ({ creative }: AdCreativeDetailsProps) => {
     title = assetFeed.titles?.[0]?.text || title;
     body = assetFeed.bodies?.[0]?.text || body;
     description = assetFeed.descriptions?.[0]?.text || description;
-    imageUrl = assetFeed.images?.[0]?.url || imageUrl;
   }
 
   return (
@@ -93,17 +89,6 @@ export const AdCreativeDetails = ({ creative }: AdCreativeDetailsProps) => {
                 >
                   {link}
                 </a>
-              </div>
-            )}
-
-            {imageUrl && (
-              <div>
-                <p className="text-xs text-gray-400 mb-1">Image</p>
-                <img 
-                  src={imageUrl} 
-                  alt="Creative preview"
-                  className="rounded-lg max-w-full h-auto"
-                />
               </div>
             )}
           </div>
