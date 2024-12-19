@@ -12,9 +12,10 @@ import { cn } from "@/lib/utils";
 interface CampaignsListProps {
   dateRange: DateRange;
   campaignStatus?: 'all' | 'active' | 'paused';
+  selectedAccountId?: string;
 }
 
-export const CampaignsList = ({ dateRange, campaignStatus = 'all' }: CampaignsListProps) => {
+export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccountId }: CampaignsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
 
@@ -38,8 +39,9 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all' }: CampaignsLi
   }
 
   const filteredCampaigns = campaigns?.filter(campaign => {
-    if (campaignStatus === 'all') return true;
-    return campaign.status.toLowerCase() === campaignStatus;
+    const matchesStatus = campaignStatus === 'all' || campaign.status.toLowerCase() === campaignStatus;
+    const matchesAccount = !selectedAccountId || campaign.account_id === selectedAccountId;
+    return matchesStatus && matchesAccount;
   });
 
   if (!filteredCampaigns?.length) {
