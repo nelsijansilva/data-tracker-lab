@@ -3,6 +3,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
+import { startOfMonth, endOfMonth } from "date-fns";
 import { DashboardTabs } from "@/components/facebook/DashboardTabs";
 import { DashboardFilters } from "@/components/facebook/DashboardFilters";
 
@@ -14,8 +15,8 @@ const Dashboard = () => {
   const [selectedAccountId, setSelectedAccountId] = useState<string>('any');
   const [activeTab, setActiveTab] = useState('campaigns');
   const [dateRange, setDateRange] = useState<DateRange>({
-    from: new Date(),
-    to: new Date(),
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date()),
   });
 
   const { data: accounts } = useQuery({
