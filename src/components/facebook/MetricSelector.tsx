@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -13,6 +13,16 @@ export type Metric = {
   isCustom?: boolean;
   formula?: string;
 };
+
+// Define default metrics that should be selected
+const DEFAULT_METRIC_FIELDS = [
+  'spend',
+  'impressions',
+  'clicks',
+  'ctr',
+  'cpc',
+  'reach'
+];
 
 interface MetricSelectorProps {
   selectedMetrics: Metric[];
@@ -35,9 +45,21 @@ export const MetricSelector = ({
   const [newMetricField, setNewMetricField] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
 
-  React.useEffect(() => {
-    fetchMetrics();
-  }, [fetchMetrics]);
+  useEffect(() => {
+    const initializeDefaultMetrics = async () => {
+      await fetchMetrics();
+      
+      // Only set default metrics if no metrics are currently selected
+      if (selectedMetrics.length === 0 && metrics.length > 0) {
+        const defaultMetrics = metrics.filter(metric => 
+          DEFAULT_METRIC_FIELDS.includes(metric.field)
+        );
+        onMetricsChange(defaultMetrics);
+      }
+    };
+
+    initializeDefaultMetrics();
+  }, [fetchMetrics, metrics, onMetricsChange, selectedMetrics.length]);
 
   const handleToggleMetric = (metric: Metric) => {
     const isSelected = selectedMetrics.some((m) => m.id === metric.id);
