@@ -19,8 +19,11 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   cpm: { field: 'cpm', isInsightMetric: true },
   reach: { field: 'reach', isInsightMetric: true },
   frequency: { field: 'frequency', isInsightMetric: true },
-  actions: { field: 'actions', isInsightMetric: true },
+  cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true },
+  unique_clicks: { field: 'unique_clicks', isInsightMetric: true },
+  unique_ctr: { field: 'unique_ctr', isInsightMetric: true },
   cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true },
+  actions: { field: 'actions', isInsightMetric: true }
 };
 
 export const getMetricMapping = (field: string): FacebookMetricMapping => {
@@ -34,11 +37,6 @@ export const buildFieldsParameter = (metrics: string[]): string => {
   const basicFields = metrics
     .map(field => getMetricMapping(field))
     .filter(mapping => !mapping.isInsightMetric)
-    .map(mapping => mapping.field);
-
-  const insightFields = metrics
-    .map(field => getMetricMapping(field))
-    .filter(mapping => mapping.isInsightMetric)
     .map(mapping => mapping.field);
 
   return [...new Set(basicFields)].join(',');

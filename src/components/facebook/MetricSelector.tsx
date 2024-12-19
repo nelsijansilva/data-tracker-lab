@@ -12,6 +12,8 @@ export type Metric = {
   isCustom?: boolean;
 };
 
+// Updated metrics to use only valid Facebook Insights API fields
+// Reference: https://developers.facebook.com/docs/marketing-api/reference/ads-insights/
 const DEFAULT_METRICS: Metric[] = [
   { id: "name", name: "Nome", field: "name" },
   { id: "status", name: "Status", field: "status" },
@@ -21,12 +23,17 @@ const DEFAULT_METRICS: Metric[] = [
   { id: "budget_remaining", name: "Orçamento Restante", field: "budget_remaining" },
   { id: "spend", name: "Gastos", field: "spend" },
   { id: "impressions", name: "Impressões", field: "impressions" },
+  { id: "reach", name: "Alcance", field: "reach" },
   { id: "clicks", name: "Cliques", field: "clicks" },
   { id: "cpc", name: "CPC", field: "cpc" },
-  { id: "ctr", name: "CTR", field: "ctr" },
   { id: "cpm", name: "CPM", field: "cpm" },
-  { id: "reach", name: "Alcance", field: "reach" },
+  { id: "ctr", name: "CTR", field: "ctr" },
   { id: "frequency", name: "Frequência", field: "frequency" },
+  { id: "cost_per_unique_click", name: "Custo por Clique Único", field: "cost_per_unique_click" },
+  { id: "unique_clicks", name: "Cliques Únicos", field: "unique_clicks" },
+  { id: "unique_ctr", name: "CTR Único", field: "unique_ctr" },
+  { id: "cost_per_action_type", name: "Custo por Ação", field: "cost_per_action_type" },
+  { id: "actions", name: "Ações", field: "actions" }
 ];
 
 interface MetricSelectorProps {
