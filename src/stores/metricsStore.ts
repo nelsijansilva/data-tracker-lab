@@ -14,6 +14,8 @@ interface MetricsState {
   setSelectedMetrics: (metrics: Metric[]) => void;
   fetchMetrics: () => Promise<void>;
   initializeDefaultMetrics: () => Promise<void>;
+  addMetric: (metric: Omit<Metric, 'id'>) => Promise<void>;
+  deleteMetric: (id: string) => Promise<void>;
 }
 
 const DEFAULT_METRIC_FIELDS = [
@@ -28,6 +30,7 @@ const DEFAULT_METRIC_FIELDS = [
 export const useMetricsStore = create<MetricsState>((set, get) => ({
   metrics: [],
   selectedMetrics: [],
+  
   setSelectedMetrics: (metrics) => set({ selectedMetrics: metrics }),
   
   fetchMetrics: async () => {
@@ -48,13 +51,13 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
       set({ metrics: formattedMetrics });
     } catch (error) {
       console.error('Error fetching metrics:', error);
+      throw error;
     }
   },
 
   initializeDefaultMetrics: async () => {
     const { selectedMetrics } = get();
     
-    // Only initialize if no metrics are selected
     if (selectedMetrics.length === 0) {
       try {
         const { data, error } = await supabase
@@ -74,7 +77,57 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
         set({ selectedMetrics: defaultMetrics });
       } catch (error) {
         console.error('Error initializing default metrics:', error);
+        throw error;
       }
+    }
+  },
+
+  addMetric: async (metric) => {
+    try {
+      const { data, error } = await supabase
+        .from('custom_metrics')
+        .insert([{
+          name: metric.name,
+          field: metric.field,
+          is_custom: metric.isCustom
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const { metrics } = get();
+      set({ 
+        metrics: [...metrics, {
+          id: data.id,
+          name: data.name,
+          field: data.field,
+          isCustom: data.is_custom
+        }]
+      });
+    } catch (error) {
+      console.error('Error adding metric:', error);
+      throw error;
+    }
+  },
+
+  deleteMetric: async (id) => {
+    try {
+      const { error } = await supabase
+        .from('custom_metrics')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      const { metrics, selectedMetrics } = get();
+      set({ 
+        metrics: metrics.filter(m => m.id !== id),
+        selectedMetrics: selectedMetrics.filter(m => m.id !== id)
+      });
+    } catch (error) {
+      console.error('Error deleting metric:', error);
+      throw error;
     }
   }
 }));
