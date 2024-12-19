@@ -1,35 +1,17 @@
-import { supabase } from "@/integrations/supabase/client";
-
-const getVerifiedCDN = async (): Promise<string | null> => {
-  const { data, error } = await supabase
-    .from('cdn_configurations')
-    .select('subdomain')
-    .eq('status', 'verified')
-    .limit(1)
-    .single();
-  
-  if (error || !data) return null;
-  return data.subdomain;
-};
-
-export const generateCDNScript = async (pixelId: string): Promise<string> => {
-  const cdnDomain = await getVerifiedCDN();
-  
-  // If no verified CDN is found, use the Supabase Edge Function URL
-  const scriptDomain = cdnDomain || 'avxgduktxkorwfmccwbs.supabase.co/functions/v1';
-  const scriptPath = cdnDomain ? '/tracking/tracker.min.js' : '/serve-tracker';
-  const domain = window.location.hostname;
-  
+export const generateTrackingScript = (pixelId: string): string => {
   return `
-<!-- Facebook Funnel Tracking Script -->
+<!-- Facebook Pixel Code -->
 <script>
-  window.pixelId = "${pixelId}";
-  var script = document.createElement("script");
-  script.setAttribute("async", "");
-  script.setAttribute("defer", "");
-  script.setAttribute("crossorigin", "anonymous");
-  script.setAttribute("src", "https://${scriptDomain}${scriptPath}?domain=${domain}");
-  document.head.appendChild(script);
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '${pixelId}');
+  fbq('track', 'PageView');
 </script>
-<!-- End Facebook Funnel Tracking Script -->`;
+<!-- End Facebook Pixel Code -->`;
 };
