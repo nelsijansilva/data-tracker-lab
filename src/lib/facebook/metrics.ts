@@ -12,17 +12,17 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   objective: { field: 'objective', isInsightMetric: false },
   
   // Valid insight metrics with appropriate levels
-  spend: { field: 'spend', isInsightMetric: true, level: 'adset' },
-  impressions: { field: 'impressions', isInsightMetric: true, level: 'adset' },
-  clicks: { field: 'clicks', isInsightMetric: true, level: 'adset' },
-  cpc: { field: 'cpc', isInsightMetric: true, level: 'adset' },
-  ctr: { field: 'ctr', isInsightMetric: true, level: 'adset' },
-  cpm: { field: 'cpm', isInsightMetric: true, level: 'adset' },
-  reach: { field: 'reach', isInsightMetric: true, level: 'adset' },
-  frequency: { field: 'frequency', isInsightMetric: true, level: 'adset' },
-  cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true, level: 'adset' },
-  unique_clicks: { field: 'unique_clicks', isInsightMetric: true, level: 'adset' },
-  unique_ctr: { field: 'unique_ctr', isInsightMetric: true, level: 'adset' }
+  spend: { field: 'spend', isInsightMetric: true },
+  impressions: { field: 'impressions', isInsightMetric: true },
+  clicks: { field: 'clicks', isInsightMetric: true },
+  cpc: { field: 'cpc', isInsightMetric: true },
+  ctr: { field: 'ctr', isInsightMetric: true },
+  cpm: { field: 'cpm', isInsightMetric: true },
+  reach: { field: 'reach', isInsightMetric: true },
+  frequency: { field: 'frequency', isInsightMetric: true },
+  cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true },
+  unique_clicks: { field: 'unique_clicks', isInsightMetric: true },
+  unique_ctr: { field: 'unique_ctr', isInsightMetric: true }
 };
 
 export const getMetricMapping = (field: string): FacebookMetricMapping => {
