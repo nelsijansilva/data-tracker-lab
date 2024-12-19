@@ -1,40 +1,31 @@
 import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
-import { buildFieldsParameter, buildInsightsFieldsParameter } from "./metrics";
 import type { Metric } from "@/components/facebook/MetricSelector";
 
-export const buildCampaignsEndpoint = (
-  accountId: string,
-  selectedMetrics: Metric[],
-  dateRange?: DateRange
-): string => {
-  const metricFields = selectedMetrics.map(metric => metric.field);
-  const fields = buildFieldsParameter(metricFields);
-  const insightFields = buildInsightsFieldsParameter(metricFields);
-  
-  let endpoint = `${accountId}/campaigns?fields=${fields}`;
+export const buildCampaignsEndpoint = (accountId: string, selectedMetrics: Metric[], dateRange?: DateRange): string => {
+  let endpoint = `act_${accountId}/campaigns?fields=name,status`;
 
-  if (insightFields && dateRange?.from && dateRange?.to) {
-    endpoint += `,insights.time_range({"since":"${format(dateRange.from, 'yyyy-MM-dd')}","until":"${format(dateRange.to, 'yyyy-MM-dd')}"}).fields(${insightFields})`;
+  if (dateRange?.from && dateRange?.to) {
+    const insights = selectedMetrics
+      .filter(metric => !['name', 'status'].includes(metric.field))
+      .map(metric => metric.field)
+      .join(',');
+
+    endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
   }
 
   return endpoint;
 };
 
-export const buildAdSetsEndpoint = (
-  accountId: string,
-  campaignId: string | null,
-  selectedMetrics: Metric[],
-  dateRange?: DateRange
-): string => {
-  const metricFields = selectedMetrics.map(metric => metric.field);
-  const fields = buildFieldsParameter(metricFields);
-  const insightFields = buildInsightsFieldsParameter(metricFields);
-  
-  let endpoint = `${accountId}/adsets?fields=${fields}`;
+export const buildAdSetsEndpoint = (accountId: string, campaignId: string | null, selectedMetrics: Metric[], dateRange?: DateRange): string => {
+  let endpoint = `act_${accountId}/adsets?fields=name,status`;
 
-  if (insightFields && dateRange?.from && dateRange?.to) {
-    endpoint += `,insights.time_range({"since":"${format(dateRange.from, 'yyyy-MM-dd')}","until":"${format(dateRange.to, 'yyyy-MM-dd')}"}).fields(${insightFields})`;
+  if (dateRange?.from && dateRange?.to) {
+    const insights = selectedMetrics
+      .filter(metric => !['name', 'status'].includes(metric.field))
+      .map(metric => metric.field)
+      .join(',');
+
+    endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
   }
 
   if (campaignId) {
@@ -44,20 +35,16 @@ export const buildAdSetsEndpoint = (
   return endpoint;
 };
 
-export const buildAdsEndpoint = (
-  accountId: string,
-  adSetId: string | null,
-  selectedMetrics: Metric[],
-  dateRange?: DateRange
-): string => {
-  const metricFields = selectedMetrics.map(metric => metric.field);
-  const fields = buildFieldsParameter(metricFields);
-  const insightFields = buildInsightsFieldsParameter(metricFields);
-  
-  let endpoint = `${accountId}/ads?fields=name,status,creative{id,name,title,body,object_story_spec{link_data{message,link,caption,description,image_url}},asset_feed_spec{bodies,descriptions,titles,videos,images}}`;
+export const buildAdsEndpoint = (accountId: string, adSetId: string | null, selectedMetrics: Metric[], dateRange?: DateRange): string => {
+  let endpoint = `act_${accountId}/ads?fields=name,status,creative{id,name,title,body,object_story_spec{link_data{message,link,caption,description,image_url}},asset_feed_spec{bodies,descriptions,titles,videos,images}}`;
 
-  if (insightFields && dateRange?.from && dateRange?.to) {
-    endpoint += `,insights.time_range({"since":"${format(dateRange.from, 'yyyy-MM-dd')}","until":"${format(dateRange.to, 'yyyy-MM-dd')}"}).fields(${insightFields})`;
+  if (dateRange?.from && dateRange?.to) {
+    const insights = selectedMetrics
+      .filter(metric => !['name', 'status', 'preview_url'].includes(metric.field))
+      .map(metric => metric.field)
+      .join(',');
+
+    endpoint += `,insights.time_range({"since":"${dateRange.from.toISOString().split('T')[0]}","until":"${dateRange.to.toISOString().split('T')[0]}"}).fields(${insights})`;
   }
 
   if (adSetId) {
