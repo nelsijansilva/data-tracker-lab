@@ -11,6 +11,7 @@ export type Metric = {
   name: string;
   field: string;
   isCustom?: boolean;
+  formula?: string;
 };
 
 interface MetricSelectorProps {
