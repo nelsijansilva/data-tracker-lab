@@ -17,9 +17,22 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("campaigns");
   const [showAlert, setShowAlert] = useState(true);
   const [campaignStatus, setCampaignStatus] = useState<CampaignStatus>('all');
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('any');
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(),
     to: new Date(),
+  });
+
+  const { data: accounts } = useQuery({
+    queryKey: ['fbAccounts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('facebook_ad_accounts')
+        .select('*');
+      
+      if (error) throw error;
+      return data || [];
+    }
   });
 
   const { data: hasCredentials, isLoading } = useQuery({
@@ -131,19 +144,38 @@ const Dashboard = () => {
                 <label className="block text-sm font-medium text-gray-400 mb-2">
                   Conta de Anúncio
                 </label>
-                <Select>
+                <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
                   <SelectTrigger className="bg-[#2a2f3d] border-gray-700 text-white">
-                    <SelectValue placeholder="Qualquer" />
+                    <SelectValue placeholder="Qualquer">
+                      {selectedAccountId === 'any' 
+                        ? 'Qualquer' 
+                        : accounts?.find(acc => acc.id === selectedAccountId)?.account_name || 'Conta selecionada'}
+                    </SelectValue>
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Qualquer</SelectItem>
+                  <SelectContent className="bg-[#2a2f3d] border-gray-700">
+                    <SelectItem value="any" className="text-white hover:bg-[#3b4252]">
+                      Qualquer
+                    </SelectItem>
+                    {accounts?.map((account) => (
+                      <SelectItem 
+                        key={account.id} 
+                        value={account.id}
+                        className="text-white hover:bg-[#3b4252]"
+                      >
+                        {account.account_name || `Conta ${account.account_id}`}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="bg-[#2a2f3d] rounded-lg p-4 mt-4">
-              <CampaignsList dateRange={dateRange} campaignStatus={campaignStatus} />
+              <CampaignsList 
+                dateRange={dateRange} 
+                campaignStatus={campaignStatus}
+                selectedAccountId={selectedAccountId === 'any' ? undefined : selectedAccountId}
+              />
             </div>
           </>
         );
