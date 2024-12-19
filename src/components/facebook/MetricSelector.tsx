@@ -25,9 +25,15 @@ const DEFAULT_METRICS: Metric[] = [
   { id: "spend", name: "Gasto", field: "spend" },
   { id: "impressions", name: "Impressões", field: "impressions" },
   { id: "clicks", name: "Cliques", field: "clicks" },
-  { id: "ctr", name: "CTR", field: "ctr", formula: "clicks / impressions * 100" },
-  { id: "cpc", name: "CPC", field: "cpc", formula: "spend / clicks" },
-  { id: "cpm", name: "CPM", field: "cpm", formula: "spend / impressions * 1000" },
+  { id: "ctr", name: "CTR", field: "ctr" },
+  { id: "cpc", name: "CPC", field: "cpc" },
+  { id: "cpm", name: "CPM", field: "cpm" },
+  // Métricas de conversão atualizadas com os nomes corretos da API
+  { id: "conversions", name: "Conversões", field: "actions" },
+  { id: "cost_per_conversion", name: "Custo por Conversão", field: "cost_per_action_type" },
+  { id: "inline_link_clicks", name: "Cliques no Link", field: "inline_link_clicks" },
+  { id: "cost_per_inline_link_click", name: "Custo por Clique no Link", field: "cost_per_inline_link_click" },
+  { id: "website_purchase_roas", name: "ROAS", field: "website_purchase_roas" },
 ];
 
 interface MetricSelectorProps {
