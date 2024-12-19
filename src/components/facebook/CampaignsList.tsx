@@ -1,16 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchCampaigns } from "@/lib/facebook/api";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrendingUp, TrendingDown, DollarSign, AlertTriangle } from "lucide-react";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { addDays } from "date-fns";
-import { DateRange } from "react-day-picker";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import type { Metric } from "@/components/facebook/MetricSelector";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { MetricValue } from "@/components/facebook/MetricValue";
+import { calculateMetricValue } from "@/utils/metricCalculations";
+import type { DateRange } from "react-day-picker";
 
 export const CampaignsList = () => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
@@ -21,12 +21,8 @@ export const CampaignsList = () => {
     from: addDays(new Date(), -30),
     to: new Date(),
   });
-  
-  const { data: campaigns, isLoading, error } = useQuery({
-    queryKey: ['campaigns', selectedMetrics, dateRange?.from, dateRange?.to],
-    queryFn: () => fetchCampaigns(selectedMetrics, dateRange),
-    enabled: !!dateRange?.from && !!dateRange?.to && selectedMetrics.length > 0,
-  });
+
+  const { data: campaigns, isLoading, error } = useCampaigns(selectedMetrics, dateRange);
 
   const handleRowClick = (campaignId: string) => {
     setSelectedCampaignId(campaignId);
@@ -59,49 +55,6 @@ export const CampaignsList = () => {
     );
   }
 
-  const calculateMetricValue = (campaign: any, metric: Metric) => {
-    if (!metric.formula) {
-      return campaign[metric.field];
-    }
-
-    try {
-      const formula = metric.formula.replace(/[a-zA-Z_]+/g, (match) => {
-        return campaign[match] || 0;
-      });
-      return eval(formula);
-    } catch (error) {
-      console.error(`Error calculating metric ${metric.name}:`, error);
-      return 0;
-    }
-  };
-
-  const formatMetricValue = (value: any, metric: Metric) => {
-    if (typeof value === 'number') {
-      if (metric.field === 'spend' || metric.field.includes('cost')) {
-        return (
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4" />
-            {value.toFixed(2)}
-          </div>
-        );
-      }
-      if (metric.field.includes('rate') || metric.field === 'ctr' || metric.field === 'website_purchase_roas') {
-        return (
-          <div className="flex items-center gap-2">
-            {value > 1 ? (
-              <TrendingUp className="w-4 h-4 text-green-500" />
-            ) : (
-              <TrendingDown className="w-4 h-4 text-red-500" />
-            )}
-            {value.toFixed(2)}%
-          </div>
-        );
-      }
-      return value.toLocaleString();
-    }
-    return value;
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex justify-end items-center gap-4">
@@ -128,7 +81,10 @@ export const CampaignsList = () => {
             >
               {selectedMetrics.map((metric) => (
                 <TableCell key={`${campaign.id}-${metric.id}`}>
-                  {formatMetricValue(calculateMetricValue(campaign, metric), metric)}
+                  <MetricValue 
+                    value={calculateMetricValue(campaign, metric)} 
+                    metric={metric}
+                  />
                 </TableCell>
               ))}
             </TableRow>
