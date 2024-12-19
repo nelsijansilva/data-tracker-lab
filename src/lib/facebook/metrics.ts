@@ -10,9 +10,6 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   name: { field: 'name', isInsightMetric: false },
   status: { field: 'status', isInsightMetric: false },
   objective: { field: 'objective', isInsightMetric: false },
-  daily_budget: { field: 'daily_budget', isInsightMetric: false },
-  lifetime_budget: { field: 'lifetime_budget', isInsightMetric: false },
-  budget_remaining: { field: 'budget_remaining', isInsightMetric: false },
   
   // Valid insight metrics for campaigns
   spend: { field: 'spend', isInsightMetric: true, level: 'campaign' },
@@ -22,11 +19,12 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   ctr: { field: 'ctr', isInsightMetric: true, level: 'campaign' },
   cpm: { field: 'cpm', isInsightMetric: true, level: 'campaign' },
   reach: { field: 'reach', isInsightMetric: true, level: 'campaign' },
-  results: { field: 'actions', isInsightMetric: true, level: 'campaign' },
-  cost_per_result: { field: 'cost_per_action_type', isInsightMetric: true, level: 'campaign' },
+  frequency: { field: 'frequency', isInsightMetric: true, level: 'campaign' },
   cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true, level: 'campaign' },
   unique_clicks: { field: 'unique_clicks', isInsightMetric: true, level: 'campaign' },
-  unique_ctr: { field: 'unique_ctr', isInsightMetric: true, level: 'campaign' }
+  unique_ctr: { field: 'unique_ctr', isInsightMetric: true, level: 'campaign' },
+  actions: { field: 'actions', isInsightMetric: true, level: 'campaign' },
+  cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true, level: 'campaign' }
 };
 
 export const getMetricMapping = (field: string): FacebookMetricMapping => {
