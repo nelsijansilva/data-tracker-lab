@@ -2,21 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCampaigns } from "@/lib/facebook/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TrendingUp, TrendingDown, DollarSign, AlertTriangle } from "lucide-react";
-import { useState } from "react";
-import { MetricSelector, type Metric } from "./MetricSelector";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useMetricsStore } from "@/stores/metricsStore";
 
 export const CampaignsList = () => {
-  const [selectedMetrics, setSelectedMetrics] = useState<Metric[]>([
-    { id: "name", name: "Nome", field: "name" },
-    { id: "status", name: "Status", field: "status" },
-    { id: "objective", name: "Objetivo", field: "objective" },
-    { id: "spend", name: "Gasto", field: "spend" },
-  ]);
-
+  const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
+  
   const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
     to: new Date(),
@@ -102,11 +96,7 @@ export const CampaignsList = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-start gap-4">
-        <MetricSelector
-          selectedMetrics={selectedMetrics}
-          onMetricsChange={setSelectedMetrics}
-        />
+      <div className="flex justify-end items-center gap-4">
         <DateRangePicker
           value={dateRange}
           onChange={setDateRange}
