@@ -81,7 +81,7 @@ export function DateRangePicker({
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal bg-[#2a2f3d] border-gray-700 text-white hover:bg-[#3b4252]",
+              "w-full justify-start text-left font-normal bg-[#1a1f2e] border-gray-700 text-white hover:bg-[#2a2f3d]",
               !value && "text-muted-foreground"
             )}
           >
@@ -115,7 +115,21 @@ export function DateRangePicker({
               onSelect={handleDateRangeChange}
               numberOfMonths={2}
               locale={ptBR}
-              className="bg-[#2a2f3d] text-white rounded-md"
+              className="bg-[#2a2f3d] text-white rounded-md border-gray-700"
+              classNames={{
+                day_selected: "bg-[#3b82f6] text-white hover:bg-[#3b82f6] hover:text-white",
+                day_today: "bg-accent text-accent-foreground",
+                day_range_middle: "bg-[#3b82f6]/20 text-white",
+                day_range_end: "bg-[#3b82f6] text-white hover:bg-[#3b82f6] hover:text-white",
+                day_range_start: "bg-[#3b82f6] text-white hover:bg-[#3b82f6] hover:text-white",
+                day: "text-white hover:bg-[#3b4252] hover:text-white focus:bg-[#3b4252] focus:text-white",
+                day_disabled: "text-gray-500",
+                day_range_start: "bg-[#3b82f6] text-white hover:bg-[#3b82f6] hover:text-white",
+                day_range_end: "bg-[#3b82f6] text-white hover:bg-[#3b82f6] hover:text-white",
+                nav_button_previous: "text-white hover:bg-[#3b4252]",
+                nav_button_next: "text-white hover:bg-[#3b4252]",
+                caption: "text-white",
+              }}
             />
 
             <TimeInputs

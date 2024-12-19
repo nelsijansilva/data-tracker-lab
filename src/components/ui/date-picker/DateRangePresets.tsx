@@ -58,12 +58,16 @@ export const presets = [
 export function DateRangePresets({ value, onChange }: DateRangePresetsProps) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-full">
+      <SelectTrigger className="w-full bg-[#1a1f2e] text-white border-gray-700 hover:bg-[#2a2f3d]">
         <SelectValue placeholder="Selecione um período predefinido" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-[#2a2f3d] border-gray-700">
         {presets.map((preset) => (
-          <SelectItem key={preset.id} value={preset.id}>
+          <SelectItem 
+            key={preset.id} 
+            value={preset.id}
+            className="text-white hover:bg-[#3b4252] focus:bg-[#3b4252] focus:text-white"
+          >
             {preset.label}
           </SelectItem>
         ))}
