@@ -9,6 +9,7 @@ import { useCampaigns } from "@/hooks/useCampaigns";
 import { MetricValue } from "@/components/facebook/MetricValue";
 import { calculateMetricValue } from "@/utils/metricCalculations";
 import { CampaignDetails } from "@/components/facebook/CampaignDetails";
+import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
 
 export const CampaignsList = () => {
@@ -74,7 +75,12 @@ export const CampaignsList = () => {
             <>
               <TableRow 
                 key={campaign.id}
-                className="cursor-pointer hover:bg-muted/50"
+                className={cn(
+                  "cursor-pointer transition-colors",
+                  selectedCampaignId === campaign.id 
+                    ? "bg-primary/10 hover:bg-primary/15" 
+                    : "hover:bg-muted/50"
+                )}
                 onClick={() => handleRowClick(campaign.id)}
               >
                 {selectedMetrics.map((metric) => (
