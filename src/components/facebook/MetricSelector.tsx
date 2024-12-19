@@ -28,6 +28,7 @@ export const MetricSelector = () => {
 
   const [newMetricName, setNewMetricName] = useState('');
   const [newMetricField, setNewMetricField] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   React.useEffect(() => {
     fetchMetrics();
@@ -62,6 +63,11 @@ export const MetricSelector = () => {
       toast.error('Erro ao adicionar métrica');
     }
   };
+
+  const filteredMetrics = metrics.filter(metric => 
+    metric.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    metric.field.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <Card className="bg-[#1a1f2e] border-gray-700">
@@ -98,15 +104,23 @@ export const MetricSelector = () => {
                 </Button>
               </div>
             </div>
-            <h3 className="text-sm font-medium text-gray-400 mb-4">
-              Métricas Disponíveis
-            </h3>
-            <MetricCheckboxList
-              metrics={metrics}
-              selectedMetrics={selectedMetrics}
-              onToggleMetric={handleToggleMetric}
-              onDeleteMetric={deleteMetric}
-            />
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-gray-400">
+                Métricas Disponíveis
+              </h3>
+              <Input
+                placeholder="Buscar métricas..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-[#2a2f3d] border-gray-700 text-white mb-4"
+              />
+              <MetricCheckboxList
+                metrics={filteredMetrics}
+                selectedMetrics={selectedMetrics}
+                onToggleMetric={handleToggleMetric}
+                onDeleteMetric={deleteMetric}
+              />
+            </div>
           </div>
           <div>
             <h3 className="text-sm font-medium text-gray-400 mb-4">
