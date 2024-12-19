@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Metric } from "@/components/facebook/MetricSelector";
 import type { DateRange } from "react-day-picker";
-import { buildCampaignsEndpoint, buildAdSetsEndpoint } from "./apiBuilder";
+import { buildCampaignsEndpoint, buildAdSetsEndpoint, buildAdsEndpoint } from "./apiBuilder";
 import { FB_BASE_URL } from "./config";
 import { handleFacebookError } from "./errors";
 
