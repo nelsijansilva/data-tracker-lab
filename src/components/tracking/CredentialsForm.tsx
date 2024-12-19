@@ -19,11 +19,13 @@ export const CredentialsForm = ({ onSave }: CredentialsFormProps) => {
   const { data: configuration } = useQuery({
     queryKey: ['pixelConfiguration'],
     queryFn: getPixelConfiguration,
-    onSuccess: (data) => {
-      if (data && !pixelId && !apiToken) {
-        setPixelId(data.pixelId);
-        setApiToken(data.apiToken);
-        onSave(data.pixelId, data.apiToken);
+    meta: {
+      onSuccess: (data) => {
+        if (data && !pixelId && !apiToken) {
+          setPixelId(data.pixelId);
+          setApiToken(data.apiToken);
+          onSave(data.pixelId, data.apiToken);
+        }
       }
     }
   });
