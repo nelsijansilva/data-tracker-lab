@@ -1,10 +1,10 @@
+import React, { useState } from 'react';
 import { addDays } from "date-fns";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
-import { useState } from "react";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { MetricValue } from "@/components/facebook/MetricValue";
 import { calculateMetricValue } from "@/utils/metricCalculations";
@@ -111,3 +111,5 @@ export const CampaignsList = () => {
     </div>
   );
 };
+
+export default CampaignsList;
