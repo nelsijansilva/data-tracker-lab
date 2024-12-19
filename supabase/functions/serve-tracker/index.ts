@@ -10,7 +10,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -55,35 +54,79 @@ serve(async (req) => {
 
   const script = `
     (function() {
-      if (window.fbq) {
-        console.log('[FB Pixel] Already initialized');
-        return;
+      // Queue para eventos antes do carregamento do FB
+      var queue = [];
+      var loaded = false;
+
+      // Função para processar a fila de eventos
+      function processQueue() {
+        while (queue.length > 0) {
+          var args = queue.shift();
+          fbq.apply(null, args);
+        }
+        loaded = true;
       }
 
-      // Create Facebook Pixel base code script
-      var fbPixelScript = document.createElement('script');
-      fbPixelScript.src = 'https://connect.facebook.net/en_US/fbevents.js';
-      fbPixelScript.async = true;
-
-      // Initialize fbq before appending the script
+      // Inicializa o objeto fbq
       window.fbq = function() {
-        window.fbq.callMethod ? window.fbq.callMethod.apply(window.fbq, arguments) : window.fbq.queue.push(arguments);
+        if (loaded) {
+          fbq.apply(null, arguments);
+        } else {
+          queue.push(arguments);
+        }
       };
-      window._fbq = window._fbq || window.fbq;
+
+      // Configuração inicial do FB Pixel
+      window._fbq = window.fbq;
       window.fbq.push = window.fbq;
       window.fbq.loaded = true;
       window.fbq.version = '2.0';
-      window.fbq.queue = [];
+      window.fbq.queue = queue;
 
-      // Add event listener to initialize pixel after script loads
-      fbPixelScript.onload = function() {
-        console.log('[FB Pixel] Script loaded');
+      // Carrega o script do Facebook Pixel
+      var script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+      
+      // Quando o script carregar, inicializa o pixel e processa a fila
+      script.onload = function() {
         window.fbq('init', '${pixelId}'${eventTestCode ? `, { external_id: '${eventTestCode}' }` : ''});
         window.fbq('track', 'PageView', {
           source: 'lovable-tracker',
           domain: '${domain}',
           timestamp: new Date().toISOString()
         });
+        processQueue();
+        
+        // Monitora formulários para leads
+        document.querySelectorAll('form').forEach(function(form) {
+          form.addEventListener('submit', function(e) {
+            window.fbq('track', 'Lead');
+          });
+        });
+
+        // Monitora cliques em botões de compra
+        document.querySelectorAll('button, a').forEach(function(el) {
+          el.addEventListener('click', function(e) {
+            var text = el.textContent?.toLowerCase() || '';
+            if (text.includes('comprar') || text.includes('checkout') || text.includes('finalizar')) {
+              window.fbq('track', 'InitiateCheckout');
+            }
+          });
+        });
+
+        // Monitora visualização de conteúdo
+        var viewContentTracked = false;
+        function trackViewContent() {
+          if (!viewContentTracked && (window.scrollY > 100 || document.documentElement.scrollTop > 100)) {
+            window.fbq('track', 'ViewContent');
+            viewContentTracked = true;
+          }
+        }
+        
+        window.addEventListener('scroll', trackViewContent);
+        setTimeout(trackViewContent, 15000);
+
         console.log('[FB Pixel] Initialized:', {
           pixelId: '${pixelId}',
           domain: '${domain}',
@@ -92,10 +135,10 @@ serve(async (req) => {
         });
       };
 
-      // Append the script to head
-      document.head.appendChild(fbPixelScript);
+      // Adiciona o script ao documento
+      document.head.appendChild(script);
 
-      // Add noscript fallback
+      // Adiciona o noscript fallback
       var noscript = document.createElement('noscript');
       var img = document.createElement('img');
       img.height = 1;
