@@ -72,7 +72,12 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
       const insights = campaign.insights.data[0];
       selectedMetrics.forEach(metric => {
         if (!['name', 'status', 'objective'].includes(metric.field)) {
-          result[metric.field] = insights[metric.field] || 0;
+          if (Array.isArray(insights[metric.field])) {
+            // Handle array responses (like actions, website_purchase_roas)
+            result[metric.field] = insights[metric.field][0]?.value || 0;
+          } else {
+            result[metric.field] = insights[metric.field] || 0;
+          }
         }
       });
     }
