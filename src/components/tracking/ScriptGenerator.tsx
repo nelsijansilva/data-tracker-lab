@@ -1,56 +1,45 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { generateTrackingScript } from "@/lib/tracking/trackingScript";
-import { ScriptDisplay } from "./ScriptDisplay";
+import type { FunnelStep } from "@/types/tracking";
 
-export const ScriptGenerator = () => {
-  const [pixelId, setPixelId] = useState("");
-  const [trackingScript, setTrackingScript] = useState("");
-  const { toast } = useToast();
+interface ScriptGeneratorProps {
+  pixelId: string;
+  apiToken: string;
+  steps: FunnelStep[];
+}
 
-  const handleGenerate = () => {
-    if (!pixelId) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira o ID do Pixel",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const script = generateTrackingScript(pixelId);
-    setTrackingScript(script);
-    toast({
-      title: "Sucesso",
-      description: "Script gerado com sucesso",
-    });
+export const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ pixelId }) => {
+  const generateScript = () => {
+    return `
+<!-- Facebook Pixel Code -->
+<script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '${pixelId}');
+  fbq('track', 'PageView');
+</script>
+<noscript>
+  <img height="1" width="1" style="display:none"
+       src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"/>
+</noscript>
+<!-- End Facebook Pixel Code -->`;
   };
 
   return (
-    <Card className="bg-[#2a2f3d] border-gray-700">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-gray-200">Gerador de Script do Facebook Pixel</CardTitle>
+        <CardTitle>Facebook Pixel Script</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Input
-            placeholder="Digite o ID do seu Pixel do Facebook"
-            value={pixelId}
-            onChange={(e) => setPixelId(e.target.value)}
-            className="bg-[#1a1f2e] border-gray-700 text-gray-200"
-          />
-          <Button 
-            onClick={handleGenerate}
-            className="w-full bg-blue-600 hover:bg-blue-700"
-          >
-            Gerar Script
-          </Button>
-        </div>
-
-        {trackingScript && <ScriptDisplay script={trackingScript} />}
+      <CardContent>
+        <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+          <code>{generateScript()}</code>
+        </pre>
       </CardContent>
     </Card>
   );
