@@ -15,13 +15,13 @@ export type Metric = {
 };
 
 // Define default metrics that should be selected
-const DEFAULT_METRICS = [
-  { field: 'spend', name: 'Gasto' },
-  { field: 'impressions', name: 'Impressões' },
-  { field: 'clicks', name: 'Cliques' },
-  { field: 'ctr', name: 'Taxa de Cliques' },
-  { field: 'cpc', name: 'Custo por Clique' },
-  { field: 'reach', name: 'Alcance' }
+const DEFAULT_METRIC_FIELDS = [
+  'spend',
+  'impressions',
+  'clicks',
+  'ctr',
+  'cpc',
+  'reach'
 ];
 
 interface MetricSelectorProps {
@@ -52,7 +52,7 @@ export const MetricSelector = ({
       // Only set default metrics if no metrics are currently selected
       if (selectedMetrics.length === 0 && metrics.length > 0) {
         const defaultMetrics = metrics.filter(metric => 
-          DEFAULT_METRICS.some(defaultMetric => defaultMetric.field === metric.field)
+          DEFAULT_METRIC_FIELDS.includes(metric.field)
         );
         onMetricsChange(defaultMetrics);
       }
@@ -78,7 +78,10 @@ export const MetricSelector = ({
           field: newMetricField,
           isCustom: true,
         });
+
+        // Fetch updated metrics after adding
         await fetchMetrics();
+
         setNewMetricName('');
         setNewMetricField('');
         setShowAddForm(false);
@@ -86,6 +89,11 @@ export const MetricSelector = ({
         console.error('Error adding custom metric:', error);
       }
     }
+  };
+
+  const handleDeleteMetric = async (metricId: string) => {
+    await deleteMetric(metricId);
+    onMetricsChange(selectedMetrics.filter((m) => m.id !== metricId));
   };
 
   const filteredMetrics = metrics.filter((metric) =>
@@ -126,7 +134,7 @@ export const MetricSelector = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteMetric(metric.id);
+                          handleDeleteMetric(metric.id);
                         }}
                         className="text-red-500 hover:text-red-400"
                       >
