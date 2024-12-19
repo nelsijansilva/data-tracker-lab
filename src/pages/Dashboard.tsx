@@ -8,21 +8,26 @@ import { AccountsList } from "@/components/facebook/AccountsList";
 import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
-  const { data: hasCredentials } = useQuery({
+  const { data: hasCredentials, isLoading } = useQuery({
     queryKey: ['fbCredentials'],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('facebook_ad_accounts')
         .select('*')
         .limit(1);
+      
+      if (error) {
+        console.error('Error fetching credentials:', error);
+        return false;
+      }
       return data && data.length > 0;
     }
   });
 
-  if (!hasCredentials) {
+  if (isLoading) {
     return (
-      <div className="container mx-auto p-8">
-        <AccountsList />
+      <div className="container mx-auto p-8 flex items-center justify-center">
+        <p>Carregando...</p>
       </div>
     );
   }
@@ -34,9 +39,13 @@ const Dashboard = () => {
       <Tabs defaultValue="accounts" className="space-y-4">
         <TabsList>
           <TabsTrigger value="accounts">Contas</TabsTrigger>
-          <TabsTrigger value="campaigns">Campanhas</TabsTrigger>
-          <TabsTrigger value="adsets">Conjuntos de Anúncios</TabsTrigger>
-          <TabsTrigger value="ads">Anúncios</TabsTrigger>
+          {hasCredentials && (
+            <>
+              <TabsTrigger value="campaigns">Campanhas</TabsTrigger>
+              <TabsTrigger value="adsets">Conjuntos de Anúncios</TabsTrigger>
+              <TabsTrigger value="ads">Anúncios</TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="accounts">
@@ -50,38 +59,42 @@ const Dashboard = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="campaigns">
-          <Card>
-            <CardHeader>
-              <CardTitle>Campanhas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CampaignsList />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {hasCredentials && (
+          <>
+            <TabsContent value="campaigns">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Campanhas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CampaignsList />
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        <TabsContent value="adsets">
-          <Card>
-            <CardHeader>
-              <CardTitle>Conjuntos de Anúncios</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AdSetsList />
-            </CardContent>
-          </Card>
-        </TabsContent>
+            <TabsContent value="adsets">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Conjuntos de Anúncios</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AdSetsList />
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        <TabsContent value="ads">
-          <Card>
-            <CardHeader>
-              <CardTitle>Anúncios</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AdsList />
-            </CardContent>
-          </Card>
-        </TabsContent>
+            <TabsContent value="ads">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Anúncios</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AdsList />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </>
+        )}
       </Tabs>
     </div>
   );
