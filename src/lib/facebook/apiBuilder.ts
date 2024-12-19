@@ -67,6 +67,6 @@ export const buildAdsEndpoint = (
   return endpoint;
 };
 
-export const buildAdPreviewEndpoint = (adId: string, adFormat: string = "DESKTOP_FEED_STANDARD"): string => {
-  return `${adId}/previews?ad_format=${adFormat}`;
+export const buildAdPreviewEndpoint = (accountId: string, adId: string, adFormat: string = "DESKTOP_FEED_STANDARD"): string => {
+  return `act_${accountId}/generatepreviews?creative={"object_story_id":"${adId}"}&ad_format=${adFormat}`;
 };

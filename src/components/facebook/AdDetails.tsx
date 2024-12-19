@@ -28,20 +28,30 @@ export const AdDetails = ({ ad, isOpen, onClose }: AdDetailsProps) => {
 
   useEffect(() => {
     const fetchPreview = async () => {
-      if (!ad?.id || !ad?.account_access_token) return;
+      if (!ad?.id || !ad?.account_id || !ad?.account_access_token) {
+        console.error('Missing required ad data for preview:', { ad });
+        return;
+      }
       
       try {
-        const endpoint = buildAdPreviewEndpoint(ad.id, selectedFormat);
+        const endpoint = buildAdPreviewEndpoint(ad.account_id, ad.id, selectedFormat);
         const response = await fetchFacebookData(endpoint, ad.account_access_token);
         
         if (response.data?.[0]?.body) {
           setPreviewHtml(response.data[0].body);
+        } else {
+          console.error('Invalid preview response:', response);
+          toast({
+            title: "Error",
+            description: "Failed to generate ad preview. The response format was invalid.",
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error('Error fetching ad preview:', error);
         toast({
           title: "Error",
-          description: "Failed to load ad preview. Please verify your Facebook access token.",
+          description: "Failed to generate ad preview. Please verify your Facebook access token and permissions.",
           variant: "destructive",
         });
       }
