@@ -48,13 +48,21 @@ export const getFacebookCredentials = async () => {
   return data;
 };
 
-const buildInsightsFields = (metrics: Metric[]) => {
+const buildInsightsFields = (metrics: Metric[], dateRange?: DateRange) => {
   const basicFields = ['name', 'status', 'objective'];
   const insightsFields = metrics
     .filter(metric => !basicFields.includes(metric.field))
     .map(metric => metric.field);
   
-  return [...basicFields, `insights.time_range(since,until){${insightsFields.join(',')}}`].join(',');
+  if (dateRange?.from && dateRange?.to) {
+    const timeRange = {
+      since: format(dateRange.from, 'yyyy-MM-dd'),
+      until: format(dateRange.to, 'yyyy-MM-dd'),
+    };
+    return [...basicFields, `insights{${insightsFields.join(',')}}`].join(',') + `&time_range=${JSON.stringify(timeRange)}`;
+  }
+  
+  return [...basicFields, `insights{${insightsFields.join(',')}}`].join(',');
 };
 
 export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: DateRange) => {
@@ -62,19 +70,10 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
     const credentials = await getFacebookCredentials();
     const { account_id, access_token } = credentials;
 
-    const fields = buildInsightsFields(selectedMetrics);
-    let endpoint = `${account_id}/campaigns?fields=${fields}`;
+    const fields = buildInsightsFields(selectedMetrics, dateRange);
+    const endpoint = `${account_id}/campaigns?fields=${fields}`;
     
-    if (dateRange?.from && dateRange?.to) {
-      const timeRange = {
-        since: format(dateRange.from, 'yyyy-MM-dd'),
-        until: format(dateRange.to, 'yyyy-MM-dd'),
-      };
-      endpoint += `&time_range=${JSON.stringify(timeRange)}`;
-    }
-
-    console.log("Fetching campaigns with fields:", fields);
-    console.log("Time range:", dateRange);
+    console.log("Fetching campaigns with endpoint:", endpoint);
     
     const response = await fetchFacebookData(endpoint, access_token);
     
