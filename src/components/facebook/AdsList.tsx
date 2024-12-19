@@ -20,13 +20,15 @@ export const AdsList = () => {
       return false;
     },
     retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000), // Exponential backoff
-    onError: (error: any) => {
-      if (error?.code === 17) {
-        toast({
-          title: "Limite de requisições atingido",
-          description: "Aguarde alguns segundos e tente novamente.",
-          variant: "destructive",
-        });
+    meta: {
+      onError: (error: any) => {
+        if (error?.code === 17) {
+          toast({
+            title: "Limite de requisições atingido",
+            description: "Aguarde alguns segundos e tente novamente.",
+            variant: "destructive",
+          });
+        }
       }
     }
   });
