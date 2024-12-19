@@ -45,36 +45,16 @@ export const CampaignsList = ({ dateRange }: CampaignsListProps) => {
     );
   }
 
-  const metrics = {
-    budget: { id: 'budget', name: 'Orçamento', field: 'budget' },
-    sales: { id: 'sales', name: 'Vendas', field: 'sales' },
-    cpa: { id: 'cpa', name: 'CPA', field: 'cpa' },
-    spend: { id: 'spend', name: 'Gastos', field: 'spend' },
-    revenue: { id: 'revenue', name: 'Faturamento', field: 'revenue' },
-    profit: { id: 'profit', name: 'Lucro', field: 'profit' },
-    roas: { id: 'roas', name: 'ROAS', field: 'roas' },
-    margin: { id: 'margin', name: 'Margem', field: 'margin' },
-    roi: { id: 'roi', name: 'ROI', field: 'roi' },
-    ic: { id: 'ic', name: 'IC', field: 'ic' }
-  };
-
   return (
     <div className="space-y-4">
       <Table>
         <TableHeader>
           <TableRow className="border-gray-700">
-            <TableHead className="text-gray-400">STATUS</TableHead>
-            <TableHead className="text-gray-400">CAMPANHA</TableHead>
-            <TableHead className="text-gray-400">ORÇAMENTO</TableHead>
-            <TableHead className="text-gray-400">VENDAS</TableHead>
-            <TableHead className="text-gray-400">CPA</TableHead>
-            <TableHead className="text-gray-400">GASTOS</TableHead>
-            <TableHead className="text-gray-400">FATURAMENTO</TableHead>
-            <TableHead className="text-gray-400">LUCRO</TableHead>
-            <TableHead className="text-gray-400">ROAS</TableHead>
-            <TableHead className="text-gray-400">MARGEM</TableHead>
-            <TableHead className="text-gray-400">ROI</TableHead>
-            <TableHead className="text-gray-400">IC</TableHead>
+            {selectedMetrics.map((metric) => (
+              <TableHead key={metric.id} className="text-gray-400">
+                {metric.name.toUpperCase()}
+              </TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -89,42 +69,15 @@ export const CampaignsList = ({ dateRange }: CampaignsListProps) => {
                 )}
                 onClick={() => handleRowClick(campaign.id)}
               >
-                <TableCell className="text-gray-400">{campaign.status}</TableCell>
-                <TableCell className="text-gray-400">{campaign.name}</TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.budget} metric={metrics.budget} />
-                </TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.sales} metric={metrics.sales} />
-                </TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.cpa} metric={metrics.cpa} />
-                </TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.spend} metric={metrics.spend} />
-                </TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.revenue} metric={metrics.revenue} />
-                </TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.profit} metric={metrics.profit} />
-                </TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.roas} metric={metrics.roas} />
-                </TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.margin} metric={metrics.margin} />
-                </TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.roi} metric={metrics.roi} />
-                </TableCell>
-                <TableCell className="text-gray-400">
-                  <MetricValue value={campaign.ic} metric={metrics.ic} />
-                </TableCell>
+                {selectedMetrics.map((metric) => (
+                  <TableCell key={metric.id} className="text-gray-400">
+                    <MetricValue value={campaign[metric.field]} metric={metric} />
+                  </TableCell>
+                ))}
               </TableRow>
               {selectedCampaignId === campaign.id && (
                 <TableRow>
-                  <TableCell colSpan={12}>
+                  <TableCell colSpan={selectedMetrics.length}>
                     <CampaignDetails 
                       campaignId={campaign.id}
                       dateRange={dateRange}

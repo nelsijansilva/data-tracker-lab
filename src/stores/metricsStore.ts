@@ -8,10 +8,18 @@ interface MetricsState {
 
 export const useMetricsStore = create<MetricsState>((set) => ({
   selectedMetrics: [
-    { id: "name", name: "Nome", field: "name" },
     { id: "status", name: "Status", field: "status" },
-    { id: "objective", name: "Objetivo", field: "objective" },
-    { id: "spend", name: "Gasto", field: "spend" },
+    { id: "name", name: "Campanha", field: "name" },
+    { id: "budget", name: "Orçamento", field: "budget" },
+    { id: "sales", name: "Vendas", field: "sales" },
+    { id: "cpa", name: "CPA", field: "cpa" },
+    { id: "spend", name: "Gastos", field: "spend" },
+    { id: "revenue", name: "Faturamento", field: "revenue" },
+    { id: "profit", name: "Lucro", field: "profit" },
+    { id: "roas", name: "ROAS", field: "roas" },
+    { id: "margin", name: "Margem", field: "margin" },
+    { id: "roi", name: "ROI", field: "roi" },
+    { id: "ic", name: "IC", field: "ic" }
   ],
   setSelectedMetrics: (metrics) => set({ selectedMetrics: metrics }),
 }));
