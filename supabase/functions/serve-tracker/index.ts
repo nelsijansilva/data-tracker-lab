@@ -3,12 +3,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, Origin',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Content-Type': 'application/javascript',
   'Cache-Control': 'public, max-age=14400', // 4 hours cache
-  'Cross-Origin-Resource-Policy': 'cross-origin',
-  'Cross-Origin-Embedder-Policy': 'credentialless'
 };
 
 serve(async (req) => {
@@ -24,16 +22,14 @@ serve(async (req) => {
     });
   }
 
-  console.log('Serving tracker script');
-
   // Get domain from request
   const url = new URL(req.url);
   const domain = url.searchParams.get('domain') || url.headers.get('referer') || 'unknown';
 
-  // Initialize Supabase client
+  // Initialize Supabase client with anon key
   const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
-  const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') as string;
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') as string;
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   try {
     // Log tracking request
@@ -44,6 +40,7 @@ serve(async (req) => {
     console.log('Logged tracking request for domain:', domain);
   } catch (error) {
     console.error('Error logging tracking request:', error);
+    // Continue even if logging fails
   }
 
   const script = `
@@ -67,7 +64,6 @@ serve(async (req) => {
         n.queue=[];
         t=b.createElement(e);
         t.async=!0;
-        t.crossOrigin="anonymous";
         t.src=v;
         s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)
@@ -94,7 +90,6 @@ serve(async (req) => {
         }
       });
 
-      // Start observing DOM changes
       observer.observe(document.body, {
         childList: true,
         subtree: true
@@ -117,7 +112,5 @@ serve(async (req) => {
     }();
   `;
 
-  return new Response(script, {
-    headers: corsHeaders
-  });
+  return new Response(script, { headers: corsHeaders });
 });
