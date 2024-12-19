@@ -5,7 +5,9 @@ import { CampaignsList } from "@/components/facebook/CampaignsList";
 import { AdSetsList } from "@/components/facebook/AdSetsList";
 import { AdsList } from "@/components/facebook/AdsList";
 import { AccountsList } from "@/components/facebook/AccountsList";
+import { CustomMetricsDashboard } from "@/components/facebook/CustomMetricsDashboard";
 import { supabase } from "@/integrations/supabase/client";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 const Dashboard = () => {
   const { data: hasCredentials, isLoading } = useQuery({
@@ -26,76 +28,86 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-8 flex items-center justify-center">
+      <div className="container mx-auto p-4 flex items-center justify-center">
         <p>Carregando...</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-8">Facebook Ads Dashboard</h1>
-      
-      <Tabs defaultValue="accounts" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="accounts">Contas</TabsTrigger>
-          {hasCredentials && (
-            <>
-              <TabsTrigger value="campaigns">Campanhas</TabsTrigger>
-              <TabsTrigger value="adsets">Conjuntos de Anúncios</TabsTrigger>
-              <TabsTrigger value="ads">Anúncios</TabsTrigger>
-            </>
-          )}
-        </TabsList>
+    <div className="h-screen bg-background">
+      <div className="border-b">
+        <div className="container mx-auto py-4">
+          <h1 className="text-2xl font-bold">Facebook Ads Manager</h1>
+        </div>
+      </div>
 
-        <TabsContent value="accounts">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gerenciar Contas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AccountsList />
-            </CardContent>
-          </Card>
-        </TabsContent>
+      <div className="container mx-auto py-4">
+        <Tabs defaultValue="campaigns" className="space-y-4">
+          <div className="border-b">
+            <TabsList className="w-full justify-start gap-4 h-12">
+              <TabsTrigger value="accounts" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Contas
+              </TabsTrigger>
+              {hasCredentials && (
+                <>
+                  <TabsTrigger value="campaigns" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    Campanhas
+                  </TabsTrigger>
+                  <TabsTrigger value="adsets" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    Conjuntos de Anúncios
+                  </TabsTrigger>
+                  <TabsTrigger value="ads" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    Anúncios
+                  </TabsTrigger>
+                  <TabsTrigger value="custom-metrics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    Métricas Personalizadas
+                  </TabsTrigger>
+                </>
+              )}
+            </TabsList>
+          </div>
 
-        {hasCredentials && (
-          <>
-            <TabsContent value="campaigns">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Campanhas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CampaignsList />
-                </CardContent>
-              </Card>
-            </TabsContent>
+          <ResizablePanelGroup direction="horizontal" className="min-h-[800px] rounded-lg border">
+            <ResizablePanel defaultSize={20} minSize={15}>
+              <div className="p-4 h-full">
+                <h3 className="font-medium mb-4">Filtros</h3>
+                {/* Filtros serão adicionados aqui */}
+              </div>
+            </ResizablePanel>
+            
+            <ResizableHandle withHandle />
+            
+            <ResizablePanel defaultSize={80}>
+              <div className="p-4 h-full">
+                <TabsContent value="accounts">
+                  <AccountsList />
+                </TabsContent>
 
-            <TabsContent value="adsets">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Conjuntos de Anúncios</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <AdSetsList />
-                </CardContent>
-              </Card>
-            </TabsContent>
+                {hasCredentials && (
+                  <>
+                    <TabsContent value="campaigns">
+                      <CampaignsList />
+                    </TabsContent>
 
-            <TabsContent value="ads">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Anúncios</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <AdsList />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </>
-        )}
-      </Tabs>
+                    <TabsContent value="adsets">
+                      <AdSetsList />
+                    </TabsContent>
+
+                    <TabsContent value="ads">
+                      <AdsList />
+                    </TabsContent>
+
+                    <TabsContent value="custom-metrics">
+                      <CustomMetricsDashboard />
+                    </TabsContent>
+                  </>
+                )}
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </Tabs>
+      </div>
     </div>
   );
 };
