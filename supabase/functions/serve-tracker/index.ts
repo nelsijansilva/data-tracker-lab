@@ -10,6 +10,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('Received request:', req.url);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -25,6 +27,8 @@ serve(async (req) => {
   // Get domain from request
   const url = new URL(req.url);
   const domain = url.searchParams.get('domain') || url.headers.get('referer') || 'unknown';
+  
+  console.log('Processing request for domain:', domain);
 
   // Initialize Supabase client with anon key
   const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
@@ -50,6 +54,8 @@ serve(async (req) => {
         console.error("Facebook Pixel ID not found");
         return;
       }
+
+      console.log("Initializing Facebook Pixel with ID:", e);
 
       // Initialize Facebook Pixel
       !function(f,b,e,v,n,t,s) {
@@ -82,6 +88,7 @@ serve(async (req) => {
         var newPath = window.location.pathname;
         if (newPath !== currentPath) {
           currentPath = newPath;
+          console.log("Tracking page view:", newPath);
           fbq('trackCustom', 'PageView', {
             path: newPath,
             title: document.title,
@@ -99,6 +106,12 @@ serve(async (req) => {
       document.addEventListener('click', function(event) {
         var target = event.target;
         if (target && target.tagName) {
+          console.log("Tracking click event:", {
+            element: target.tagName.toLowerCase(),
+            path: window.location.pathname,
+            text: target.textContent?.trim() || ''
+          });
+          
           fbq('trackCustom', 'Click', {
             element: target.tagName.toLowerCase(),
             path: window.location.pathname,
@@ -112,5 +125,11 @@ serve(async (req) => {
     }();
   `;
 
-  return new Response(script, { headers: corsHeaders });
+  return new Response(script, { 
+    headers: {
+      ...corsHeaders,
+      'Content-Type': 'application/javascript',
+      'Cache-Control': 'public, max-age=14400', // 4 hours cache
+    } 
+  });
 });
