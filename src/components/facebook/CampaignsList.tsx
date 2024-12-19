@@ -2,16 +2,18 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampaigns } from "@/lib/facebook/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrendingUp, TrendingDown, DollarSign, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useMetricsStore } from "@/stores/metricsStore";
 import type { Metric } from "@/components/facebook/MetricSelector";
+import { CampaignDetails } from "./CampaignDetails";
 
 export const CampaignsList = () => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   
   const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
@@ -93,6 +95,10 @@ export const CampaignsList = () => {
     return value;
   };
 
+  const handleRowClick = (campaignId: string) => {
+    setSelectedCampaign(selectedCampaign === campaignId ? null : campaignId);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end items-center gap-4">
@@ -105,6 +111,7 @@ export const CampaignsList = () => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-8"></TableHead>
             {selectedMetrics.map((metric) => (
               <TableHead key={metric.id}>{metric.name}</TableHead>
             ))}
@@ -112,13 +119,37 @@ export const CampaignsList = () => {
         </TableHeader>
         <TableBody>
           {campaigns?.map((campaign: any) => (
-            <TableRow key={campaign.id}>
-              {selectedMetrics.map((metric) => (
-                <TableCell key={`${campaign.id}-${metric.id}`}>
-                  {formatMetricValue(calculateMetricValue(campaign, metric), metric)}
+            <>
+              <TableRow 
+                key={campaign.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleRowClick(campaign.id)}
+              >
+                <TableCell>
+                  {selectedCampaign === campaign.id ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
                 </TableCell>
-              ))}
-            </TableRow>
+                {selectedMetrics.map((metric) => (
+                  <TableCell key={`${campaign.id}-${metric.id}`}>
+                    {formatMetricValue(calculateMetricValue(campaign, metric), metric)}
+                  </TableCell>
+                ))}
+              </TableRow>
+              {selectedCampaign === campaign.id && (
+                <TableRow>
+                  <TableCell colSpan={selectedMetrics.length + 1}>
+                    <CampaignDetails 
+                      campaignId={campaign.id} 
+                      dateRange={dateRange}
+                      selectedMetrics={selectedMetrics}
+                    />
+                  </TableCell>
+                </TableRow>
+              )}
+            </>
           ))}
         </TableBody>
       </Table>

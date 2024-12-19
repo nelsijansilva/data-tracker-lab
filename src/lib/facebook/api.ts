@@ -111,17 +111,43 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
   }
 };
 
-export const fetchAdSets = async () => {
+export const fetchAdSets = async (campaignId: string, selectedMetrics: Metric[], dateRange?: DateRange) => {
   try {
     const credentials = await getFacebookCredentials();
     const { account_id, access_token } = credentials;
 
-    const response = await fetchFacebookData(
-      `${account_id}/adsets?fields=name,status,budget_remaining,daily_budget,lifetime_budget,campaign`,
-      access_token
-    );
+    const fields = buildInsightsFields(selectedMetrics, dateRange);
+    const endpoint = `${account_id}/adsets?fields=${fields}&filtering=[{"field":"campaign.id","operator":"EQUAL","value":"${campaignId}"}]`;
+    
+    console.log("Fetching ad sets with endpoint:", endpoint);
+    
+    const response = await fetchFacebookData(endpoint, access_token);
 
-    return response.data;
+    if (!response.data) {
+      throw new Error('Nenhum conjunto de anúncios encontrado');
+    }
+
+    return response.data.map((adSet: any) => {
+      const result: any = {
+        id: adSet.id,
+        name: adSet.name,
+        status: adSet.status,
+        daily_budget: adSet.daily_budget,
+        lifetime_budget: adSet.lifetime_budget,
+        budget_remaining: adSet.budget_remaining
+      };
+
+      if (adSet.insights?.data?.[0]) {
+        const insights = adSet.insights.data[0];
+        selectedMetrics.forEach(metric => {
+          if (!['name', 'status', 'daily_budget', 'lifetime_budget', 'budget_remaining'].includes(metric.field)) {
+            result[metric.field] = insights[metric.field] || 0;
+          }
+        });
+      }
+
+      return result;
+    });
   } catch (error: any) {
     console.error('Error fetching ad sets:', error);
     throw error;
