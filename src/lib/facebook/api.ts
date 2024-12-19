@@ -49,20 +49,36 @@ export const getFacebookCredentials = async () => {
 };
 
 const buildInsightsFields = (metrics: Metric[], dateRange?: DateRange) => {
+  // Separate basic fields from insights fields
   const basicFields = ['name', 'status', 'objective'];
   const insightsFields = metrics
     .filter(metric => !basicFields.includes(metric.field))
-    .map(metric => metric.field);
+    .map(metric => {
+      // Remove bid_strategy from insights fields as it's not a valid metric
+      if (metric.field === 'bid_strategy') return null;
+      return metric.field;
+    })
+    .filter(Boolean); // Remove null values
+
+  let fields = basicFields;
   
+  // Only add insights if there are valid insights fields
+  if (insightsFields.length > 0) {
+    fields.push(`insights{${insightsFields.join(',')}}`);
+  }
+
+  let endpoint = fields.join(',');
+  
+  // Add time range if provided
   if (dateRange?.from && dateRange?.to) {
     const timeRange = {
       since: format(dateRange.from, 'yyyy-MM-dd'),
       until: format(dateRange.to, 'yyyy-MM-dd'),
     };
-    return [...basicFields, `insights{${insightsFields.join(',')}}`].join(',') + `&time_range=${JSON.stringify(timeRange)}`;
+    endpoint += `&time_range=${JSON.stringify(timeRange)}`;
   }
   
-  return [...basicFields, `insights{${insightsFields.join(',')}}`].join(',');
+  return endpoint;
 };
 
 export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: DateRange) => {
@@ -89,10 +105,15 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
         objective: campaign.objective,
       };
 
+      // Handle bid_strategy separately as it's a campaign-level field
+      if (selectedMetrics.some(m => m.field === 'bid_strategy')) {
+        result.bid_strategy = campaign.bid_strategy;
+      }
+
       if (campaign.insights?.data?.[0]) {
         const insights = campaign.insights.data[0];
         selectedMetrics.forEach(metric => {
-          if (!['name', 'status', 'objective'].includes(metric.field)) {
+          if (!['name', 'status', 'objective', 'bid_strategy'].includes(metric.field)) {
             if (Array.isArray(insights[metric.field])) {
               result[metric.field] = insights[metric.field][0]?.value || 0;
             } else {
