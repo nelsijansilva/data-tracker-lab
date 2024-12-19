@@ -4,11 +4,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DollarSign } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { addDays } from "date-fns";
+import { useMetricsStore } from "@/stores/metricsStore";
 
 export const AdSetsList = () => {
+  const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
+  const defaultDateRange = {
+    from: addDays(new Date(), -30),
+    to: new Date(),
+  };
+
   const { data: adSets, isLoading, error } = useQuery({
-    queryKey: ['adSets'],
-    queryFn: fetchAdSets
+    queryKey: ['adSets', selectedMetrics, defaultDateRange?.from, defaultDateRange?.to],
+    queryFn: () => fetchAdSets(undefined, selectedMetrics, defaultDateRange),
+    enabled: selectedMetrics.length > 0,
   });
 
   if (isLoading) return <div>Carregando conjuntos de anúncios...</div>;
