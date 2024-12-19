@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCheckboxList } from "./MetricCheckboxList";
 import { SelectedMetricsList } from "./SelectedMetricsList";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useMetricsStore } from "@/stores/metricsStore";
+import { toast } from "sonner";
 
 export type Metric = {
   id: string;
@@ -12,54 +16,51 @@ export type Metric = {
   isCustom?: boolean;
 };
 
-// Updated metrics to use only valid Facebook Insights API fields
-// Reference: https://developers.facebook.com/docs/marketing-api/reference/ads-insights/
-const DEFAULT_METRICS: Metric[] = [
-  { id: "name", name: "Nome", field: "name" },
-  { id: "status", name: "Status", field: "status" },
-  { id: "objective", name: "Objetivo", field: "objective" },
-  { id: "daily_budget", name: "Orçamento Diário", field: "daily_budget" },
-  { id: "lifetime_budget", name: "Orçamento Total", field: "lifetime_budget" },
-  { id: "budget_remaining", name: "Orçamento Restante", field: "budget_remaining" },
-  { id: "spend", name: "Gastos", field: "spend" },
-  { id: "impressions", name: "Impressões", field: "impressions" },
-  { id: "reach", name: "Alcance", field: "reach" },
-  { id: "clicks", name: "Cliques", field: "clicks" },
-  { id: "cpc", name: "CPC", field: "cpc" },
-  { id: "cpm", name: "CPM", field: "cpm" },
-  { id: "ctr", name: "CTR", field: "ctr" },
-  { id: "frequency", name: "Frequência", field: "frequency" },
-  { id: "cost_per_unique_click", name: "Custo por Clique Único", field: "cost_per_unique_click" },
-  { id: "unique_clicks", name: "Cliques Únicos", field: "unique_clicks" },
-  { id: "unique_ctr", name: "CTR Único", field: "unique_ctr" },
-  { id: "cost_per_action_type", name: "Custo por Ação", field: "cost_per_action_type" },
-  { id: "actions", name: "Ações", field: "actions" }
-];
+export const MetricSelector = () => {
+  const { 
+    metrics,
+    selectedMetrics,
+    setSelectedMetrics,
+    addMetric,
+    deleteMetric,
+    fetchMetrics
+  } = useMetricsStore();
 
-interface MetricSelectorProps {
-  selectedMetrics: Metric[];
-  onMetricsChange: (metrics: Metric[]) => void;
-}
+  const [newMetricName, setNewMetricName] = useState('');
+  const [newMetricField, setNewMetricField] = useState('');
 
-export const MetricSelector = ({
-  selectedMetrics,
-  onMetricsChange,
-}: MetricSelectorProps) => {
+  React.useEffect(() => {
+    fetchMetrics();
+  }, [fetchMetrics]);
+
   const handleToggleMetric = (metric: Metric) => {
     const isSelected = selectedMetrics.some((m) => m.id === metric.id);
     if (isSelected) {
-      onMetricsChange(selectedMetrics.filter((m) => m.id !== metric.id));
+      setSelectedMetrics(selectedMetrics.filter((m) => m.id !== metric.id));
     } else {
-      onMetricsChange([...selectedMetrics, metric]);
+      setSelectedMetrics([...selectedMetrics, metric]);
     }
   };
 
-  const handleRemoveMetric = (metricId: string) => {
-    onMetricsChange(selectedMetrics.filter((m) => m.id !== metricId));
-  };
+  const handleAddMetric = async () => {
+    if (!newMetricName || !newMetricField) {
+      toast.error('Por favor, preencha todos os campos');
+      return;
+    }
 
-  const handleReorderMetrics = (newMetrics: Metric[]) => {
-    onMetricsChange(newMetrics);
+    try {
+      await addMetric({
+        name: newMetricName,
+        field: newMetricField,
+        isCustom: true
+      });
+      
+      setNewMetricName('');
+      setNewMetricField('');
+      toast.success('Métrica adicionada com sucesso');
+    } catch (error) {
+      toast.error('Erro ao adicionar métrica');
+    }
   };
 
   return (
@@ -68,20 +69,43 @@ export const MetricSelector = ({
         <CardTitle className="text-xl font-semibold text-white">
           Personalizar Métricas
         </CardTitle>
-        <button className="text-gray-400 hover:text-white">
-          <X className="h-5 w-5" />
-        </button>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-8">
           <div>
+            <div className="mb-6 space-y-4">
+              <h3 className="text-sm font-medium text-gray-400">
+                Adicionar Nova Métrica
+              </h3>
+              <div className="space-y-2">
+                <Input
+                  placeholder="Nome da Métrica"
+                  value={newMetricName}
+                  onChange={(e) => setNewMetricName(e.target.value)}
+                  className="bg-[#2a2f3d] border-gray-700 text-white"
+                />
+                <Input
+                  placeholder="Campo da API (ex: clicks, impressions)"
+                  value={newMetricField}
+                  onChange={(e) => setNewMetricField(e.target.value)}
+                  className="bg-[#2a2f3d] border-gray-700 text-white"
+                />
+                <Button 
+                  onClick={handleAddMetric}
+                  className="w-full bg-primary hover:bg-primary-hover text-white"
+                >
+                  Adicionar Métrica
+                </Button>
+              </div>
+            </div>
             <h3 className="text-sm font-medium text-gray-400 mb-4">
-              Escolha como você quer visualizar as colunas na tabela
+              Métricas Disponíveis
             </h3>
             <MetricCheckboxList
-              metrics={DEFAULT_METRICS}
+              metrics={metrics}
               selectedMetrics={selectedMetrics}
               onToggleMetric={handleToggleMetric}
+              onDeleteMetric={deleteMetric}
             />
           </div>
           <div>
@@ -90,8 +114,7 @@ export const MetricSelector = ({
             </h3>
             <SelectedMetricsList
               selectedMetrics={selectedMetrics}
-              onRemoveMetric={handleRemoveMetric}
-              onReorderMetrics={handleReorderMetrics}
+              onRemoveMetric={(id) => handleToggleMetric(metrics.find(m => m.id === id)!)}
             />
           </div>
         </div>

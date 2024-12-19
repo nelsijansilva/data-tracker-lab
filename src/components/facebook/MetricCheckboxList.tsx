@@ -4,25 +4,24 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Metric } from "./MetricSelector";
-import { useMetricsStore } from "@/stores/metricsStore";
 
 interface MetricCheckboxListProps {
   metrics: Metric[];
   selectedMetrics: Metric[];
   onToggleMetric: (metric: Metric) => void;
+  onDeleteMetric: (id: string) => Promise<void>;
 }
 
 export const MetricCheckboxList = ({
   metrics,
   selectedMetrics,
   onToggleMetric,
+  onDeleteMetric,
 }: MetricCheckboxListProps) => {
-  const { deleteMetric } = useMetricsStore();
-
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm('Tem certeza que deseja deletar esta métrica?')) {
-      await deleteMetric(id);
+      await onDeleteMetric(id);
     }
   };
 
@@ -44,14 +43,16 @@ export const MetricCheckboxList = ({
                 {metric.name}
               </label>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={(e) => handleDelete(metric.id, e)}
-            >
-              <Trash2 className="h-4 w-4 text-red-500 hover:text-red-400" />
-            </Button>
+            {metric.isCustom && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => handleDelete(metric.id, e)}
+              >
+                <Trash2 className="h-4 w-4 text-red-500 hover:text-red-400" />
+              </Button>
+            )}
           </div>
         ))}
       </div>

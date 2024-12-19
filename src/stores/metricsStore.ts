@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface MetricsState {
+  metrics: Metric[];
   selectedMetrics: Metric[];
   setSelectedMetrics: (metrics: Metric[]) => void;
   deleteMetric: (id: string) => Promise<void>;
@@ -12,6 +13,7 @@ interface MetricsState {
 }
 
 export const useMetricsStore = create<MetricsState>((set) => ({
+  metrics: [],
   selectedMetrics: [],
   
   setSelectedMetrics: (metrics) => set({ selectedMetrics: metrics }),
@@ -35,7 +37,7 @@ export const useMetricsStore = create<MetricsState>((set) => ({
       isCustom: m.is_custom
     }));
 
-    set({ selectedMetrics: metrics });
+    set({ metrics });
   },
 
   deleteMetric: async (id: string) => {
@@ -52,6 +54,7 @@ export const useMetricsStore = create<MetricsState>((set) => ({
 
     toast.success('Métrica deletada com sucesso');
     set(state => ({
+      metrics: state.metrics.filter(m => m.id !== id),
       selectedMetrics: state.selectedMetrics.filter(m => m.id !== id)
     }));
   },
@@ -75,7 +78,7 @@ export const useMetricsStore = create<MetricsState>((set) => ({
 
     toast.success('Métrica adicionada com sucesso');
     set(state => ({
-      selectedMetrics: [...state.selectedMetrics, {
+      metrics: [...state.metrics, {
         id: data.id,
         name: data.name,
         field: data.field,
