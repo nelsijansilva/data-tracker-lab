@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCampaigns } from "@/lib/facebook/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,6 +8,7 @@ import { addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useMetricsStore } from "@/stores/metricsStore";
+import type { Metric } from "@/components/facebook/MetricSelector";
 
 export const CampaignsList = () => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
