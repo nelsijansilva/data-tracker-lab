@@ -13,25 +13,20 @@ export type Metric = {
 };
 
 const DEFAULT_METRICS: Metric[] = [
-  { id: "budget", name: "Orçamento", field: "budget" },
-  { id: "cpa", name: "CPA", field: "cpa" },
-  { id: "product_cost", name: "Custos de Produto", field: "product_cost" },
-  { id: "conversations", name: "[Conversas] - Conversas Iniciadas", field: "conversations" },
-  { id: "conversation_cost", name: "[Custo / Conversa] - Custo por Conversa Iniciada", field: "conversation_cost" },
-  { id: "sales", name: "Vendas", field: "sales" },
+  { id: "name", name: "Nome", field: "name" },
+  { id: "status", name: "Status", field: "status" },
+  { id: "objective", name: "Objetivo", field: "objective" },
+  { id: "daily_budget", name: "Orçamento Diário", field: "daily_budget" },
+  { id: "lifetime_budget", name: "Orçamento Total", field: "lifetime_budget" },
+  { id: "budget_remaining", name: "Orçamento Restante", field: "budget_remaining" },
   { id: "spend", name: "Gastos", field: "spend" },
-  { id: "revenue", name: "Faturamento", field: "revenue" },
-  { id: "profit", name: "Lucro", field: "profit" },
-  { id: "roas", name: "ROAS", field: "roas" },
-  { id: "margin", name: "Margem", field: "margin" },
-  { id: "roi", name: "ROI", field: "roi" },
-  { id: "ic", name: "[IC] - Finalização de compra iniciada", field: "ic" },
-  { id: "registrations", name: "Cadastros", field: "registrations" },
-  { id: "cpl", name: "[CPL] - Custo por Cadastro", field: "cpl" },
-  { id: "cpi", name: "[CPI] - Custo por finalização de compra iniciada", field: "cpi" },
-  { id: "cpc", name: "[CPC] - Custo por clique", field: "cpc" },
+  { id: "impressions", name: "Impressões", field: "impressions" },
+  { id: "clicks", name: "Cliques", field: "clicks" },
+  { id: "cpc", name: "CPC", field: "cpc" },
   { id: "ctr", name: "CTR", field: "ctr" },
   { id: "cpm", name: "CPM", field: "cpm" },
+  { id: "reach", name: "Alcance", field: "reach" },
+  { id: "frequency", name: "Frequência", field: "frequency" },
 ];
 
 interface MetricSelectorProps {

@@ -1,60 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Metric } from "@/components/facebook/MetricSelector";
 import type { DateRange } from "react-day-picker";
-import { format } from "date-fns";
-
-const FB_API_VERSION = 'v18.0'; // Downgrading to a more stable version
-const FB_BASE_URL = `https://graph.facebook.com/${FB_API_VERSION}`;
-
-const REQUIRED_PERMISSIONS = [
-  'ads_read',
-  'ads_management',
-  'read_insights'
-];
-
-export const fetchFacebookData = async (endpoint: string, accessToken: string) => {
-  try {
-    console.log('Making Facebook API request to:', `${FB_BASE_URL}/${endpoint}`);
-    
-    const response = await fetch(`${FB_BASE_URL}/${endpoint}`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      mode: 'cors',
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      console.error('Facebook API error response:', data);
-      
-      const error: any = new Error(data.error?.message || 'Erro na API do Facebook');
-      error.code = data.error?.code;
-      error.status = response.status;
-      
-      if (data.error?.code === 17) {
-        error.message = 'Limite de requisições atingido. Por favor, aguarde alguns segundos e tente novamente.';
-      } else if (data.error?.code === 100) {
-        error.message = `Permissões insuficientes do Facebook. Por favor, verifique se seu token de acesso tem as permissões necessárias: ${REQUIRED_PERMISSIONS.join(', ')}`;
-      } else if (data.error?.code === 190) {
-        error.message = 'Token de acesso inválido ou expirado. Por favor, atualize suas credenciais.';
-      } else if (!response.ok) {
-        error.message = `Erro na API do Facebook: ${data.error?.message || 'Erro desconhecido'}`;
-      }
-      
-      throw error;
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error: any) {
-    console.error('Facebook API request failed:', error);
-    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      throw new Error('Não foi possível conectar à API do Facebook. Por favor, verifique sua conexão com a internet e tente novamente.');
-    }
-    throw error;
-  }
-};
+import { buildCampaignsEndpoint, buildAdSetsEndpoint } from "./apiBuilder";
+import { FB_BASE_URL } from "./config";
+import { handleFacebookError } from "./errors";
 
 export const getFacebookCredentials = async () => {
   const { data, error } = await supabase
@@ -76,23 +25,30 @@ export const getFacebookCredentials = async () => {
   return data;
 };
 
-const buildInsightsFields = (metrics: Metric[], dateRange?: DateRange) => {
-  // Campos básicos que não precisam de insights
-  const basicFields = ['name', 'status', 'objective', 'daily_budget', 'lifetime_budget', 'budget_remaining'];
-  
-  // Campos que precisam de insights (métricas que variam com o tempo)
-  const insightsFields = metrics
-    .filter(metric => !basicFields.includes(metric.field))
-    .map(metric => metric.field);
+export const fetchFacebookData = async (endpoint: string, accessToken: string) => {
+  try {
+    console.log('Making Facebook API request to:', `${FB_BASE_URL}/${endpoint}`);
+    
+    const response = await fetch(`${FB_BASE_URL}/${endpoint}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+    });
 
-  let fields = basicFields.join(',');
-  
-  // Adiciona campos de insights com o período específico
-  if (insightsFields.length > 0 && dateRange?.from && dateRange?.to) {
-    fields += `,insights.time_range({"since":"${format(dateRange.from, 'yyyy-MM-dd')}","until":"${format(dateRange.to, 'yyyy-MM-dd')}"}).fields(${insightsFields.join(',')})`;
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Facebook API error response:', data);
+      handleFacebookError(data);
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error('Facebook API request failed:', error);
+    handleFacebookError(error);
   }
-  
-  return fields;
 };
 
 export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: DateRange) => {
@@ -100,9 +56,7 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
     const credentials = await getFacebookCredentials();
     const { account_id, access_token } = credentials;
 
-    const fields = buildInsightsFields(selectedMetrics, dateRange);
-    const endpoint = `${account_id}/campaigns?fields=${fields}`;
-    
+    const endpoint = buildCampaignsEndpoint(account_id, selectedMetrics, dateRange);
     console.log("Fetching campaigns with endpoint:", endpoint);
     
     const response = await fetchFacebookData(endpoint, access_token);
@@ -144,14 +98,7 @@ export const fetchAdSets = async (campaignId: string | null, selectedMetrics: Me
     const credentials = await getFacebookCredentials();
     const { account_id, access_token } = credentials;
 
-    const fields = buildInsightsFields(selectedMetrics, dateRange);
-    let endpoint = `${account_id}/adsets?fields=${fields}`;
-    
-    // Adiciona filtro de campanha apenas se um ID for fornecido
-    if (campaignId) {
-      endpoint += `&filtering=[{"field":"campaign.id","operator":"EQUAL","value":"${campaignId}"}]`;
-    }
-    
+    const endpoint = buildAdSetsEndpoint(account_id, campaignId, selectedMetrics, dateRange);
     console.log("Fetching ad sets with endpoint:", endpoint);
     
     const response = await fetchFacebookData(endpoint, access_token);
@@ -183,27 +130,6 @@ export const fetchAdSets = async (campaignId: string | null, selectedMetrics: Me
     });
   } catch (error: any) {
     console.error('Error fetching ad sets:', error);
-    throw error;
-  }
-};
-
-export const fetchAds = async () => {
-  try {
-    const credentials = await getFacebookCredentials();
-    const { account_id, access_token } = credentials;
-
-    const response = await fetchFacebookData(
-      `${account_id}/ads?fields=name,status,preview_url,adset`,
-      access_token
-    );
-
-    if (!response.data) {
-      throw new Error('Nenhum anúncio encontrado');
-    }
-
-    return response.data;
-  } catch (error: any) {
-    console.error('Error fetching ads:', error);
     throw error;
   }
 };
