@@ -20,16 +20,15 @@ export const fetchFacebookData = async (endpoint: string, accessToken: string) =
       }
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
+      const data = await response.json();
       if (data.error?.code === 100) {
         throw new Error(`Permissões insuficientes do Facebook. Por favor, verifique se seu token de acesso tem as permissões necessárias: ${REQUIRED_PERMISSIONS.join(', ')}`);
       }
       throw new Error(`Erro na API do Facebook: ${data.error?.message || 'Erro desconhecido'}`);
     }
 
-    return data;
+    return response.json();
   } catch (error: any) {
     console.error('Facebook API error:', error);
     throw new Error(error.message || 'Erro ao acessar a API do Facebook');
@@ -50,24 +49,18 @@ export const getFacebookCredentials = async () => {
 
 const buildInsightsFields = (metrics: Metric[], dateRange?: DateRange) => {
   // Separate basic fields from insights fields
-  const basicFields = ['name', 'status', 'objective'];
+  const basicFields = ['name', 'status', 'objective', 'daily_budget', 'lifetime_budget', 'budget_remaining'];
   const insightsFields = metrics
     .filter(metric => !basicFields.includes(metric.field))
-    .map(metric => {
-      // Remove bid_strategy from insights fields as it's not a valid metric
-      if (metric.field === 'bid_strategy') return null;
-      return metric.field;
-    })
-    .filter(Boolean); // Remove null values
+    .map(metric => metric.field)
+    .filter(field => !field.includes('budget')); // Remove budget-related fields from insights
 
-  let fields = basicFields;
+  let fields = basicFields.join(',');
   
   // Only add insights if there are valid insights fields
   if (insightsFields.length > 0) {
-    fields.push(`insights{${insightsFields.join(',')}}`);
+    fields += `,insights{${insightsFields.join(',')}}`;
   }
-
-  let endpoint = fields.join(',');
   
   // Add time range if provided
   if (dateRange?.from && dateRange?.to) {
@@ -75,10 +68,10 @@ const buildInsightsFields = (metrics: Metric[], dateRange?: DateRange) => {
       since: format(dateRange.from, 'yyyy-MM-dd'),
       until: format(dateRange.to, 'yyyy-MM-dd'),
     };
-    endpoint += `&time_range=${JSON.stringify(timeRange)}`;
+    fields += `&time_range=${JSON.stringify(timeRange)}`;
   }
   
-  return endpoint;
+  return fields;
 };
 
 export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: DateRange) => {
@@ -103,17 +96,15 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
         name: campaign.name,
         status: campaign.status,
         objective: campaign.objective,
+        daily_budget: campaign.daily_budget,
+        lifetime_budget: campaign.lifetime_budget,
+        budget_remaining: campaign.budget_remaining
       };
-
-      // Handle bid_strategy separately as it's a campaign-level field
-      if (selectedMetrics.some(m => m.field === 'bid_strategy')) {
-        result.bid_strategy = campaign.bid_strategy;
-      }
 
       if (campaign.insights?.data?.[0]) {
         const insights = campaign.insights.data[0];
         selectedMetrics.forEach(metric => {
-          if (!['name', 'status', 'objective', 'bid_strategy'].includes(metric.field)) {
+          if (!['name', 'status', 'objective', 'daily_budget', 'lifetime_budget', 'budget_remaining'].includes(metric.field)) {
             if (Array.isArray(insights[metric.field])) {
               result[metric.field] = insights[metric.field][0]?.value || 0;
             } else {
