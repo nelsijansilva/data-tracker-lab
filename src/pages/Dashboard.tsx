@@ -4,7 +4,6 @@ import { CampaignsList } from "@/components/facebook/CampaignsList";
 import { AccountsList } from "@/components/facebook/AccountsList";
 import { CustomMetricsDashboard } from "@/components/facebook/CustomMetricsDashboard";
 import { supabase } from "@/integrations/supabase/client";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -70,36 +69,23 @@ const Dashboard = () => {
             </TabsList>
           </div>
 
-          <ResizablePanelGroup direction="horizontal" className="min-h-[800px] rounded-lg border">
-            <ResizablePanel defaultSize={20} minSize={15}>
-              <div className="p-4 h-full">
-                <h3 className="font-medium mb-4">Filtros</h3>
-                {/* Filtros serão adicionados aqui */}
-              </div>
-            </ResizablePanel>
-            
-            <ResizableHandle withHandle />
-            
-            <ResizablePanel defaultSize={80}>
-              <div className="p-4 h-full">
-                <TabsContent value="accounts">
-                  <AccountsList />
+          <div className="p-4 h-full border rounded-lg">
+            <TabsContent value="accounts">
+              <AccountsList />
+            </TabsContent>
+
+            {hasCredentials && (
+              <>
+                <TabsContent value="campaigns">
+                  <CampaignsList />
                 </TabsContent>
 
-                {hasCredentials && (
-                  <>
-                    <TabsContent value="campaigns">
-                      <CampaignsList />
-                    </TabsContent>
-
-                    <TabsContent value="custom-metrics">
-                      <CustomMetricsDashboard />
-                    </TabsContent>
-                  </>
-                )}
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+                <TabsContent value="custom-metrics">
+                  <CustomMetricsDashboard />
+                </TabsContent>
+              </>
+            )}
+          </div>
         </Tabs>
       </div>
     </div>
