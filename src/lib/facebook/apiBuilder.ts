@@ -1,8 +1,15 @@
 import { DateRange } from "react-day-picker";
 import type { Metric } from "@/components/facebook/MetricSelector";
 
+const ensureActPrefix = (accountId: string) => {
+  // Remove act_ if it exists and add it back to ensure consistent format
+  const cleanId = accountId.replace('act_', '');
+  return `act_${cleanId}`;
+};
+
 export const buildCampaignsEndpoint = (accountId: string, selectedMetrics: Metric[], dateRange?: DateRange): string => {
-  let endpoint = `act_${accountId}/campaigns?fields=name,status`;
+  const formattedAccountId = ensureActPrefix(accountId);
+  let endpoint = `${formattedAccountId}/campaigns?fields=name,status`;
 
   if (dateRange?.from && dateRange?.to) {
     const insights = selectedMetrics
@@ -17,7 +24,8 @@ export const buildCampaignsEndpoint = (accountId: string, selectedMetrics: Metri
 };
 
 export const buildAdSetsEndpoint = (accountId: string, campaignId: string | null, selectedMetrics: Metric[], dateRange?: DateRange): string => {
-  let endpoint = `act_${accountId}/adsets?fields=name,status`;
+  const formattedAccountId = ensureActPrefix(accountId);
+  let endpoint = `${formattedAccountId}/adsets?fields=name,status`;
 
   if (dateRange?.from && dateRange?.to) {
     const insights = selectedMetrics
@@ -36,7 +44,8 @@ export const buildAdSetsEndpoint = (accountId: string, campaignId: string | null
 };
 
 export const buildAdsEndpoint = (accountId: string, adSetId: string | null, selectedMetrics: Metric[], dateRange?: DateRange): string => {
-  let endpoint = `act_${accountId}/ads?fields=name,status,creative{id,name,title,body,object_story_spec{link_data{message,link,caption,description,image_url}},asset_feed_spec{bodies,descriptions,titles,videos,images}}`;
+  const formattedAccountId = ensureActPrefix(accountId);
+  let endpoint = `${formattedAccountId}/ads?fields=name,status,creative{id,name,title,body,object_story_spec{link_data{message,link,caption,description,image_url}},asset_feed_spec{bodies,descriptions,titles,videos,images}}`;
 
   if (dateRange?.from && dateRange?.to) {
     const insights = selectedMetrics
@@ -55,5 +64,6 @@ export const buildAdsEndpoint = (accountId: string, adSetId: string | null, sele
 };
 
 export const buildAdPreviewEndpoint = (accountId: string, adId: string, adFormat: string = "DESKTOP_FEED_STANDARD"): string => {
-  return `act_${accountId}/generatepreviews?creative={"object_story_id":"${adId}"}&ad_format=${adFormat}`;
+  const formattedAccountId = ensureActPrefix(accountId);
+  return `${formattedAccountId}/generatepreviews?creative={"object_story_id":"${adId}"}&ad_format=${adFormat}`;
 };
