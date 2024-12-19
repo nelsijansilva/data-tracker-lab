@@ -13,14 +13,16 @@ const DEFAULT_METRICS: Metric[] = [
   { id: "impressions", name: "Impressões", field: "impressions" },
   { id: "clicks", name: "Cliques", field: "clicks" },
   { id: "ctr", name: "CTR", field: "ctr", formula: "clicks / impressions * 100" },
+  { id: "cpc", name: "CPC", field: "cpc", formula: "spend / clicks" },
+  { id: "cpm", name: "CPM", field: "cpm", formula: "spend / impressions * 1000" },
 ];
 
 export const CampaignsList = () => {
   const [selectedMetrics, setSelectedMetrics] = useState<Metric[]>(DEFAULT_METRICS);
   
   const { data: campaigns, isLoading, error } = useQuery({
-    queryKey: ['campaigns'],
-    queryFn: fetchCampaigns
+    queryKey: ['campaigns', selectedMetrics],
+    queryFn: () => fetchCampaigns(selectedMetrics)
   });
 
   if (isLoading) return <div>Carregando campanhas...</div>;
@@ -31,7 +33,6 @@ export const CampaignsList = () => {
       return campaign[metric.field];
     }
 
-    // Parse and evaluate the formula
     try {
       const formula = metric.formula.replace(/[a-zA-Z_]+/g, (match) => {
         return campaign[match] || 0;

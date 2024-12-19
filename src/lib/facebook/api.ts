@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Metric } from "@/components/facebook/MetricSelector";
 
 const FB_API_VERSION = 'v21.0';
 const FB_BASE_URL = `https://graph.facebook.com/${FB_API_VERSION}`;
@@ -29,29 +30,47 @@ export const getFacebookCredentials = async () => {
   return data;
 };
 
-export const fetchCampaigns = async () => {
+const buildInsightsFields = (metrics: Metric[]) => {
+  const basicFields = ['name', 'status', 'objective'];
+  const insightsFields = metrics
+    .filter(metric => !basicFields.includes(metric.field))
+    .map(metric => metric.field);
+  
+  return [...basicFields, `insights{${insightsFields.join(',')}}`].join(',');
+};
+
+export const fetchCampaigns = async (selectedMetrics: Metric[]) => {
   const credentials = await getFacebookCredentials();
   const { account_id, access_token } = credentials;
 
+  const fields = buildInsightsFields(selectedMetrics);
+  console.log("Fetching campaigns with fields:", fields);
+
   const response = await fetchFacebookData(
-    `${account_id}/campaigns?fields=name,status,objective,insights{spend,impressions,clicks,ctr,cpc,cpm,cost_per_inline_link_click,cost_per_inline_post_engagement}`,
+    `${account_id}/campaigns?fields=${fields}`,
     access_token
   );
 
-  return response.data.map((campaign: any) => ({
-    id: campaign.id,
-    name: campaign.name,
-    status: campaign.status,
-    objective: campaign.objective,
-    spend: parseFloat(campaign.insights?.data?.[0]?.spend || '0'),
-    impressions: campaign.insights?.data?.[0]?.impressions || 0,
-    clicks: campaign.insights?.data?.[0]?.clicks || 0,
-    ctr: campaign.insights?.data?.[0]?.ctr || 0,
-    cpc: campaign.insights?.data?.[0]?.cpc || 0,
-    cpm: campaign.insights?.data?.[0]?.cpm || 0,
-    cost_per_inline_link_click: campaign.insights?.data?.[0]?.cost_per_inline_link_click || 0,
-    cost_per_inline_post_engagement: campaign.insights?.data?.[0]?.cost_per_inline_post_engagement || 0
-  }));
+  return response.data.map((campaign: any) => {
+    const result: any = {
+      id: campaign.id,
+      name: campaign.name,
+      status: campaign.status,
+      objective: campaign.objective,
+    };
+
+    // Add insights data if available
+    if (campaign.insights?.data?.[0]) {
+      const insights = campaign.insights.data[0];
+      selectedMetrics.forEach(metric => {
+        if (!['name', 'status', 'objective'].includes(metric.field)) {
+          result[metric.field] = insights[metric.field] || 0;
+        }
+      });
+    }
+
+    return result;
+  });
 };
 
 export const fetchAdSets = async () => {
