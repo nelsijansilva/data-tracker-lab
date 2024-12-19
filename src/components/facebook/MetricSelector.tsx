@@ -58,6 +58,10 @@ export const MetricSelector = ({
     onMetricsChange(selectedMetrics.filter((m) => m.id !== metricId));
   };
 
+  const handleReorderMetrics = (newMetrics: Metric[]) => {
+    onMetricsChange(newMetrics);
+  };
+
   return (
     <Card className="bg-[#1a1f2e] border-gray-700">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -87,6 +91,7 @@ export const MetricSelector = ({
             <SelectedMetricsList
               selectedMetrics={selectedMetrics}
               onRemoveMetric={handleRemoveMetric}
+              onReorderMetrics={handleReorderMetrics}
             />
           </div>
         </div>
