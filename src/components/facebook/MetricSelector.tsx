@@ -16,11 +16,17 @@ export type Metric = {
   isCustom?: boolean;
 };
 
-export const MetricSelector = () => {
+interface MetricSelectorProps {
+  selectedMetrics: Metric[];
+  onMetricsChange: (metrics: Metric[]) => void;
+}
+
+export const MetricSelector = ({ 
+  selectedMetrics, 
+  onMetricsChange 
+}: MetricSelectorProps) => {
   const { 
     metrics,
-    selectedMetrics,
-    setSelectedMetrics,
     addMetric,
     deleteMetric,
     fetchMetrics
@@ -37,9 +43,9 @@ export const MetricSelector = () => {
   const handleToggleMetric = (metric: Metric) => {
     const isSelected = selectedMetrics.some((m) => m.id === metric.id);
     if (isSelected) {
-      setSelectedMetrics(selectedMetrics.filter((m) => m.id !== metric.id));
+      onMetricsChange(selectedMetrics.filter((m) => m.id !== metric.id));
     } else {
-      setSelectedMetrics([...selectedMetrics, metric]);
+      onMetricsChange([...selectedMetrics, metric]);
     }
   };
 
@@ -128,7 +134,12 @@ export const MetricSelector = () => {
             </h3>
             <SelectedMetricsList
               selectedMetrics={selectedMetrics}
-              onRemoveMetric={(id) => handleToggleMetric(metrics.find(m => m.id === id)!)}
+              onRemoveMetric={(id) => {
+                const metricToRemove = metrics.find(m => m.id === id);
+                if (metricToRemove) {
+                  handleToggleMetric(metricToRemove);
+                }
+              }}
             />
           </div>
         </div>
