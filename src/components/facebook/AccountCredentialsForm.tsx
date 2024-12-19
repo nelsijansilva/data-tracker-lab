@@ -13,6 +13,7 @@ interface AccountCredentialsFormProps {
     access_token: string;
     app_id: string;
     app_secret: string;
+    account_name: string;
   };
   onSuccess?: () => void;
 }
@@ -22,6 +23,7 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
   const [accessToken, setAccessToken] = useState("");
   const [appId, setAppId] = useState("");
   const [appSecret, setAppSecret] = useState("");
+  const [accountName, setAccountName] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -31,6 +33,7 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
       setAccessToken(initialData.access_token);
       setAppId(initialData.app_id);
       setAppSecret(initialData.app_secret);
+      setAccountName(initialData.account_name);
     }
   }, [initialData]);
 
@@ -47,6 +50,7 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
             access_token: accessToken,
             app_id: appId,
             app_secret: appSecret,
+            account_name: accountName,
           })
           .eq('id', initialData.id);
 
@@ -66,6 +70,7 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
               access_token: accessToken,
               app_id: appId,
               app_secret: appSecret,
+              account_name: accountName,
             }
           ]);
 
@@ -82,6 +87,7 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
       setAccessToken("");
       setAppId("");
       setAppSecret("");
+      setAccountName("");
       onSuccess?.();
     } catch (error) {
       console.error('Error saving credentials:', error);
@@ -102,6 +108,18 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="accountName" className="block text-sm font-medium mb-1">
+              Nome da Conta
+            </label>
+            <Input
+              id="accountName"
+              placeholder="Digite um nome para identificar esta conta"
+              value={accountName}
+              onChange={(e) => setAccountName(e.target.value)}
+              required
+            />
+          </div>
           <div>
             <label htmlFor="accountId" className="block text-sm font-medium mb-1">
               ID da Conta

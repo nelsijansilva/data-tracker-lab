@@ -13,6 +13,7 @@ interface Account {
   access_token: string;
   app_id: string;
   app_secret: string;
+  account_name: string;
 }
 
 export const AccountsList = () => {
@@ -98,7 +99,8 @@ export const AccountsList = () => {
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >
                   <div>
-                    <p className="font-medium">ID da Conta: {account.account_id}</p>
+                    <p className="font-medium text-lg mb-1">{account.account_name || 'Conta sem nome'}</p>
+                    <p className="text-sm text-gray-500">ID da Conta: {account.account_id}</p>
                     <p className="text-sm text-gray-500">
                       App ID: {account.app_id}
                     </p>
