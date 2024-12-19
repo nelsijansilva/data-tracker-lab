@@ -7,6 +7,7 @@ import { useMetricsStore } from "@/stores/metricsStore";
 import { useAdSetStore } from "@/stores/adSetStore";
 import { useAds } from "@/hooks/useAds";
 import { MetricValue } from "@/components/facebook/MetricValue";
+import { AdDetails } from "@/components/facebook/AdDetails";
 
 interface AdsListProps {
   dateRange: DateRange;
@@ -17,8 +18,25 @@ export const AdsList = ({ dateRange, selectedAccountId }: AdsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const { selectedAdSetId } = useAdSetStore();
   const [selectedAdId, setSelectedAdId] = React.useState<string | null>(null);
+  const [lastClickTime, setLastClickTime] = React.useState<number>(0);
+  const [showDetails, setShowDetails] = React.useState(false);
+  const [selectedAd, setSelectedAd] = React.useState<any>(null);
 
   const { data: ads, isLoading, error } = useAds(selectedMetrics, dateRange, selectedAccountId, selectedAdSetId);
+
+  const handleRowClick = (ad: any) => {
+    const currentTime = new Date().getTime();
+    const timeDiff = currentTime - lastClickTime;
+    
+    if (timeDiff < 300) { // Double click detected (within 300ms)
+      setSelectedAd(ad);
+      setShowDetails(true);
+    } else {
+      setSelectedAdId(ad.id === selectedAdId ? null : ad.id);
+    }
+    
+    setLastClickTime(currentTime);
+  };
 
   if (isLoading) return <div className="text-gray-400">Carregando anúncios...</div>;
   
@@ -64,7 +82,7 @@ export const AdsList = ({ dateRange, selectedAccountId }: AdsListProps) => {
                   ? "bg-[#3b82f6]/10" 
                   : "hover:bg-[#2f3850]"
               }`}
-              onClick={() => setSelectedAdId(ad.id === selectedAdId ? null : ad.id)}
+              onClick={() => handleRowClick(ad)}
             >
               {selectedMetrics.map((metric) => (
                 <TableCell key={metric.id} className="text-gray-400">
@@ -75,6 +93,12 @@ export const AdsList = ({ dateRange, selectedAccountId }: AdsListProps) => {
           ))}
         </TableBody>
       </Table>
+
+      <AdDetails 
+        ad={selectedAd}
+        isOpen={showDetails}
+        onClose={() => setShowDetails(false)}
+      />
     </div>
   );
 };
