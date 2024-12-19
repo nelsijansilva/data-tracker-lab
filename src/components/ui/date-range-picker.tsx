@@ -11,6 +11,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DateRangePickerProps {
   value: DateRange;
@@ -51,102 +58,56 @@ export function DateRangePicker({
       }),
     },
     {
-      id: 'last14',
-      label: 'Últimos 14 dias',
-      getValue: () => ({
-        from: subDays(new Date(), 13),
-        to: new Date()
-      }),
-    },
-    {
-      id: 'last30',
-      label: 'Últimos 30 dias',
-      getValue: () => ({
-        from: subDays(new Date(), 29),
-        to: new Date()
-      }),
-    },
-    {
       id: 'thisMonth',
-      label: 'Este mês',
+      label: 'Esse mês',
       getValue: () => ({
         from: startOfMonth(new Date()),
         to: endOfMonth(new Date())
       }),
     },
     {
-      id: 'allTime',
-      label: 'Todo período',
+      id: 'lastMonth',
+      label: 'Mês passado',
       getValue: () => ({
-        from: subDays(new Date(), 365),
-        to: new Date()
+        from: startOfMonth(subDays(new Date(), 30)),
+        to: endOfMonth(subDays(new Date(), 30))
       }),
+    },
+    {
+      id: 'custom',
+      label: 'Personalizado',
+      getValue: () => value,
     },
   ];
 
+  const handlePresetChange = (presetId: string) => {
+    const preset = presets.find(p => p.id === presetId);
+    if (preset) {
+      onChange(preset.getValue());
+    }
+  };
+
   return (
     <div className={cn("grid gap-2", className)}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            id="date"
-            variant={"outline"}
-            className={cn(
-              "w-[300px] justify-start text-left font-normal",
-              !value && "text-muted-foreground"
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {value?.from ? (
-              value.to ? (
-                <>
-                  {format(value.from, "dd/MM/yyyy", { locale: ptBR })} -{" "}
-                  {format(value.to, "dd/MM/yyyy", { locale: ptBR })}
-                </>
-              ) : (
-                format(value.from, "dd/MM/yyyy", { locale: ptBR })
-              )
-            ) : (
-              <span>Selecione um período</span>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="space-y-4 p-4">
-            <div className="flex flex-col gap-2">
-              {presets.map((preset) => (
-                <Button
-                  key={preset.id}
-                  variant="outline"
-                  className="justify-start text-left font-normal"
-                  onClick={() => {
-                    onChange(preset.getValue());
-                    setOpen(false);
-                  }}
-                >
-                  {preset.label}
-                </Button>
-              ))}
-            </div>
-            <div className="border-t pt-4">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={value?.from}
-                selected={value}
-                onSelect={(newValue) => {
-                  onChange(newValue || { from: undefined, to: undefined });
-                  if (newValue?.from && newValue?.to) {
-                    setOpen(false);
-                  }
-                }}
-                numberOfMonths={2}
-                locale={ptBR}
-              />
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+      <Select onValueChange={handlePresetChange}>
+        <SelectTrigger className="w-[240px] bg-[#2a2f3d] border-gray-700 text-white">
+          <SelectValue placeholder="Selecione um período" />
+        </SelectTrigger>
+        <SelectContent>
+          {presets.map((preset) => (
+            <SelectItem key={preset.id} value={preset.id}>
+              {preset.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {value?.from && value?.to && (
+        <div className="text-sm text-gray-400">
+          {format(value.from, "dd/MM/yyyy", { locale: ptBR })} -{" "}
+          {format(value.to, "dd/MM/yyyy", { locale: ptBR })}
+        </div>
+      )}
     </div>
   );
-}
+};

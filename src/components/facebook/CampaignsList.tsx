@@ -6,18 +6,16 @@ import { AlertTriangle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { MetricValue } from "@/components/facebook/MetricValue";
-import { calculateMetricValue } from "@/utils/metricCalculations";
 import { CampaignDetails } from "@/components/facebook/CampaignDetails";
 import { cn } from "@/lib/utils";
 
-export const CampaignsList = () => {
+interface CampaignsListProps {
+  dateRange: DateRange;
+}
+
+export const CampaignsList = ({ dateRange }: CampaignsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
-  
-  const [dateRange] = useState<DateRange>({
-    from: new Date(),
-    to: new Date(),
-  });
 
   const { data: campaigns, isLoading, error } = useCampaigns(selectedMetrics, dateRange);
 

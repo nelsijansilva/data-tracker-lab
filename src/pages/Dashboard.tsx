@@ -5,12 +5,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CampaignsList } from "@/components/facebook/CampaignsList";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { DateRange } from "react-day-picker";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("campaigns");
   const [showAlert, setShowAlert] = useState(true);
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: new Date(),
+    to: new Date(),
+  });
 
   const { data: hasCredentials, isLoading } = useQuery({
     queryKey: ['fbCredentials'],
@@ -121,16 +127,10 @@ const Dashboard = () => {
             <label className="block text-sm font-medium text-gray-400 mb-2">
               Período de Visualização
             </label>
-            <Select>
-              <SelectTrigger className="bg-[#2a2f3d] border-gray-700 text-white">
-                <SelectValue placeholder="Hoje" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="today">Hoje</SelectItem>
-                <SelectItem value="yesterday">Ontem</SelectItem>
-                <SelectItem value="last7days">Últimos 7 dias</SelectItem>
-              </SelectContent>
-            </Select>
+            <DateRangePicker 
+              value={dateRange}
+              onChange={setDateRange}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -149,7 +149,7 @@ const Dashboard = () => {
 
         {/* Campaigns List */}
         <div className="bg-[#2a2f3d] rounded-lg p-4">
-          <CampaignsList />
+          <CampaignsList dateRange={dateRange} />
         </div>
       </div>
     </div>
