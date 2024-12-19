@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
 import { SelectedMetricsList } from "./SelectedMetricsList";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { MetricList } from "./MetricList";
+import { AddMetricForm } from "./AddMetricForm";
 
 export type Metric = {
   id: string;
@@ -79,9 +80,7 @@ export const MetricSelector = ({
           isCustom: true,
         });
 
-        // Fetch updated metrics after adding
         await fetchMetrics();
-
         setNewMetricName('');
         setNewMetricField('');
         setShowAddForm(false);
@@ -89,11 +88,6 @@ export const MetricSelector = ({
         console.error('Error adding custom metric:', error);
       }
     }
-  };
-
-  const handleDeleteMetric = async (metricId: string) => {
-    await deleteMetric(metricId);
-    onMetricsChange(selectedMetrics.filter((m) => m.id !== metricId));
   };
 
   const filteredMetrics = metrics.filter((metric) =>
@@ -112,40 +106,12 @@ export const MetricSelector = ({
             className="bg-[#2a2f3d] border-gray-700 text-white"
           />
 
-          <ScrollArea className="h-[500px] rounded-md border border-gray-700 bg-[#2a2f3d] p-4">
-            <div className="space-y-2">
-              {filteredMetrics.map((metric) => {
-                const isSelected = selectedMetrics.some((m) => m.id === metric.id);
-                return (
-                  <div
-                    key={metric.id}
-                    onClick={() => handleToggleMetric(metric)}
-                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-                      isSelected
-                        ? 'bg-[#3b82f6]/10 border-[#3b82f6]'
-                        : 'border-gray-700 hover:border-gray-600'
-                    }`}
-                  >
-                    <div>
-                      <p className="text-gray-300">{metric.name}</p>
-                      <p className="text-sm text-gray-500">{metric.field}</p>
-                    </div>
-                    {metric.isCustom && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteMetric(metric.id);
-                        }}
-                        className="text-red-500 hover:text-red-400"
-                      >
-                        Excluir
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </ScrollArea>
+          <MetricList
+            metrics={filteredMetrics}
+            selectedMetrics={selectedMetrics}
+            onToggleMetric={handleToggleMetric}
+            onDeleteMetric={deleteMetric}
+          />
 
           <Button
             variant="outline"
@@ -157,27 +123,13 @@ export const MetricSelector = ({
           </Button>
 
           {showAddForm && (
-            <div className="space-y-4 p-4 rounded-lg border border-gray-700 bg-[#2a2f3d]">
-              <Input
-                placeholder="Nome da métrica"
-                value={newMetricName}
-                onChange={(e) => setNewMetricName(e.target.value)}
-                className="bg-[#1a1f2e] border-gray-700 text-white"
-              />
-              <Input
-                placeholder="Campo da métrica"
-                value={newMetricField}
-                onChange={(e) => setNewMetricField(e.target.value)}
-                className="bg-[#1a1f2e] border-gray-700 text-white"
-              />
-              <Button
-                onClick={handleAddCustomMetric}
-                disabled={!newMetricName || !newMetricField}
-                className="w-full"
-              >
-                Adicionar
-              </Button>
-            </div>
+            <AddMetricForm
+              newMetricName={newMetricName}
+              newMetricField={newMetricField}
+              onNameChange={setNewMetricName}
+              onFieldChange={setNewMetricField}
+              onSubmit={handleAddCustomMetric}
+            />
           )}
         </div>
       </div>
