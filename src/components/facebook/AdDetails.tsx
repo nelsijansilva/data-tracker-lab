@@ -2,6 +2,7 @@ import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 interface AdDetailsProps {
   ad: any;
@@ -11,6 +12,44 @@ interface AdDetailsProps {
 
 export const AdDetails = ({ ad, isOpen, onClose }: AdDetailsProps) => {
   if (!ad) return null;
+
+  const getCreativeContent = () => {
+    const creative = ad.creative;
+    if (!creative) return null;
+
+    let title = creative.title;
+    let body = creative.body;
+    let imageUrl = null;
+    let message = null;
+    let description = null;
+
+    // Tentar obter dados do object_story_spec
+    if (creative.object_story_spec?.link_data) {
+      const linkData = creative.object_story_spec.link_data;
+      message = linkData.message;
+      description = linkData.description;
+      imageUrl = linkData.image_url;
+    }
+
+    // Tentar obter dados do asset_feed_spec
+    if (creative.asset_feed_spec) {
+      const assetFeed = creative.asset_feed_spec;
+      title = assetFeed.titles?.[0]?.text || title;
+      body = assetFeed.bodies?.[0]?.text || body;
+      description = assetFeed.descriptions?.[0]?.text || description;
+      imageUrl = assetFeed.images?.[0]?.url || imageUrl;
+    }
+
+    return {
+      title,
+      body,
+      message,
+      description,
+      imageUrl
+    };
+  };
+
+  const creativeContent = getCreativeContent();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -26,13 +65,9 @@ export const AdDetails = ({ ad, isOpen, onClose }: AdDetailsProps) => {
             {/* Status */}
             <div>
               <h3 className="text-sm font-medium text-gray-400 mb-2">Status</h3>
-              <div className={`inline-block px-2 py-1 rounded-full text-xs ${
-                ad.status === 'ACTIVE' ? 'bg-green-500/20 text-green-500' :
-                ad.status === 'PAUSED' ? 'bg-yellow-500/20 text-yellow-500' :
-                'bg-red-500/20 text-red-500'
-              }`}>
+              <Badge variant={ad.status === 'ACTIVE' ? 'default' : 'secondary'}>
                 {ad.status}
-              </div>
+              </Badge>
             </div>
 
             <Separator className="border-gray-700" />
@@ -54,35 +89,46 @@ export const AdDetails = ({ ad, isOpen, onClose }: AdDetailsProps) => {
             <Separator className="border-gray-700" />
 
             {/* Creative Details */}
-            {ad.creative && (
+            {creativeContent && (
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-gray-400">Detalhes Criativos</h3>
                 
-                {ad.creative.title && (
+                {creativeContent.title && (
                   <div>
                     <p className="text-xs text-gray-400 mb-1">Título</p>
-                    <p className="text-sm">{ad.creative.title}</p>
+                    <p className="text-sm">{creativeContent.title}</p>
                   </div>
                 )}
 
-                {ad.creative.body && (
+                {creativeContent.message && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Mensagem</p>
+                    <p className="text-sm whitespace-pre-wrap">{creativeContent.message}</p>
+                  </div>
+                )}
+
+                {creativeContent.body && (
                   <div>
                     <p className="text-xs text-gray-400 mb-1">Texto</p>
-                    <p className="text-sm whitespace-pre-wrap">{ad.creative.body}</p>
+                    <p className="text-sm whitespace-pre-wrap">{creativeContent.body}</p>
                   </div>
                 )}
 
-                {ad.creative.link_url && (
+                {creativeContent.description && (
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">URL de Destino</p>
-                    <a 
-                      href={ad.creative.link_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-400 hover:text-blue-300"
-                    >
-                      {ad.creative.link_url}
-                    </a>
+                    <p className="text-xs text-gray-400 mb-1">Descrição</p>
+                    <p className="text-sm whitespace-pre-wrap">{creativeContent.description}</p>
+                  </div>
+                )}
+
+                {creativeContent.imageUrl && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Imagem</p>
+                    <img 
+                      src={creativeContent.imageUrl} 
+                      alt="Creative preview"
+                      className="rounded-lg max-w-full h-auto"
+                    />
                   </div>
                 )}
               </div>
