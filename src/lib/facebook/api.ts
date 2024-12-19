@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Metric } from "@/components/facebook/MetricSelector";
+import type { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 
 const FB_API_VERSION = 'v21.0';
 const FB_BASE_URL = `https://graph.facebook.com/${FB_API_VERSION}`;
@@ -39,17 +41,24 @@ const buildInsightsFields = (metrics: Metric[]) => {
   return [...basicFields, `insights{${insightsFields.join(',')}}`].join(',');
 };
 
-export const fetchCampaigns = async (selectedMetrics: Metric[]) => {
+export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: DateRange) => {
   const credentials = await getFacebookCredentials();
   const { account_id, access_token } = credentials;
 
   const fields = buildInsightsFields(selectedMetrics);
-  console.log("Fetching campaigns with fields:", fields);
+  let endpoint = `${account_id}/campaigns?fields=${fields}`;
+  
+  if (dateRange?.from && dateRange?.to) {
+    const timeRange = {
+      since: format(dateRange.from, 'yyyy-MM-dd'),
+      until: format(dateRange.to, 'yyyy-MM-dd'),
+    };
+    endpoint += `&time_range=${JSON.stringify(timeRange)}`;
+  }
 
-  const response = await fetchFacebookData(
-    `${account_id}/campaigns?fields=${fields}`,
-    access_token
-  );
+  console.log("Fetching campaigns with fields:", fields);
+  
+  const response = await fetchFacebookData(endpoint, access_token);
 
   return response.data.map((campaign: any) => {
     const result: any = {
@@ -59,7 +68,6 @@ export const fetchCampaigns = async (selectedMetrics: Metric[]) => {
       objective: campaign.objective,
     };
 
-    // Add insights data if available
     if (campaign.insights?.data?.[0]) {
       const insights = campaign.insights.data[0];
       selectedMetrics.forEach(metric => {
