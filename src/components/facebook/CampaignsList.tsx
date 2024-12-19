@@ -7,6 +7,8 @@ import { MetricSelector, type Metric } from "./MetricSelector";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 export const CampaignsList = () => {
   const [selectedMetrics, setSelectedMetrics] = useState<Metric[]>([
@@ -27,7 +29,17 @@ export const CampaignsList = () => {
   });
 
   if (isLoading) return <div>Carregando campanhas...</div>;
-  if (error) return <div>Erro ao carregar campanhas</div>;
+  
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          {error instanceof Error ? error.message : 'Erro ao carregar campanhas'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   const calculateMetricValue = (campaign: any, metric: Metric) => {
     if (!metric.formula) {

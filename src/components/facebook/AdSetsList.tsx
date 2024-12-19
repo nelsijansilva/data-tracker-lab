@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchAdSets } from "@/lib/facebook/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DollarSign } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 export const AdSetsList = () => {
   const { data: adSets, isLoading, error } = useQuery({
@@ -9,19 +11,29 @@ export const AdSetsList = () => {
     queryFn: fetchAdSets
   });
 
-  if (isLoading) return <div>Loading ad sets...</div>;
-  if (error) return <div>Error loading ad sets</div>;
+  if (isLoading) return <div>Carregando conjuntos de anúncios...</div>;
+  
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          {error instanceof Error ? error.message : 'Erro ao carregar conjuntos de anúncios'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
+          <TableHead>Nome</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead>Campaign</TableHead>
-          <TableHead>Daily Budget</TableHead>
-          <TableHead>Lifetime Budget</TableHead>
-          <TableHead>Budget Remaining</TableHead>
+          <TableHead>Campanha</TableHead>
+          <TableHead>Orçamento Diário</TableHead>
+          <TableHead>Orçamento Total</TableHead>
+          <TableHead>Orçamento Restante</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

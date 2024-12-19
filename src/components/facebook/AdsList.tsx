@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchAds } from "@/lib/facebook/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 export const AdsList = () => {
   const { data: ads, isLoading, error } = useQuery({
@@ -8,16 +10,26 @@ export const AdsList = () => {
     queryFn: fetchAds
   });
 
-  if (isLoading) return <div>Loading ads...</div>;
-  if (error) return <div>Error loading ads</div>;
+  if (isLoading) return <div>Carregando anúncios...</div>;
+  
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          {error instanceof Error ? error.message : 'Erro ao carregar anúncios'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
+          <TableHead>Nome</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead>Ad Set</TableHead>
+          <TableHead>Conjunto de Anúncios</TableHead>
           <TableHead>Preview</TableHead>
         </TableRow>
       </TableHeader>
@@ -35,7 +47,7 @@ export const AdsList = () => {
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:text-blue-700"
                 >
-                  View Preview
+                  Ver Preview
                 </a>
               )}
             </TableCell>
