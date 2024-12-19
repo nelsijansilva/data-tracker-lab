@@ -2,14 +2,19 @@ import { supabase } from "@/integrations/supabase/client";
 import type { FunnelStep, Funnel, PixelConfiguration } from "@/types/tracking";
 
 export const savePixelConfiguration = async (pixelId: string, apiToken: string) => {
-  // Primeiro, vamos verificar se já existe uma configuração
-  const { data: existingConfig } = await supabase
+  // First, let's get all existing configurations
+  const { data: existingConfigs, error: fetchError } = await supabase
     .from('pixel_configurations')
     .select('*')
-    .single();
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (fetchError) throw fetchError;
+
+  const existingConfig = existingConfigs?.[0];
 
   if (existingConfig) {
-    // Se existe, atualiza
+    // If exists, update
     const { data, error } = await supabase
       .from('pixel_configurations')
       .update({ pixel_id: pixelId, api_token: apiToken })
@@ -20,7 +25,7 @@ export const savePixelConfiguration = async (pixelId: string, apiToken: string) 
     if (error) throw error;
     return data;
   } else {
-    // Se não existe, cria uma nova
+    // If doesn't exist, create new
     const { data, error } = await supabase
       .from('pixel_configurations')
       .insert([{ pixel_id: pixelId, api_token: apiToken }])
@@ -36,6 +41,8 @@ export const getPixelConfiguration = async () => {
   const { data, error } = await supabase
     .from('pixel_configurations')
     .select('*')
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) throw error;
