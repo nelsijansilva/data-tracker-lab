@@ -23,15 +23,14 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   unique_clicks: { field: 'unique_clicks', isInsightMetric: true },
   unique_ctr: { field: 'unique_ctr', isInsightMetric: true },
   actions: { field: 'actions', isInsightMetric: true },
-  cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true },
-  // Removing invalid metrics like content_views
+  cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true }
 };
 
 export const getMetricMapping = (field: string): FacebookMetricMapping => {
   const mapping = FACEBOOK_METRIC_MAPPINGS[field];
   if (!mapping) {
-    console.warn(`Metric mapping not found for field: ${field}`);
-    return { field, isInsightMetric: true };
+    console.warn(`Metric mapping not found for field: ${field}. This metric will be ignored.`);
+    return { field, isInsightMetric: false };
   }
   return mapping;
 };
