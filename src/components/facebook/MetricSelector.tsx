@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
-import { X } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MetricCheckboxList } from "./MetricCheckboxList";
-import { SelectedMetricsList } from "./SelectedMetricsList";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
-import { toast } from "sonner";
+import { SelectedMetricsList } from "./SelectedMetricsList";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export type Metric = {
   id: string;
   name: string;
   field: string;
-  formula?: string;
   isCustom?: boolean;
 };
 
@@ -32,9 +29,10 @@ export const MetricSelector = ({
     fetchMetrics
   } = useMetricsStore();
 
+  const [searchTerm, setSearchTerm] = useState('');
   const [newMetricName, setNewMetricName] = useState('');
   const [newMetricField, setNewMetricField] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
 
   React.useEffect(() => {
     fetchMetrics();
@@ -49,101 +47,132 @@ export const MetricSelector = ({
     }
   };
 
-  const handleAddMetric = async () => {
-    if (!newMetricName || !newMetricField) {
-      toast.error('Por favor, preencha todos os campos');
-      return;
-    }
-
-    try {
-      await addMetric({
+  const handleAddCustomMetric = async () => {
+    if (newMetricName && newMetricField) {
+      const newMetric = await addMetric({
         name: newMetricName,
         field: newMetricField,
-        isCustom: true
+        isCustom: true,
       });
-      
+
       setNewMetricName('');
       setNewMetricField('');
-      toast.success('Métrica adicionada com sucesso');
-    } catch (error) {
-      toast.error('Erro ao adicionar métrica');
+      setShowAddForm(false);
+
+      if (newMetric) {
+        onMetricsChange([...selectedMetrics, newMetric]);
+      }
     }
   };
 
-  const filteredMetrics = metrics.filter(metric => 
+  const handleDeleteMetric = async (metricId: string) => {
+    await deleteMetric(metricId);
+    onMetricsChange(selectedMetrics.filter((m) => m.id !== metricId));
+  };
+
+  const filteredMetrics = metrics.filter((metric) =>
     metric.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     metric.field.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <Card className="bg-[#1a1f2e] border-gray-700">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl font-semibold text-white">
-          Personalizar Métricas
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-8">
-          <div>
-            <div className="mb-6 space-y-4">
-              <h3 className="text-sm font-medium text-gray-400">
-                Adicionar Nova Métrica
-              </h3>
-              <div className="space-y-2">
-                <Input
-                  placeholder="Nome da Métrica"
-                  value={newMetricName}
-                  onChange={(e) => setNewMetricName(e.target.value)}
-                  className="bg-[#2a2f3d] border-gray-700 text-white"
-                />
-                <Input
-                  placeholder="Campo da API (ex: clicks, impressions)"
-                  value={newMetricField}
-                  onChange={(e) => setNewMetricField(e.target.value)}
-                  className="bg-[#2a2f3d] border-gray-700 text-white"
-                />
-                <Button 
-                  onClick={handleAddMetric}
-                  className="w-full bg-primary hover:bg-primary-hover text-white"
-                >
-                  Adicionar Métrica
-                </Button>
-              </div>
+    <div className="grid grid-cols-2 gap-6">
+      <div>
+        <div className="space-y-4">
+          <Input
+            placeholder="Buscar métricas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-[#2a2f3d] border-gray-700 text-white"
+          />
+
+          <ScrollArea className="h-[500px] rounded-md border border-gray-700 bg-[#2a2f3d] p-4">
+            <div className="space-y-2">
+              {filteredMetrics.map((metric) => {
+                const isSelected = selectedMetrics.some((m) => m.id === metric.id);
+                return (
+                  <div
+                    key={metric.id}
+                    onClick={() => handleToggleMetric(metric)}
+                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-[#3b82f6]/10 border-[#3b82f6]'
+                        : 'border-gray-700 hover:border-gray-600'
+                    }`}
+                  >
+                    <div>
+                      <p className="text-gray-300">{metric.name}</p>
+                      <p className="text-sm text-gray-500">{metric.field}</p>
+                    </div>
+                    {metric.isCustom && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteMetric(metric.id);
+                        }}
+                        className="text-red-500 hover:text-red-400"
+                      >
+                        Excluir
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-400">
-                Métricas Disponíveis
-              </h3>
+          </ScrollArea>
+
+          <Button
+            variant="outline"
+            className="w-full border-dashed"
+            onClick={() => setShowAddForm(!showAddForm)}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Métrica Personalizada
+          </Button>
+
+          {showAddForm && (
+            <div className="space-y-4 p-4 rounded-lg border border-gray-700 bg-[#2a2f3d]">
               <Input
-                placeholder="Buscar métricas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-[#2a2f3d] border-gray-700 text-white mb-4"
+                placeholder="Nome da métrica"
+                value={newMetricName}
+                onChange={(e) => setNewMetricName(e.target.value)}
+                className="bg-[#1a1f2e] border-gray-700 text-white"
               />
-              <MetricCheckboxList
-                metrics={filteredMetrics}
-                selectedMetrics={selectedMetrics}
-                onToggleMetric={handleToggleMetric}
-                onDeleteMetric={deleteMetric}
+              <Input
+                placeholder="Campo da métrica"
+                value={newMetricField}
+                onChange={(e) => setNewMetricField(e.target.value)}
+                className="bg-[#1a1f2e] border-gray-700 text-white"
               />
+              <Button
+                onClick={handleAddCustomMetric}
+                disabled={!newMetricName || !newMetricField}
+                className="w-full"
+              >
+                Adicionar
+              </Button>
             </div>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-gray-400 mb-4">
-              Colunas selecionadas
-            </h3>
-            <SelectedMetricsList
-              selectedMetrics={selectedMetrics}
-              onRemoveMetric={(id) => {
-                const metricToRemove = metrics.find(m => m.id === id);
-                if (metricToRemove) {
-                  handleToggleMetric(metricToRemove);
-                }
-              }}
-            />
-          </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white mb-4">
+            Métricas Selecionadas
+          </h3>
+          <SelectedMetricsList
+            selectedMetrics={selectedMetrics}
+            onRemoveMetric={(id) => {
+              const metricToRemove = metrics.find(m => m.id === id);
+              if (metricToRemove) {
+                handleToggleMetric(metricToRemove);
+              }
+            }}
+            onReorderMetrics={onMetricsChange}
+          />
+        </div>
+      </div>
+    </div>
   );
 };

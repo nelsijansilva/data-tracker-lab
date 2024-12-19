@@ -7,6 +7,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -30,11 +31,14 @@ const SortableItem = ({ metric, onRemove }: SortableItemProps) => {
     setNodeRef,
     transform,
     transition,
+    isDragging,
   } = useSortable({ id: metric.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    zIndex: isDragging ? 1 : 0,
+    position: 'relative' as const,
   };
 
   return (
@@ -43,11 +47,18 @@ const SortableItem = ({ metric, onRemove }: SortableItemProps) => {
       style={style}
       {...attributes}
       {...listeners}
-      className="flex items-center justify-between p-3 mb-2 bg-[#1a1f2e] rounded-lg border border-gray-700 cursor-move hover:border-gray-600 transition-colors"
+      className={`flex items-center justify-between p-3 mb-2 rounded-lg border cursor-move transition-colors ${
+        isDragging 
+          ? 'bg-[#3b82f6]/10 border-[#3b82f6]' 
+          : 'bg-[#1a1f2e] border-gray-700 hover:border-gray-600'
+      }`}
     >
       <span className="text-gray-300">{metric.name}</span>
       <button
-        onClick={() => onRemove(metric.id)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(metric.id);
+        }}
         className="text-gray-500 hover:text-gray-300 transition-colors"
       >
         <X className="h-4 w-4" />
@@ -68,16 +79,20 @@ export const SelectedMetricsList = ({
   onReorderMetrics,
 }: SelectedMetricsListProps) => {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over.id) {
+    if (over && active.id !== over.id) {
       const oldIndex = selectedMetrics.findIndex((metric) => metric.id === active.id);
       const newIndex = selectedMetrics.findIndex((metric) => metric.id === over.id);
       
