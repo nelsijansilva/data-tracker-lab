@@ -7,7 +7,6 @@ import { useMetricsStore } from "@/stores/metricsStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { MetricValue } from "@/components/facebook/MetricValue";
-import { CampaignDetails } from "@/components/facebook/CampaignDetails";
 import { cn } from "@/lib/utils";
 
 interface CampaignsListProps {
@@ -67,34 +66,22 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
         </TableHeader>
         <TableBody>
           {filteredCampaigns?.map((campaign: any) => (
-            <React.Fragment key={campaign.id}>
-              <TableRow 
-                className={cn(
-                  "cursor-pointer transition-colors border-gray-700",
-                  selectedCampaignId === campaign.id 
-                    ? "bg-[#3b82f6]/10" 
-                    : "hover:bg-[#2f3850]"
-                )}
-                onClick={() => handleRowClick(campaign.id)}
-              >
-                {selectedMetrics.map((metric) => (
-                  <TableCell key={metric.id} className="text-gray-400">
-                    <MetricValue value={campaign[metric.field]} metric={metric} />
-                  </TableCell>
-                ))}
-              </TableRow>
-              {selectedCampaignId === campaign.id && (
-                <TableRow>
-                  <TableCell colSpan={selectedMetrics.length}>
-                    <CampaignDetails 
-                      campaignId={campaign.id}
-                      dateRange={dateRange}
-                      selectedMetrics={selectedMetrics}
-                    />
-                  </TableCell>
-                </TableRow>
+            <TableRow 
+              key={campaign.id}
+              className={cn(
+                "cursor-pointer transition-colors border-gray-700",
+                selectedCampaignId === campaign.id 
+                  ? "bg-[#3b82f6]/10" 
+                  : "hover:bg-[#2f3850]"
               )}
-            </React.Fragment>
+              onClick={() => handleRowClick(campaign.id)}
+            >
+              {selectedMetrics.map((metric) => (
+                <TableCell key={metric.id} className="text-gray-400">
+                  <MetricValue value={campaign[metric.field]} metric={metric} />
+                </TableCell>
+              ))}
+            </TableRow>
           ))}
         </TableBody>
       </Table>
