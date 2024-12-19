@@ -11,9 +11,10 @@ import { cn } from "@/lib/utils";
 
 interface CampaignsListProps {
   dateRange: DateRange;
+  campaignStatus?: 'all' | 'active' | 'paused';
 }
 
-export const CampaignsList = ({ dateRange }: CampaignsListProps) => {
+export const CampaignsList = ({ dateRange, campaignStatus = 'all' }: CampaignsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
 
@@ -36,7 +37,12 @@ export const CampaignsList = ({ dateRange }: CampaignsListProps) => {
     );
   }
 
-  if (!campaigns?.length) {
+  const filteredCampaigns = campaigns?.filter(campaign => {
+    if (campaignStatus === 'all') return true;
+    return campaign.status.toLowerCase() === campaignStatus;
+  });
+
+  if (!filteredCampaigns?.length) {
     return (
       <div className="text-center py-8 text-gray-400">
         <p>Nenhuma campanha encontrada no período selecionado.</p>
@@ -58,7 +64,7 @@ export const CampaignsList = ({ dateRange }: CampaignsListProps) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {campaigns?.map((campaign: any) => (
+          {filteredCampaigns?.map((campaign: any) => (
             <React.Fragment key={campaign.id}>
               <TableRow 
                 className={cn(

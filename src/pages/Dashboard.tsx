@@ -10,9 +10,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
 
+type CampaignStatus = 'all' | 'active' | 'paused';
+
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("campaigns");
   const [showAlert, setShowAlert] = useState(true);
+  const [campaignStatus, setCampaignStatus] = useState<CampaignStatus>('all');
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(),
     to: new Date(),
@@ -112,14 +115,28 @@ const Dashboard = () => {
             <label className="block text-sm font-medium text-gray-400 mb-2">
               Status da Campanha
             </label>
-            <Select>
-              <SelectTrigger className="bg-[#2a2f3d] border-gray-700 text-white">
-                <SelectValue placeholder="Qualquer" />
+            <Select value={campaignStatus} onValueChange={(value: CampaignStatus) => setCampaignStatus(value)}>
+              <SelectTrigger className={`bg-[#2a2f3d] border-gray-700 text-white ${
+                campaignStatus === 'active' ? 'bg-[#3b82f6]/20 border-[#3b82f6]' :
+                campaignStatus === 'paused' ? 'bg-gray-600/20 border-gray-600' :
+                ''
+              }`}>
+                <SelectValue>
+                  {campaignStatus === 'all' && 'Todas as Campanhas'}
+                  {campaignStatus === 'active' && 'Campanhas Ativas'}
+                  {campaignStatus === 'paused' && 'Campanhas Pausadas'}
+                </SelectValue>
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Qualquer</SelectItem>
-                <SelectItem value="active">Ativo</SelectItem>
-                <SelectItem value="paused">Pausado</SelectItem>
+              <SelectContent className="bg-[#2a2f3d] border-gray-700">
+                <SelectItem value="all" className="text-white hover:bg-[#3b4252]">
+                  Todas as Campanhas
+                </SelectItem>
+                <SelectItem value="active" className="text-white hover:bg-[#3b4252]">
+                  Campanhas Ativas
+                </SelectItem>
+                <SelectItem value="paused" className="text-white hover:bg-[#3b4252]">
+                  Campanhas Pausadas
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -149,7 +166,7 @@ const Dashboard = () => {
 
         {/* Campaigns List */}
         <div className="bg-[#2a2f3d] rounded-lg p-4">
-          <CampaignsList dateRange={dateRange} />
+          <CampaignsList dateRange={dateRange} campaignStatus={campaignStatus} />
         </div>
       </div>
     </div>
