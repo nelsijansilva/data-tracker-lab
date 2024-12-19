@@ -43,3 +43,26 @@ export const buildAdSetsEndpoint = (
 
   return endpoint;
 };
+
+export const buildAdsEndpoint = (
+  accountId: string,
+  adSetId: string | null,
+  selectedMetrics: Metric[],
+  dateRange?: DateRange
+): string => {
+  const metricFields = selectedMetrics.map(metric => metric.field);
+  const fields = buildFieldsParameter(metricFields);
+  const insightFields = buildInsightsFieldsParameter(metricFields);
+  
+  let endpoint = `${accountId}/ads?fields=${fields}`;
+
+  if (insightFields && dateRange?.from && dateRange?.to) {
+    endpoint += `,insights.time_range({"since":"${format(dateRange.from, 'yyyy-MM-dd')}","until":"${format(dateRange.to, 'yyyy-MM-dd')}"}).fields(${insightFields})`;
+  }
+
+  if (adSetId) {
+    endpoint += `&filtering=[{"field":"adset.id","operator":"EQUAL","value":"${adSetId}"}]`;
+  }
+
+  return endpoint;
+};

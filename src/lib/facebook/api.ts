@@ -135,3 +135,42 @@ export const fetchAdSets = async (campaignId: string | null, selectedMetrics: Me
     throw error;
   }
 };
+
+export const fetchAds = async (adSetId: string | null, selectedMetrics: Metric[], dateRange?: DateRange) => {
+  try {
+    const credentials = await getFacebookCredentials();
+    const { account_id, access_token } = credentials;
+
+    const endpoint = buildAdsEndpoint(account_id, adSetId, selectedMetrics, dateRange);
+    console.log("Fetching ads with endpoint:", endpoint);
+    
+    const response = await fetchFacebookData(endpoint, access_token);
+
+    if (!response.data) {
+      throw new Error('Nenhum anúncio encontrado');
+    }
+
+    return response.data.map((ad: any) => {
+      const result: any = {
+        id: ad.id,
+        name: ad.name,
+        status: ad.status,
+        preview_url: ad.preview_url
+      };
+
+      if (ad.insights?.data?.[0]) {
+        const insights = ad.insights.data[0];
+        selectedMetrics.forEach(metric => {
+          if (!['name', 'status', 'preview_url'].includes(metric.field)) {
+            result[metric.field] = insights[metric.field] || 0;
+          }
+        });
+      }
+
+      return result;
+    });
+  } catch (error: any) {
+    console.error('Error fetching ads:', error);
+    throw error;
+  }
+};

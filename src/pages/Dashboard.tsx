@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignsList } from "@/components/facebook/CampaignsList";
 import { AdSetsList } from "@/components/facebook/AdSetsList";
+import { AdsList } from "@/components/facebook/AdsList";
 import { AccountsList } from "@/components/facebook/AccountsList";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { supabase } from "@/integrations/supabase/client";
@@ -209,8 +210,11 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="ads">
-            <div className="text-center py-8 text-gray-400">
-              Em desenvolvimento
+            <div className="bg-[#2a2f3d] rounded-lg p-4 mt-4">
+              <AdsList 
+                dateRange={dateRange}
+                selectedAccountId={selectedAccountId === 'any' ? undefined : selectedAccountId}
+              />
             </div>
           </TabsContent>
         </div>
