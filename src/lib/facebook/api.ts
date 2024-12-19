@@ -20,18 +20,22 @@ export const fetchFacebookData = async (endpoint: string, accessToken: string) =
       }
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const data = await response.json();
+      if (data.error?.code === 17) {
+        throw new Error('User request limit reached');
+      }
       if (data.error?.code === 100) {
         throw new Error(`Permissões insuficientes do Facebook. Por favor, verifique se seu token de acesso tem as permissões necessárias: ${REQUIRED_PERMISSIONS.join(', ')}`);
       }
       throw new Error(`Erro na API do Facebook: ${data.error?.message || 'Erro desconhecido'}`);
     }
 
-    return response.json();
+    return data;
   } catch (error: any) {
     console.error('Facebook API error:', error);
-    throw new Error(error.message || 'Erro ao acessar a API do Facebook');
+    throw error;
   }
 };
 
@@ -111,13 +115,18 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
   }
 };
 
-export const fetchAdSets = async (campaignId: string, selectedMetrics: Metric[], dateRange?: DateRange) => {
+export const fetchAdSets = async (campaignId: string | null, selectedMetrics: Metric[], dateRange?: DateRange) => {
   try {
     const credentials = await getFacebookCredentials();
     const { account_id, access_token } = credentials;
 
     const fields = buildInsightsFields(selectedMetrics, dateRange);
-    const endpoint = `${account_id}/adsets?fields=${fields}&filtering=[{"field":"campaign.id","operator":"EQUAL","value":"${campaignId}"}]`;
+    let endpoint = `${account_id}/adsets?fields=${fields}`;
+    
+    // Adiciona filtro de campanha apenas se um ID for fornecido
+    if (campaignId) {
+      endpoint += `&filtering=[{"field":"campaign.id","operator":"EQUAL","value":"${campaignId}"}]`;
+    }
     
     console.log("Fetching ad sets with endpoint:", endpoint);
     

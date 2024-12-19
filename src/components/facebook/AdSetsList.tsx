@@ -16,18 +16,32 @@ export const AdSetsList = () => {
 
   const { data: adSets, isLoading, error } = useQuery({
     queryKey: ['adSets', selectedMetrics, defaultDateRange?.from, defaultDateRange?.to],
-    queryFn: () => fetchAdSets(undefined, selectedMetrics, defaultDateRange),
+    queryFn: () => fetchAdSets(null, selectedMetrics, defaultDateRange),
     enabled: selectedMetrics.length > 0,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    retry: (failureCount, error: any) => {
+      // Don't retry on rate limit errors
+      if (error?.message?.includes('User request limit reached')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 
   if (isLoading) return <div>Carregando conjuntos de anúncios...</div>;
   
   if (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar conjuntos de anúncios';
+    const isRateLimit = errorMessage.includes('User request limit reached');
+    
     return (
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
-          {error instanceof Error ? error.message : 'Erro ao carregar conjuntos de anúncios'}
+          {isRateLimit 
+            ? 'Limite de requisições atingido. Por favor, aguarde alguns minutos e tente novamente.'
+            : errorMessage
+          }
         </AlertDescription>
       </Alert>
     );
