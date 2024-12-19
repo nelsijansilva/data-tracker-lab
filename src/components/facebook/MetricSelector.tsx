@@ -16,12 +16,23 @@ export type Metric = {
 
 // Define default metrics that should be selected
 const DEFAULT_METRICS = [
-  { field: 'spend', name: 'Gasto' },
-  { field: 'impressions', name: 'Impressões' },
+  { field: 'name', name: 'Nome' },
+  { field: 'status', name: 'Status' },
+  { field: 'objective', name: 'Objetivo' },
+  { field: 'cost_per_result', name: 'Custo por Resultado' },
+  { field: 'budget_remaining', name: 'Orçamento Restante' },
+  { field: 'results', name: 'Resultados' },
+  { field: 'daily_budget', name: 'Orçamento Diário' },
+  { field: 'lifetime_budget', name: 'Orçamento Total' },
+  { field: 'spend', name: 'Gastos' },
   { field: 'clicks', name: 'Cliques' },
-  { field: 'ctr', name: 'Taxa de Cliques' },
-  { field: 'cpc', name: 'Custo por Clique' },
-  { field: 'reach', name: 'Alcance' }
+  { field: 'cpm', name: 'CPM' },
+  { field: 'impressions', name: 'Impressões' },
+  { field: 'ctr', name: 'CTR' },
+  { field: 'cpc', name: 'CPC' },
+  { field: 'cost_per_unique_click', name: 'Custo por Clique Único' },
+  { field: 'unique_clicks', name: 'Cliques Únicos' },
+  { field: 'unique_ctr', name: 'CTR Único' }
 ];
 
 interface MetricSelectorProps {
