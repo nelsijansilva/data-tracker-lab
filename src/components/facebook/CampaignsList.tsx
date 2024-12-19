@@ -19,7 +19,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
 
-  const { data: campaigns, isLoading, error } = useCampaigns(selectedMetrics, dateRange);
+  const { data: campaigns, isLoading, error } = useCampaigns(selectedMetrics, dateRange, selectedAccountId);
 
   const handleRowClick = (campaignId: string) => {
     setSelectedCampaignId(campaignId === selectedCampaignId ? null : campaignId);
@@ -40,9 +40,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
 
   const filteredCampaigns = campaigns?.filter(campaign => {
     const matchesStatus = campaignStatus === 'all' || campaign.status.toLowerCase() === campaignStatus;
-    // Aqui está a correção: comparamos com o ID da conta do Facebook, não com o UUID do banco
-    const matchesAccount = !selectedAccountId || campaign.account_id === selectedAccountId;
-    return matchesStatus && matchesAccount;
+    return matchesStatus;
   });
 
   if (!filteredCampaigns?.length) {

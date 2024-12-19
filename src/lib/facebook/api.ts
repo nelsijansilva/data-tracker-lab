@@ -5,12 +5,14 @@ import { buildCampaignsEndpoint, buildAdSetsEndpoint } from "./apiBuilder";
 import { FB_BASE_URL } from "./config";
 import { handleFacebookError } from "./errors";
 
-export const getFacebookCredentials = async () => {
-  const { data, error } = await supabase
-    .from('facebook_ad_accounts')
-    .select('*')
-    .limit(1)
-    .single();
+export const getFacebookCredentials = async (accountId?: string) => {
+  let query = supabase.from('facebook_ad_accounts').select('*');
+  
+  if (accountId) {
+    query = query.eq('id', accountId);
+  }
+  
+  const { data, error } = await query.limit(1).single();
 
   if (error) {
     console.error('Error fetching Facebook credentials:', error);
@@ -51,9 +53,9 @@ export const fetchFacebookData = async (endpoint: string, accessToken: string) =
   }
 };
 
-export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: DateRange) => {
+export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: DateRange, selectedAccountId?: string) => {
   try {
-    const credentials = await getFacebookCredentials();
+    const credentials = await getFacebookCredentials(selectedAccountId);
     const { account_id, access_token } = credentials;
 
     const endpoint = buildCampaignsEndpoint(account_id, selectedMetrics, dateRange);
