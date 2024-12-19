@@ -5,11 +5,12 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/javascript',
+  'Content-Type': 'application/javascript; charset=utf-8',
   'Cache-Control': 'no-cache, no-store, must-revalidate',
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -24,7 +25,6 @@ serve(async (req) => {
   const url = new URL(req.url);
   const pixelId = url.searchParams.get('pixel_id');
   const eventTestCode = url.searchParams.get('event_test_code');
-  const domain = 'tracker.easelifeperformance.com';
   
   if (!pixelId) {
     return new Response('Pixel ID is required', { 
@@ -42,7 +42,7 @@ serve(async (req) => {
     await supabase
       .from('tracking_requests')
       .insert([{
-        domain,
+        domain: url.hostname,
         url: url.toString(),
         user_agent: req.headers.get('user-agent'),
         language: req.headers.get('accept-language'),
@@ -53,101 +53,68 @@ serve(async (req) => {
   }
 
   const script = `
-    (function() {
-      // Queue para eventos antes do carregamento do FB
-      var queue = [];
-      var loaded = false;
+    !function(f,b,e,v,n,t,s) {
+      if(f.fbq)return;
+      n=f.fbq=function(){
+        n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments)
+      };
+      if(!f._fbq)f._fbq=n;
+      n.push=n;
+      n.loaded=!0;
+      n.version='2.0';
+      n.queue=[];
+      t=b.createElement(e);
+      t.async=!0;
+      t.src=v;
+      s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
-      // Função para processar a fila de eventos
-      function processQueue() {
-        while (queue.length > 0) {
-          var args = queue.shift();
-          fbq.apply(null, args);
-        }
-        loaded = true;
+    // Initialize the pixel with optional test code
+    fbq('init', '${pixelId}'${eventTestCode ? `, { external_id: '${eventTestCode}' }` : ''});
+    
+    // Track PageView
+    fbq('track', 'PageView', {
+      source: 'lovable-tracker',
+      timestamp: new Date().toISOString()
+    });
+
+    // Monitor form submissions for leads
+    document.addEventListener('submit', function(e) {
+      if (e.target.tagName === 'FORM') {
+        fbq('track', 'Lead');
       }
+    }, true);
 
-      // Inicializa o objeto fbq
-      window.fbq = function() {
-        if (loaded) {
-          fbq.apply(null, arguments);
-        } else {
-          queue.push(arguments);
+    // Monitor clicks for checkout events
+    document.addEventListener('click', function(e) {
+      const target = e.target;
+      if (target.tagName === 'BUTTON' || target.tagName === 'A') {
+        const text = target.textContent?.toLowerCase() || '';
+        if (text.includes('comprar') || text.includes('checkout') || text.includes('finalizar')) {
+          fbq('track', 'InitiateCheckout');
         }
-      };
+      }
+    }, true);
 
-      // Configuração inicial do FB Pixel
-      window._fbq = window.fbq;
-      window.fbq.push = window.fbq;
-      window.fbq.loaded = true;
-      window.fbq.version = '2.0';
-      window.fbq.queue = queue;
+    // Monitor scroll for ViewContent
+    let viewContentTracked = false;
+    function trackViewContent() {
+      if (!viewContentTracked && (window.scrollY > 100 || document.documentElement.scrollTop > 100)) {
+        fbq('track', 'ViewContent');
+        viewContentTracked = true;
+        window.removeEventListener('scroll', trackViewContent);
+      }
+    }
+    
+    window.addEventListener('scroll', trackViewContent);
+    setTimeout(trackViewContent, 15000);
 
-      // Carrega o script do Facebook Pixel
-      var script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-      
-      // Quando o script carregar, inicializa o pixel e processa a fila
-      script.onload = function() {
-        window.fbq('init', '${pixelId}'${eventTestCode ? `, { external_id: '${eventTestCode}' }` : ''});
-        window.fbq('track', 'PageView', {
-          source: 'lovable-tracker',
-          domain: '${domain}',
-          timestamp: new Date().toISOString()
-        });
-        processQueue();
-        
-        // Monitora formulários para leads
-        document.querySelectorAll('form').forEach(function(form) {
-          form.addEventListener('submit', function(e) {
-            window.fbq('track', 'Lead');
-          });
-        });
-
-        // Monitora cliques em botões de compra
-        document.querySelectorAll('button, a').forEach(function(el) {
-          el.addEventListener('click', function(e) {
-            var text = el.textContent?.toLowerCase() || '';
-            if (text.includes('comprar') || text.includes('checkout') || text.includes('finalizar')) {
-              window.fbq('track', 'InitiateCheckout');
-            }
-          });
-        });
-
-        // Monitora visualização de conteúdo
-        var viewContentTracked = false;
-        function trackViewContent() {
-          if (!viewContentTracked && (window.scrollY > 100 || document.documentElement.scrollTop > 100)) {
-            window.fbq('track', 'ViewContent');
-            viewContentTracked = true;
-          }
-        }
-        
-        window.addEventListener('scroll', trackViewContent);
-        setTimeout(trackViewContent, 15000);
-
-        console.log('[FB Pixel] Initialized:', {
-          pixelId: '${pixelId}',
-          domain: '${domain}',
-          ${eventTestCode ? `eventTestCode: '${eventTestCode}',` : ''}
-          timestamp: new Date().toISOString()
-        });
-      };
-
-      // Adiciona o script ao documento
-      document.head.appendChild(script);
-
-      // Adiciona o noscript fallback
-      var noscript = document.createElement('noscript');
-      var img = document.createElement('img');
-      img.height = 1;
-      img.width = 1;
-      img.style.display = 'none';
-      img.src = 'https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1';
-      noscript.appendChild(img);
-      document.body.appendChild(noscript);
-    })();
+    console.log('[FB Pixel] Initialized:', {
+      pixelId: '${pixelId}',
+      ${eventTestCode ? `eventTestCode: '${eventTestCode}',` : ''}
+      timestamp: new Date().toISOString()
+    });
   `;
 
   return new Response(script, { headers: corsHeaders });
