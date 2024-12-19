@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { Settings, ArrowUp, ArrowDown, RefreshCw } from "lucide-react";
+import { Settings, ArrowUp, ArrowDown, RefreshCw, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignsList } from "@/components/facebook/CampaignsList";
+import { AdSetsList } from "@/components/facebook/AdSetsList";
 import { AccountsList } from "@/components/facebook/AccountsList";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +16,6 @@ import { DateRange } from "react-day-picker";
 type CampaignStatus = 'all' | 'active' | 'paused';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("campaigns");
   const [showAlert, setShowAlert] = useState(true);
   const [campaignStatus, setCampaignStatus] = useState<CampaignStatus>('all');
   const [selectedAccountId, setSelectedAccountId] = useState<string>('any');
@@ -35,46 +36,132 @@ const Dashboard = () => {
     }
   });
 
-  const { data: hasCredentials, isLoading } = useQuery({
-    queryKey: ['fbCredentials'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('facebook_ad_accounts')
-        .select('*')
-        .limit(1);
-      
-      if (error) {
-        console.error('Error fetching credentials:', error);
-        return false;
-      }
-      return data && data.length > 0;
-    }
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p>Carregando...</p>
+  const renderFilters = () => (
+    <div className="grid grid-cols-4 gap-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">
+          Nome
+        </label>
+        <Input
+          placeholder="Filtrar por nome"
+          className="bg-[#2a2f3d] border-gray-700 text-white"
+        />
       </div>
-    );
-  }
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">
+          Status
+        </label>
+        <Select value={campaignStatus} onValueChange={(value: CampaignStatus) => setCampaignStatus(value)}>
+          <SelectTrigger className={`bg-[#2a2f3d] border-gray-700 text-white ${
+            campaignStatus === 'active' ? 'bg-[#3b82f6]/20 border-[#3b82f6]' :
+            campaignStatus === 'paused' ? 'bg-gray-600/20 border-gray-600' :
+            ''
+          }`}>
+            <SelectValue>
+              {campaignStatus === 'all' && 'Todos'}
+              {campaignStatus === 'active' && 'Ativos'}
+              {campaignStatus === 'paused' && 'Pausados'}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent className="bg-[#2a2f3d] border-gray-700">
+            <SelectItem value="all" className="text-white hover:bg-[#3b4252]">
+              Todos
+            </SelectItem>
+            <SelectItem value="active" className="text-white hover:bg-[#3b4252]">
+              Ativos
+            </SelectItem>
+            <SelectItem value="paused" className="text-white hover:bg-[#3b4252]">
+              Pausados
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">
+          Período de Visualização
+        </label>
+        <DateRangePicker 
+          value={dateRange}
+          onChange={setDateRange}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">
+          Conta de Anúncio
+        </label>
+        <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+          <SelectTrigger className="bg-[#2a2f3d] border-gray-700 text-white">
+            <SelectValue placeholder="Qualquer">
+              {selectedAccountId === 'any' 
+                ? 'Qualquer' 
+                : accounts?.find(acc => acc.id === selectedAccountId)?.account_name || 'Conta selecionada'}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent className="bg-[#2a2f3d] border-gray-700">
+            <SelectItem value="any" className="text-white hover:bg-[#3b4252]">
+              Qualquer
+            </SelectItem>
+            {accounts?.map((account) => (
+              <SelectItem 
+                key={account.id} 
+                value={account.id}
+                className="text-white hover:bg-[#3b4252]"
+              >
+                {account.account_name || `Conta ${account.account_id}`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
 
-  const tabs = [
-    { id: 'accounts', label: 'Contas', icon: <Settings className="w-4 h-4" /> },
-    { id: 'campaigns', label: 'Campanhas', icon: <ArrowUp className="w-4 h-4" /> },
-    { id: 'adsets', label: 'Conjuntos', icon: <ArrowDown className="w-4 h-4" /> },
-    { id: 'ads', label: 'Anúncios', icon: <RefreshCw className="w-4 h-4" /> },
-  ];
+  return (
+    <div className="min-h-screen bg-[#1a1f2e] text-white">
+      <Tabs defaultValue="campaigns" className="w-full">
+        <nav className="border-b border-gray-700">
+          <div className="container mx-auto">
+            <TabsList className="h-16 bg-transparent">
+              <TabsTrigger 
+                value="accounts"
+                className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Contas
+              </TabsTrigger>
+              <TabsTrigger 
+                value="campaigns"
+                className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
+              >
+                <ArrowUp className="w-4 h-4 mr-2" />
+                Campanhas
+              </TabsTrigger>
+              <TabsTrigger 
+                value="adsets"
+                className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
+              >
+                <Layers className="w-4 h-4 mr-2" />
+                Conjuntos
+              </TabsTrigger>
+              <TabsTrigger 
+                value="ads"
+                className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Anúncios
+              </TabsTrigger>
+            </TabsList>
+          </div>
+        </nav>
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'accounts':
-        return <AccountsList />;
-      case 'campaigns':
-        return (
-          <>
+        <div className="container mx-auto py-6 space-y-6">
+          <TabsContent value="accounts">
+            <AccountsList />
+          </TabsContent>
+
+          <TabsContent value="campaigns">
             {showAlert && (
-              <Alert className="bg-[#2a2f3d] border-none text-orange-400">
+              <Alert className="bg-[#2a2f3d] border-none text-orange-400 mb-4">
                 <AlertDescription className="flex justify-between items-center">
                   <div>
                     <p className="font-medium">Filtro de Período de Visualização</p>
@@ -92,83 +179,7 @@ const Dashboard = () => {
               </Alert>
             )}
 
-            <div className="grid grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Nome da Campanha
-                </label>
-                <Input
-                  placeholder="Filtrar por nome"
-                  className="bg-[#2a2f3d] border-gray-700 text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Status da Campanha
-                </label>
-                <Select value={campaignStatus} onValueChange={(value: CampaignStatus) => setCampaignStatus(value)}>
-                  <SelectTrigger className={`bg-[#2a2f3d] border-gray-700 text-white ${
-                    campaignStatus === 'active' ? 'bg-[#3b82f6]/20 border-[#3b82f6]' :
-                    campaignStatus === 'paused' ? 'bg-gray-600/20 border-gray-600' :
-                    ''
-                  }`}>
-                    <SelectValue>
-                      {campaignStatus === 'all' && 'Todas as Campanhas'}
-                      {campaignStatus === 'active' && 'Campanhas Ativas'}
-                      {campaignStatus === 'paused' && 'Campanhas Pausadas'}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#2a2f3d] border-gray-700">
-                    <SelectItem value="all" className="text-white hover:bg-[#3b4252]">
-                      Todas as Campanhas
-                    </SelectItem>
-                    <SelectItem value="active" className="text-white hover:bg-[#3b4252]">
-                      Campanhas Ativas
-                    </SelectItem>
-                    <SelectItem value="paused" className="text-white hover:bg-[#3b4252]">
-                      Campanhas Pausadas
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Período de Visualização
-                </label>
-                <DateRangePicker 
-                  value={dateRange}
-                  onChange={setDateRange}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Conta de Anúncio
-                </label>
-                <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-                  <SelectTrigger className="bg-[#2a2f3d] border-gray-700 text-white">
-                    <SelectValue placeholder="Qualquer">
-                      {selectedAccountId === 'any' 
-                        ? 'Qualquer' 
-                        : accounts?.find(acc => acc.id === selectedAccountId)?.account_name || 'Conta selecionada'}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#2a2f3d] border-gray-700">
-                    <SelectItem value="any" className="text-white hover:bg-[#3b4252]">
-                      Qualquer
-                    </SelectItem>
-                    {accounts?.map((account) => (
-                      <SelectItem 
-                        key={account.id} 
-                        value={account.id}
-                        className="text-white hover:bg-[#3b4252]"
-                      >
-                        {account.account_name || `Conta ${account.account_id}`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            {renderFilters()}
 
             <div className="bg-[#2a2f3d] rounded-lg p-4 mt-4">
               <CampaignsList 
@@ -177,43 +188,26 @@ const Dashboard = () => {
                 selectedAccountId={selectedAccountId === 'any' ? undefined : selectedAccountId}
               />
             </div>
-          </>
-        );
-      default:
-        return <div>Em desenvolvimento</div>;
-    }
-  };
+          </TabsContent>
 
-  return (
-    <div className="min-h-screen bg-[#1a1f2e] text-white">
-      {/* Navigation */}
-      <nav className="border-b border-gray-700">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex space-x-8">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? 'text-[#3b82f6] border-b-2 border-[#3b82f6]'
-                      : 'text-gray-400 hover:text-gray-200'
-                  }`}
-                >
-                  {tab.icon}
-                  <span>{tab.label}</span>
-                </button>
-              ))}
+          <TabsContent value="adsets">
+            {renderFilters()}
+            
+            <div className="bg-[#2a2f3d] rounded-lg p-4 mt-4">
+              <AdSetsList 
+                dateRange={dateRange}
+                selectedAccountId={selectedAccountId === 'any' ? undefined : selectedAccountId}
+              />
             </div>
-          </div>
-        </div>
-      </nav>
+          </TabsContent>
 
-      {/* Main Content */}
-      <div className="container mx-auto py-6 space-y-6">
-        {renderContent()}
-      </div>
+          <TabsContent value="ads">
+            <div className="text-center py-8 text-gray-400">
+              Em desenvolvimento
+            </div>
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 };
