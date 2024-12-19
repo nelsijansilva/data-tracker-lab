@@ -54,7 +54,7 @@ export const buildAdsEndpoint = (
   const fields = buildFieldsParameter(metricFields);
   const insightFields = buildInsightsFieldsParameter(metricFields);
   
-  let endpoint = `${accountId}/ads?fields=${fields}`;
+  let endpoint = `${accountId}/ads?fields=${fields},preview_url`;
 
   if (insightFields && dateRange?.from && dateRange?.to) {
     endpoint += `,insights.time_range({"since":"${format(dateRange.from, 'yyyy-MM-dd')}","until":"${format(dateRange.to, 'yyyy-MM-dd')}"}).fields(${insightFields})`;
