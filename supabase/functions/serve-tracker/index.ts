@@ -9,9 +9,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log('Received request:', req.url);
-
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -28,12 +25,6 @@ serve(async (req) => {
   const eventTestCode = url.searchParams.get('event_test_code');
   const domain = url.searchParams.get('domain') || url.headers.get('referer') || 'unknown';
   
-  console.log('Processing request:', {
-    pixelId,
-    eventTestCode,
-    domain
-  });
-
   if (!pixelId) {
     return new Response('Pixel ID is required', { 
       status: 400,
@@ -41,13 +32,12 @@ serve(async (req) => {
     });
   }
 
-  // Initialize Supabase client with anon key
+  // Initialize Supabase client
   const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
   const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') as string;
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   try {
-    // Log tracking request
     await supabase
       .from('tracking_requests')
       .insert([{
@@ -57,69 +47,90 @@ serve(async (req) => {
         language: req.headers.get('accept-language'),
         timestamp: new Date().toISOString()
       }]);
-
-    console.log('Logged tracking request for domain:', domain);
   } catch (error) {
     console.error('Error logging tracking request:', error);
-    // Continue even if logging fails
   }
 
   const script = `
-    // Ensure fbq is not already defined
-    if (typeof fbq === 'undefined') {
-      !function(f,b,e,v,n,t,s) {
-        if(f.fbq)return;
-        n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;
-        n.push=n;
-        n.loaded=!0;
-        n.version='2.0';
-        n.queue=[];
-        t=b.createElement(e);
-        t.async=!0;
-        t.src=v;
-        s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)
-      }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-
-      // Store pixel configuration
-      window.pixelId = '${pixelId}';
-      ${eventTestCode ? `window.eventTestCode = '${eventTestCode}';` : ''}
+    (function() {
+      // Create and append Facebook Pixel base code
+      var fbPixelScript = document.createElement('script');
+      fbPixelScript.innerHTML = \`
+        !function(f,b,e,v,n,t,s) {
+          if(f.fbq)return;
+          n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;
+          n.push=n;
+          n.loaded=!0;
+          n.version='2.0';
+          n.queue=[];
+          t=b.createElement(e);
+          t.async=!0;
+          t.src=v;
+          s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)
+        }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      \`;
+      document.head.appendChild(fbPixelScript);
 
       // Initialize pixel with test code if available
-      fbq('init', '${pixelId}'${eventTestCode ? `, {
-        external_id: '${eventTestCode}'
-      }` : ''});
+      if (typeof fbq === 'undefined') {
+        console.warn('[FB Pixel] fbq not defined yet, waiting...');
+        var initAttempts = 0;
+        var initInterval = setInterval(function() {
+          if (typeof fbq !== 'undefined') {
+            clearInterval(initInterval);
+            initializePixel();
+          } else if (initAttempts >= 10) {
+            clearInterval(initInterval);
+            console.error('[FB Pixel] Failed to initialize after 10 attempts');
+          }
+          initAttempts++;
+        }, 500);
+      } else {
+        initializePixel();
+      }
 
-      // Track PageView event
-      fbq('track', 'PageView', {
-        source: 'lovable-tracker',
-        domain: '${domain}',
-        timestamp: new Date().toISOString()
-      });
+      function initializePixel() {
+        try {
+          ${eventTestCode 
+            ? `fbq('init', '${pixelId}', { external_id: '${eventTestCode}' });`
+            : `fbq('init', '${pixelId}');`
+          }
+          
+          fbq('track', 'PageView', {
+            source: 'lovable-tracker',
+            domain: '${domain}',
+            timestamp: new Date().toISOString()
+          });
 
-      // Debug logging
-      console.log('[FB Pixel] Initialized:', {
-        pixelId: '${pixelId}',
-        domain: '${domain}',
-        ${eventTestCode ? `eventTestCode: '${eventTestCode}',` : ''}
-        timestamp: new Date().toISOString()
-      });
+          console.log('[FB Pixel] Initialized:', {
+            pixelId: '${pixelId}',
+            domain: '${domain}',
+            ${eventTestCode ? `eventTestCode: '${eventTestCode}',` : ''}
+            timestamp: new Date().toISOString()
+          });
 
-      // Add noscript fallback
-      const noscript = document.createElement('noscript');
-      noscript.innerHTML = '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />';
-      document.body.appendChild(noscript);
-    } else {
-      console.log('[FB Pixel] Already initialized');
-    }
+          // Add noscript fallback
+          var noscript = document.createElement('noscript');
+          var img = document.createElement('img');
+          img.height = 1;
+          img.width = 1;
+          img.style.display = 'none';
+          img.src = 'https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1';
+          noscript.appendChild(img);
+          document.body.appendChild(noscript);
+        } catch (error) {
+          console.error('[FB Pixel] Initialization error:', error);
+        }
+      }
+    })();
   `;
 
   return new Response(script, { 
     headers: {
       ...corsHeaders,
-      'Content-Type': 'application/javascript',
-      'Cache-Control': 'no-cache, no-store, must-revalidate', // Disable caching for debugging
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
     } 
   });
 });
