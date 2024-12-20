@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model FacebookAdAccount {
+  id           String     @id @default(uuid())
+  accountId    String     @map("account_id")
+  accessToken  String     @map("access_token")
+  appId        String     @map("app_id")
+  appSecret    String     @map("app_secret")
+  accountName  String     @map("account_name")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  campaigns    Campaign[]
+
+  @@map("facebook_ad_accounts")
+}
+
+model Campaign {
+  id           String           @id @default(uuid())
+  campaignId   String          @map("campaign_id")
+  accountId    String?         @map("account_id")
+  name         String
+  status       String
+  objective    String?
+  spend        Float?
+  impressions  Int?
+  clicks       Int?
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  account      FacebookAdAccount? @relation(fields: [accountId], references: [id])
+  adSets       AdSet[]
+
+  @@map("facebook_campaigns")
+}
+
+model AdSet {
+  id              String    @id @default(uuid())
+  adSetId         String    @map("ad_set_id")
+  campaignId      String?   @map("campaign_id")
+  name            String
+  status          String
+  budgetRemaining Float?    @map("budget_remaining")
+  dailyBudget     Float?    @map("daily_budget")
+  lifetimeBudget  Float?    @map("lifetime_budget")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  campaign        Campaign? @relation(fields: [campaignId], references: [id])
+  ads             Ad[]
+
+  @@map("facebook_ad_sets")
+}
+
+model Ad {
+  id          String   @id @default(uuid())
+  adId        String   @map("ad_id")
+  adSetId     String?  @map("ad_set_id")
+  name        String
+  status      String
+  previewUrl  String?  @map("preview_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  adSet       AdSet?   @relation(fields: [adSetId], references: [id])
+
+  @@map("facebook_ads")
+}
+
+model CustomMetric {
+  id        String   @id @default(uuid())
+  name      String
+  field     String
+  isCustom  Boolean? @map("is_custom")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  selected  SelectedMetric[]
+
+  @@map("custom_metrics")
+}
+
+model SelectedMetric {
+  id        String       @id @default(uuid())
+  metricId  String      @map("metric_id")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  metric    CustomMetric @relation(fields: [metricId], references: [id])
+
+  @@map("selected_metrics")
+}
+
+model WebhookEvent {
+  id          String    @id @default(uuid())
+  event       String
+  value       Json
+  rawPayload  Json      @map("raw_payload")
+  processedAt DateTime? @map("processed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("webhook_events")
+}
+
+model WebhookLog {
+  id          String    @id @default(uuid())
+  payload     Json
+  headers     Json
+  source      String?
+  status      String?   @default("received")
+  processedAt DateTime? @map("processed_at")
+  createdAt   DateTime? @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+
+  @@map("webhook_logs")
+}
