@@ -1,10 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, ArrowUp, Layers, RefreshCw, LineChart } from "lucide-react";
+import { Settings, ArrowUp, Layers, RefreshCw, LineChart, List } from "lucide-react";
 import { AccountsList } from "./AccountsList";
 import { CampaignsList } from "./CampaignsList";
 import { AdSetsList } from "./AdSetsList";
 import { AdsList } from "./AdsList";
 import { CustomMetricsDashboard } from "./CustomMetricsDashboard";
+import { LogsTab } from "./LogsTab";
 import { DateRange } from "react-day-picker";
 import { useEffect } from "react";
 
@@ -23,7 +24,6 @@ export const DashboardTabs = ({
   campaignStatus,
   selectedAccountId
 }: DashboardTabsProps) => {
-  // Handle ResizeObserver errors
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
       if (event.message.includes('ResizeObserver')) {
@@ -80,6 +80,13 @@ export const DashboardTabs = ({
               <LineChart className="w-4 h-4 mr-2" />
               Métricas
             </TabsTrigger>
+            <TabsTrigger 
+              value="logs"
+              className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
+            >
+              <List className="w-4 h-4 mr-2" />
+              Logs
+            </TabsTrigger>
           </TabsList>
         </div>
       </nav>
@@ -122,6 +129,12 @@ export const DashboardTabs = ({
         <TabsContent value="metrics" className="mt-0">
           <div className="bg-[#2a2f3d] rounded-lg p-4">
             <CustomMetricsDashboard />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="logs" className="mt-0">
+          <div className="bg-[#2a2f3d] rounded-lg p-4">
+            <LogsTab />
           </div>
         </TabsContent>
       </div>
