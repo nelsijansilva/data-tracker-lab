@@ -30,11 +30,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // Garantir que apenas requisições POST sejam aceitas
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+    return new Response(
+      JSON.stringify({ 
+        error: 'Method not allowed. Only POST requests are accepted.',
+        method: req.method 
+      }), 
+      {
+        status: 405,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
   }
 
   try {
