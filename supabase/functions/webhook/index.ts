@@ -52,13 +52,24 @@ serve(async (req) => {
       throw new Error('Invalid JSON payload');
     }
 
-    // Validate token - now comparing with the stored token directly
+    // Log the entire payload structure for debugging
+    console.log('Received payload structure:', JSON.stringify(payload, null, 2));
+
+    // Validate token - now checking if it exists in the body
     const receivedToken = payload.body?.token;
-    console.log('Token validation - Received:', receivedToken, 'Stored:', tictoAccount.token);
+    const storedToken = tictoAccount.token;
     
-    if (!receivedToken || receivedToken !== tictoAccount.token) {
-      console.error('Token validation failed');
-      throw new Error('Invalid token');
+    console.log('Token validation:');
+    console.log('- Received token:', receivedToken);
+    console.log('- Stored token:', storedToken);
+    console.log('- Token match:', receivedToken === storedToken);
+
+    if (!receivedToken) {
+      throw new Error('Token not found in payload');
+    }
+
+    if (receivedToken !== storedToken) {
+      throw new Error(`Invalid token for account: ${accountName}`);
     }
 
     console.log('Token validation successful');
