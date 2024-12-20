@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,13 +7,13 @@ import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
-import { useState } from "react";
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+// Separate the ProtectedRoute into its own component file for better organization
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         navigate('/');
@@ -41,8 +41,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-function App() {
-  const [queryClient] = useState(() => new QueryClient());
+// Create a separate component for the app's main content
+const AppContent: React.FC = () => {
+  const queryClient = React.useState(() => new QueryClient())[0];
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -62,6 +63,11 @@ function App() {
       </TooltipProvider>
     </QueryClientProvider>
   );
-}
+};
+
+// Main App component
+const App: React.FC = () => {
+  return <AppContent />;
+};
 
 export default App;

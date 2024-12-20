@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 export type Metric = {
   id: string;
@@ -29,15 +30,27 @@ const DEFAULT_METRIC_FIELDS = [
   'reach'
 ];
 
+const handleApiError = (error: any, message: string) => {
+  console.error(message, error);
+  toast({
+    title: "Error",
+    description: message,
+    variant: "destructive",
+  });
+};
+
 export const useMetricsStore = create<MetricsState>((set, get) => ({
   metrics: [],
   selectedMetrics: [],
   
   setSelectedMetrics: async (metrics) => {
     set({ selectedMetrics: metrics });
-    // Persist the selection whenever it changes
-    const { persistSelectedMetrics } = get();
-    await persistSelectedMetrics(metrics);
+    try {
+      const { persistSelectedMetrics } = get();
+      await persistSelectedMetrics(metrics);
+    } catch (error) {
+      handleApiError(error, "Failed to save selected metrics");
+    }
   },
   
   fetchMetrics: async () => {
@@ -57,8 +70,7 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
 
       set({ metrics: formattedMetrics });
     } catch (error) {
-      console.error('Error fetching metrics:', error);
-      throw error;
+      handleApiError(error, "Failed to fetch metrics");
     }
   },
 
@@ -66,12 +78,10 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
     const { selectedMetrics, loadPersistedMetrics } = get();
     
     if (selectedMetrics.length === 0) {
-      // First try to load persisted metrics
-      await loadPersistedMetrics();
-      
-      // If still no metrics are selected, load defaults
-      if (get().selectedMetrics.length === 0) {
-        try {
+      try {
+        await loadPersistedMetrics();
+        
+        if (get().selectedMetrics.length === 0) {
           const { data, error } = await supabase
             .from('custom_metrics')
             .select('*')
@@ -87,42 +97,33 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
           }));
 
           set({ selectedMetrics: defaultMetrics });
-          // Persist default metrics
           const { persistSelectedMetrics } = get();
           await persistSelectedMetrics(defaultMetrics);
-        } catch (error) {
-          console.error('Error initializing default metrics:', error);
-          throw error;
         }
+      } catch (error) {
+        handleApiError(error, "Failed to initialize default metrics");
       }
     }
   },
 
   persistSelectedMetrics: async (metrics: Metric[]) => {
     try {
-      // First, delete all existing selections
       const { error: deleteError } = await supabase
         .from('selected_metrics')
         .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+        .neq('id', '00000000-0000-0000-0000-000000000000');
 
       if (deleteError) throw deleteError;
 
-      // Then insert new selections
       if (metrics.length > 0) {
         const { error: insertError } = await supabase
           .from('selected_metrics')
-          .insert(
-            metrics.map(metric => ({
-              metric_id: metric.id
-            }))
-          );
+          .insert(metrics.map(metric => ({ metric_id: metric.id })));
 
         if (insertError) throw insertError;
       }
     } catch (error) {
-      console.error('Error persisting selected metrics:', error);
-      throw error;
+      handleApiError(error, "Failed to persist selected metrics");
     }
   },
 
@@ -153,8 +154,7 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
         set({ selectedMetrics: metrics });
       }
     } catch (error) {
-      console.error('Error loading persisted metrics:', error);
-      throw error;
+      handleApiError(error, "Failed to load persisted metrics");
     }
   },
 
@@ -182,8 +182,7 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
         }]
       });
     } catch (error) {
-      console.error('Error adding metric:', error);
-      throw error;
+      handleApiError(error, "Failed to add metric");
     }
   },
 
@@ -204,12 +203,10 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
         selectedMetrics: newSelectedMetrics
       });
 
-      // Update persisted selections
       const { persistSelectedMetrics } = get();
       await persistSelectedMetrics(newSelectedMetrics);
     } catch (error) {
-      console.error('Error deleting metric:', error);
-      throw error;
+      handleApiError(error, "Failed to delete metric");
     }
   }
 }));
