@@ -3,8 +3,7 @@ import {
   FacebookAdAccountsTable,
   FacebookAdSetsTable,
   FacebookAdsTable,
-  FacebookCampaignsTable,
-  FacebookPixelsTable
+  FacebookCampaignsTable
 } from './facebook';
 import { ProfilesTable } from './profiles';
 import { TrackingRequestsTable } from './tracking';
@@ -25,7 +24,6 @@ export type Database = {
       facebook_ad_sets: FacebookAdSetsTable
       facebook_ads: FacebookAdsTable
       facebook_campaigns: FacebookCampaignsTable
-      facebook_pixels: FacebookPixelsTable
       profiles: ProfilesTable
       selected_metrics: SelectedMetricsTable
       tracking_requests: TrackingRequestsTable
