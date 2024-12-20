@@ -24,11 +24,9 @@ serve(async (req) => {
       )
     }
 
-    // Verificar token de autenticação
+    // Get the authorization header
     const authHeader = req.headers.get('authorization')
-    const webhookSecret = Deno.env.get('WEBHOOK_SECRET')
-    
-    if (!authHeader || !webhookSecret) {
+    if (!authHeader) {
       return new Response(
         JSON.stringify({ 
           error: 'Missing authorization header',
@@ -41,25 +39,18 @@ serve(async (req) => {
       )
     }
 
-    // Validar formato do token (Bearer TOKEN)
-    if (!authHeader.startsWith('Bearer ')) {
+    // Extract the token
+    const token = authHeader.replace('Bearer ', '')
+    const webhookSecret = Deno.env.get('WEBHOOK_SECRET')
+
+    // Validate webhook secret
+    if (!webhookSecret || token !== webhookSecret) {
+      console.error('Invalid webhook secret provided:', token)
       return new Response(
         JSON.stringify({ 
-          error: 'Invalid authorization format',
-          message: 'Authorization header must be in format: Bearer YOUR_WEBHOOK_SECRET'
+          error: 'Invalid webhook secret',
+          message: 'The provided webhook secret is invalid'
         }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 401 
-        }
-      )
-    }
-
-    // Validar o token
-    const token = authHeader.split(' ')[1]
-    if (token !== webhookSecret) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid webhook secret' }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 401 
