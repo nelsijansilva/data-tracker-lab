@@ -22,6 +22,30 @@ export const createFacebookAccount = async (accountData: any) => {
   return response.json();
 };
 
+export const updateFacebookAccount = async (id: string, accountData: any) => {
+  const response = await fetch(`${API_URL}/api/facebook/accounts/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(accountData),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update Facebook account');
+  }
+  return response.json();
+};
+
+export const deleteFacebookAccount = async (id: string) => {
+  const response = await fetch(`${API_URL}/api/facebook/accounts/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to delete Facebook account');
+  }
+  return response.json();
+};
+
 export const fetchCampaigns = async () => {
   const response = await fetch(`${API_URL}/api/facebook/campaigns`);
   if (!response.ok) {
