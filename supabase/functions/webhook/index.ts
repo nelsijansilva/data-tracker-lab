@@ -93,11 +93,7 @@ serve(async (req) => {
           method: req.method,
           url: req.url,
           status: 200,
-          payload: {
-            headers: Object.fromEntries(req.headers.entries()),
-            body: payload,
-            rawBody: rawBody
-          },
+          payload: JSON.parse(rawBody), // Store the raw webhook payload directly
           ticto_account_id: tictoAccount.id
         }
       ]);
@@ -130,12 +126,8 @@ serve(async (req) => {
             method: req.method,
             url: req.url,
             status: 400,
-            payload: { 
-              error: error.message,
-              url: req.url,
-              method: req.method,
-              headers: Object.fromEntries(req.headers.entries())
-            }
+            payload: { error: error.message },
+            ticto_account_id: null
           }
         ]);
     }
@@ -143,10 +135,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        url: req.url,
-        method: req.method,
-        headers: Object.fromEntries(req.headers.entries())
+        error: error instanceof Error ? error.message : 'Unknown error'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
