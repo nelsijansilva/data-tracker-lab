@@ -52,6 +52,8 @@ serve(async (req) => {
       throw new Error(`Ticto account not found for account name: ${accountName}`);
     }
 
+    console.log('Found Ticto account:', tictoAccount.id);
+
     // Parse webhook payload
     let payload: TictoWebhookPayload;
     try {
@@ -63,10 +65,15 @@ serve(async (req) => {
     console.log('Received webhook payload:', JSON.stringify(payload, null, 2));
 
     // Validate token
-    if (!payload.body?.token || payload.body.token !== tictoAccount.token) {
-      console.error('Invalid token received:', payload.body?.token);
+    const receivedToken = payload.body?.token;
+    console.log('Comparing tokens - Received:', receivedToken, 'Stored:', tictoAccount.token);
+    
+    if (!receivedToken || receivedToken !== tictoAccount.token) {
+      console.error('Token validation failed - Received:', receivedToken);
       throw new Error('Invalid token');
     }
+
+    console.log('Token validation successful');
 
     // Process and validate data
     const processedData = processWebhookData(payload);
@@ -126,7 +133,7 @@ serve(async (req) => {
             method: req.method,
             url: req.url,
             status: 400,
-            payload: { error: error.message },
+            payload: JSON.parse(await req.clone().text()), // Store the raw webhook payload
             ticto_account_id: null
           }
         ]);
