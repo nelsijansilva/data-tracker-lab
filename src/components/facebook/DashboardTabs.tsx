@@ -1,11 +1,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, ArrowUp, Layers, RefreshCw, LineChart, Code } from "lucide-react";
+import { Settings, ArrowUp, Layers, RefreshCw, LineChart } from "lucide-react";
 import { AccountsList } from "./AccountsList";
 import { CampaignsList } from "./CampaignsList";
 import { AdSetsList } from "./AdSetsList";
 import { AdsList } from "./AdsList";
 import { CustomMetricsDashboard } from "./CustomMetricsDashboard";
-import { PixelConfigForm } from "./PixelConfigForm";
 import { DateRange } from "react-day-picker";
 import { useEffect } from "react";
 
@@ -81,13 +80,6 @@ export const DashboardTabs = ({
               <LineChart className="w-4 h-4 mr-2" />
               Métricas
             </TabsTrigger>
-            <TabsTrigger 
-              value="pixel"
-              className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
-            >
-              <Code className="w-4 h-4 mr-2" />
-              Pixel
-            </TabsTrigger>
           </TabsList>
         </div>
       </nav>
@@ -130,12 +122,6 @@ export const DashboardTabs = ({
         <TabsContent value="metrics" className="mt-0">
           <div className="bg-[#2a2f3d] rounded-lg p-4">
             <CustomMetricsDashboard />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="pixel" className="mt-0">
-          <div className="bg-[#2a2f3d] rounded-lg p-4">
-            <PixelConfigForm />
           </div>
         </TabsContent>
       </div>

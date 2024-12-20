@@ -14,12 +14,6 @@ export interface Funnel {
   steps: FunnelStep[];
 }
 
-export interface PixelConfiguration {
-  id: string;
-  pixelId: string;
-  apiToken: string;
-}
-
 export interface CDNConfig {
   id: string;
   subdomain: string;

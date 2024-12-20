@@ -207,36 +207,6 @@ export type Database = {
           },
         ]
       }
-      facebook_pixels: {
-        Row: {
-          created_at: string
-          event_test_code: string | null
-          id: string
-          pixel_id: string
-          pixel_name: string
-          pixel_token: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          event_test_code?: string | null
-          id?: string
-          pixel_id: string
-          pixel_name: string
-          pixel_token: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          event_test_code?: string | null
-          id?: string
-          pixel_id?: string
-          pixel_name?: string
-          pixel_token?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -289,39 +259,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      tracking_requests: {
-        Row: {
-          domain: string
-          id: string
-          language: string | null
-          latitude: number | null
-          longitude: number | null
-          timestamp: string
-          url: string | null
-          user_agent: string | null
-        }
-        Insert: {
-          domain: string
-          id?: string
-          language?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          timestamp?: string
-          url?: string | null
-          user_agent?: string | null
-        }
-        Update: {
-          domain?: string
-          id?: string
-          language?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          timestamp?: string
-          url?: string | null
-          user_agent?: string | null
-        }
-        Relationships: []
       }
     }
     Views: {
