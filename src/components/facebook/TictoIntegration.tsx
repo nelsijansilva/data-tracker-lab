@@ -29,12 +29,15 @@ export const TictoIntegration = () => {
 
   const handleSubmit = async (data: { account_name: string; token: string }) => {
     try {
+      const webhookUrl = `${window.location.origin}/api/webhook?account=${data.account_name}`;
+
       if (selectedAccount) {
         const { error } = await supabase
           .from('ticto_accounts')
           .update({ 
             account_name: data.account_name,
-            token: data.token
+            token: data.token,
+            webhook_url: webhookUrl
           })
           .eq('id', selectedAccount.id);
 
@@ -45,7 +48,8 @@ export const TictoIntegration = () => {
           .from('ticto_accounts')
           .insert([{ 
             account_name: data.account_name,
-            token: data.token
+            token: data.token,
+            webhook_url: webhookUrl
           }]);
 
         if (error) throw error;
