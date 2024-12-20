@@ -55,8 +55,8 @@ serve(async (req) => {
     // Log the entire payload structure for debugging
     console.log('Received payload structure:', JSON.stringify(payload, null, 2));
 
-    // Validate token - now checking if it exists in the body
-    const receivedToken = payload.body?.token;
+    // Validate token - checking token directly from payload, not in body
+    const receivedToken = payload.token;
     const storedToken = tictoAccount.token;
     
     console.log('Token validation:');

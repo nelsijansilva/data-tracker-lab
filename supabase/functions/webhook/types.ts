@@ -1,6 +1,6 @@
 export interface TictoWebhookPayload {
+  token: string;
   body: {
-    token: string;
     status: string;
     payment_method: string;
     order: {
