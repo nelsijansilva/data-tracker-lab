@@ -36,11 +36,9 @@ interface TictoWebhookPayload {
   };
 }
 
-// Função para validar e processar os dados antes de salvar
 function processWebhookData(payload: TictoWebhookPayload) {
   const { body } = payload;
   
-  // Validações básicas
   if (!body.order?.hash) {
     throw new Error('Order hash is required');
   }
@@ -53,7 +51,6 @@ function processWebhookData(payload: TictoWebhookPayload) {
     throw new Error('Payment method is required');
   }
 
-  // Processar e formatar os dados
   return {
     order_hash: body.order.hash,
     status: body.status.toLowerCase(),
@@ -83,6 +80,7 @@ serve(async (req) => {
     const accountName = url.searchParams.get('account');
     
     if (!accountName) {
+      console.error('Account name missing in query parameters');
       throw new Error('Account name is required in query parameters');
     }
 
@@ -111,7 +109,7 @@ serve(async (req) => {
     console.log('Received webhook payload:', payload);
 
     // Validar o token
-    if (payload.body?.token !== tictoAccount.token) {
+    if (!payload.body?.token || payload.body.token !== tictoAccount.token) {
       console.error('Invalid token received');
       throw new Error('Invalid token');
     }
