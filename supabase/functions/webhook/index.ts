@@ -3,7 +3,10 @@ import { corsHeaders, createSupabaseAdmin, processWebhookData } from './utils.ts
 import type { TictoWebhookPayload } from './types.ts';
 
 serve(async (req) => {
-  console.log('Received webhook request:', req.method, req.url);
+  console.log('=== Webhook Request Details ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Headers:', Object.fromEntries(req.headers.entries()));
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -16,6 +19,11 @@ serve(async (req) => {
   }
 
   try {
+    // Clone the request to read the body multiple times if needed
+    const clonedReq = req.clone();
+    const rawBody = await clonedReq.text();
+    console.log('Raw request body:', rawBody);
+
     // Parse URL and validate account parameter
     const url = new URL(req.url);
     console.log('Full URL:', url.toString());
@@ -45,7 +53,13 @@ serve(async (req) => {
     }
 
     // Parse webhook payload
-    const payload = await req.json() as TictoWebhookPayload;
+    let payload: TictoWebhookPayload;
+    try {
+      payload = JSON.parse(rawBody) as TictoWebhookPayload;
+    } catch (e) {
+      console.error('Error parsing JSON payload:', e);
+      throw new Error('Invalid JSON payload');
+    }
     console.log('Received webhook payload:', JSON.stringify(payload, null, 2));
 
     // Validate token
@@ -79,7 +93,11 @@ serve(async (req) => {
           method: req.method,
           url: req.url,
           status: 200,
-          payload: payload,
+          payload: {
+            headers: Object.fromEntries(req.headers.entries()),
+            body: payload,
+            rawBody: rawBody
+          },
           ticto_account_id: tictoAccount.id
         }
       ]);
@@ -115,7 +133,8 @@ serve(async (req) => {
             payload: { 
               error: error.message,
               url: req.url,
-              method: req.method
+              method: req.method,
+              headers: Object.fromEntries(req.headers.entries())
             }
           }
         ]);
@@ -126,7 +145,8 @@ serve(async (req) => {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
         url: req.url,
-        method: req.method
+        method: req.method,
+        headers: Object.fromEntries(req.headers.entries())
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
