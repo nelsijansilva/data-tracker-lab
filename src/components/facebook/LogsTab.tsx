@@ -3,6 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 
+interface WebhookLog {
+  id: string;
+  method: string;
+  url: string;
+  status: number;
+  payload: any;
+  created_at: string;
+}
+
 export const LogsTab = () => {
   const { data: logs, isLoading } = useQuery({
     queryKey: ['webhook-logs'],
@@ -10,7 +19,7 @@ export const LogsTab = () => {
       const { data, error } = await supabase
         .from('webhook_logs')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as { data: WebhookLog[], error: any };
       
       if (error) throw error;
       return data || [];
