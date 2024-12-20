@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AccountCredentialsForm } from "./AccountCredentialsForm";
 import { useState } from "react";
+import { fetchFacebookAccounts } from "@/services/api";
 
 interface Account {
   id: string;
@@ -23,24 +23,15 @@ export const AccountsList = () => {
 
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['fbAccounts'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('facebook_ad_accounts')
-        .select('*');
-      
-      if (error) throw error;
-      return data;
-    }
+    queryFn: fetchFacebookAccounts
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (accountId: string) => {
-      const { error } = await supabase
-        .from('facebook_ad_accounts')
-        .delete()
-        .eq('id', accountId);
-      
-      if (error) throw error;
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/facebook/accounts/${accountId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete account');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fbAccounts'] });

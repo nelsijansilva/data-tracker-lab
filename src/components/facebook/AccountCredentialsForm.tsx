@@ -3,8 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { createFacebookAccount } from "@/services/api";
 
 interface AccountCredentialsFormProps {
   initialData?: {
@@ -41,20 +41,25 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
     e.preventDefault();
 
     try {
+      const accountData = {
+        account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
+        access_token: accessToken,
+        app_id: appId,
+        app_secret: appSecret,
+        account_name: accountName,
+      };
+
       if (initialData) {
         // Update existing account
-        const { error } = await supabase
-          .from('facebook_ad_accounts')
-          .update({
-            account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
-            access_token: accessToken,
-            app_id: appId,
-            app_secret: appSecret,
-            account_name: accountName,
-          })
-          .eq('id', initialData.id);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/facebook/accounts/${initialData.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(accountData),
+        });
 
-        if (error) throw error;
+        if (!response.ok) throw new Error('Failed to update account');
 
         toast({
           title: "Sucesso",
@@ -62,19 +67,7 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
         });
       } else {
         // Create new account
-        const { error } = await supabase
-          .from('facebook_ad_accounts')
-          .insert([
-            {
-              account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
-              access_token: accessToken,
-              app_id: appId,
-              app_secret: appSecret,
-              account_name: accountName,
-            }
-          ]);
-
-        if (error) throw error;
+        await createFacebookAccount(accountData);
 
         toast({
           title: "Sucesso",
