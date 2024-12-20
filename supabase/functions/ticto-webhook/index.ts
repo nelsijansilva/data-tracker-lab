@@ -21,7 +21,6 @@ interface TictoWebhookPayload {
     installments: number;
     order_date: string;
   };
-  // ... outros campos conforme necessário
 }
 
 serve(async (req) => {
@@ -45,20 +44,26 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Obter o token da URL
+    // Get the integration_id from query params
     const url = new URL(req.url)
     const integrationId = url.searchParams.get('integration_id')
+    const token = url.searchParams.get('token')
 
     if (!integrationId) {
       throw new Error('Integration ID is required')
     }
 
-    // Verificar se a integração existe e está ativa
+    if (!token) {
+      throw new Error('Token is required')
+    }
+
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Verify if the integration exists and is active
     const { data: integration, error: integrationError } = await supabaseClient
       .from('platform_integrations')
       .select('*')
@@ -73,15 +78,15 @@ serve(async (req) => {
       throw new Error('Integration is not active')
     }
 
-    // Ler o payload do webhook
-    const payload: TictoWebhookPayload = await req.json()
-
-    // Verificar o token do webhook
-    if (payload.token !== integration.webhook_token) {
+    // Verify webhook token
+    if (token !== integration.webhook_token) {
       throw new Error('Invalid webhook token')
     }
 
-    // Salvar o evento do webhook
+    // Read the webhook payload
+    const payload: TictoWebhookPayload = await req.json()
+
+    // Save the webhook event
     const { data: webhookEvent, error: webhookError } = await supabaseClient
       .from('webhook_events')
       .insert([
@@ -98,7 +103,7 @@ serve(async (req) => {
       throw webhookError
     }
 
-    console.log(`Webhook processado com sucesso: ${webhookEvent.id}`)
+    console.log(`Webhook processed successfully: ${webhookEvent.id}`)
 
     return new Response(
       JSON.stringify({ success: true, event_id: webhookEvent.id }),
@@ -109,7 +114,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Erro ao processar webhook:', error)
+    console.error('Error processing webhook:', error)
     
     return new Response(
       JSON.stringify({ error: error.message }),
