@@ -27,6 +27,11 @@ serve(async (req) => {
     const payload = await req.json()
     const headers = Object.fromEntries(req.headers.entries())
 
+    console.log('Received webhook:', {
+      source: headers['x-webhook-source'],
+      payload: payload
+    })
+
     // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
