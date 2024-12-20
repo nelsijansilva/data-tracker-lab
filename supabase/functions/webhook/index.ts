@@ -93,14 +93,20 @@ serve(async (req) => {
 
     console.log('Processing webhook for account:', accountName);
 
-    // Create Supabase client
-    const supabaseClient = createClient(
+    // Create Supabase client with service role key for admin access
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
     );
 
     // Get the Ticto account configuration
-    const { data: tictoAccount, error: accountError } = await supabaseClient
+    const { data: tictoAccount, error: accountError } = await supabaseAdmin
       .from('ticto_accounts')
       .select('id, token')
       .eq('account_name', accountName)
@@ -126,7 +132,7 @@ serve(async (req) => {
     console.log('Processed data:', processedData);
 
     // Inserir dados processados
-    const { error: insertError } = await supabaseClient
+    const { error: insertError } = await supabaseAdmin
       .from('ticto_orders')
       .insert([{
         ...processedData,
@@ -139,7 +145,7 @@ serve(async (req) => {
     }
 
     // Log webhook
-    await supabaseClient
+    await supabaseAdmin
       .from('webhook_logs')
       .insert([
         {
@@ -169,12 +175,18 @@ serve(async (req) => {
 
     // Log error no webhook_logs
     if (error instanceof Error) {
-      const supabaseClient = createClient(
+      const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
       );
 
-      await supabaseClient
+      await supabaseAdmin
         .from('webhook_logs')
         .insert([
           {
