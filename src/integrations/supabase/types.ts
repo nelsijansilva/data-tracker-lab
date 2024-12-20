@@ -287,6 +287,74 @@ export type Database = {
         }
         Relationships: []
       }
+      ticto_orders: {
+        Row: {
+          created_at: string
+          customer_document: string | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          installments: number | null
+          offer_id: number | null
+          offer_name: string | null
+          order_hash: string
+          paid_amount: number | null
+          payment_method: string
+          product_id: number | null
+          product_name: string | null
+          status: string
+          ticto_account_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_document?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          installments?: number | null
+          offer_id?: number | null
+          offer_name?: string | null
+          order_hash: string
+          paid_amount?: number | null
+          payment_method: string
+          product_id?: number | null
+          product_name?: string | null
+          status: string
+          ticto_account_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_document?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          installments?: number | null
+          offer_id?: number | null
+          offer_name?: string | null
+          order_hash?: string
+          paid_amount?: number | null
+          payment_method?: string
+          product_id?: number | null
+          product_name?: string | null
+          status?: string
+          ticto_account_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticto_orders_ticto_account_id_fkey"
+            columns: ["ticto_account_id"]
+            isOneToOne: false
+            referencedRelation: "ticto_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_logs: {
         Row: {
           created_at: string
@@ -294,6 +362,7 @@ export type Database = {
           method: string
           payload: Json | null
           status: number
+          ticto_account_id: string | null
           url: string
         }
         Insert: {
@@ -302,6 +371,7 @@ export type Database = {
           method: string
           payload?: Json | null
           status: number
+          ticto_account_id?: string | null
           url: string
         }
         Update: {
@@ -310,9 +380,18 @@ export type Database = {
           method?: string
           payload?: Json | null
           status?: number
+          ticto_account_id?: string | null
           url?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "webhook_logs_ticto_account_id_fkey"
+            columns: ["ticto_account_id"]
+            isOneToOne: false
+            referencedRelation: "ticto_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
