@@ -16,12 +16,15 @@ serve(async (req) => {
   }
 
   try {
-    // Validar URL e parâmetros
+    // Parse URL and validate account parameter
     const url = new URL(req.url);
+    console.log('Full URL:', url.toString());
+    console.log('Search params:', Object.fromEntries(url.searchParams.entries()));
+    
     const accountName = url.searchParams.get('account');
+    console.log('Account name from URL:', accountName);
     
     if (!accountName) {
-      console.error('Account name missing in query parameters');
       throw new Error('Account name is required in query parameters');
     }
 
@@ -38,24 +41,24 @@ serve(async (req) => {
 
     if (accountError || !tictoAccount) {
       console.error('Error finding Ticto account:', accountError);
-      throw new Error('Ticto account not found');
+      throw new Error(`Ticto account not found for account name: ${accountName}`);
     }
 
     // Parse webhook payload
     const payload = await req.json() as TictoWebhookPayload;
     console.log('Received webhook payload:', JSON.stringify(payload, null, 2));
 
-    // Validar o token
+    // Validate token
     if (!payload.body?.token || payload.body.token !== tictoAccount.token) {
       console.error('Invalid token received:', payload.body?.token);
       throw new Error('Invalid token');
     }
 
-    // Processar e validar os dados
+    // Process and validate data
     const processedData = processWebhookData(payload);
     console.log('Processed data:', processedData);
 
-    // Inserir dados processados
+    // Insert processed data
     const { error: insertError } = await supabaseAdmin
       .from('ticto_orders')
       .insert([{
@@ -86,7 +89,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true,
         message: 'Webhook processed successfully',
-        order_hash: processedData.order_hash
+        order_hash: processedData.order_hash,
+        account_name: accountName
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -97,10 +101,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error processing webhook:', error);
 
-    // Log error no webhook_logs
+    // Log error in webhook_logs
     if (error instanceof Error) {
       const supabaseAdmin = createSupabaseAdmin();
-
+      
       await supabaseAdmin
         .from('webhook_logs')
         .insert([
@@ -108,7 +112,11 @@ serve(async (req) => {
             method: req.method,
             url: req.url,
             status: 400,
-            payload: { error: error.message }
+            payload: { 
+              error: error.message,
+              url: req.url,
+              method: req.method
+            }
           }
         ]);
     }
@@ -116,7 +124,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
+        url: req.url,
+        method: req.method
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
