@@ -29,7 +29,7 @@ export const TictoIntegration = () => {
 
   const handleSubmit = async (data: { account_name: string; token: string }) => {
     try {
-      const webhookUrl = `${window.location.origin}/api/webhook?account=${data.account_name}`;
+      const webhookUrl = `https://avxgduktxkorwfmccwbs.supabase.co/functions/v1/webhook?account=${data.account_name}`;
 
       if (selectedAccount) {
         const { error } = await supabase
@@ -58,6 +58,7 @@ export const TictoIntegration = () => {
       
       refetch();
       setSelectedAccount(undefined);
+      setIsOpen(false);
     } catch (error) {
       console.error('Error:', error);
       toast.error("Erro ao salvar conta");
