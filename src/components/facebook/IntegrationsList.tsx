@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Copy } from "lucide-react";
 import { IntegrationForm } from "./IntegrationForm";
+import { toast } from "@/components/ui/use-toast";
 
 export const IntegrationsList = () => {
   const [showForm, setShowForm] = useState(false);
@@ -19,6 +20,14 @@ export const IntegrationsList = () => {
       return data;
     }
   });
+
+  const handleCopyId = (id: string) => {
+    navigator.clipboard.writeText(id);
+    toast({
+      title: "ID Copiado",
+      description: "O ID da integração foi copiado para a área de transferência.",
+    });
+  };
 
   if (isLoading) {
     return <div>Carregando integrações...</div>;
@@ -47,6 +56,17 @@ export const IntegrationsList = () => {
               <div>
                 <h3 className="text-lg font-medium">{integration.name}</h3>
                 <p className="text-sm text-gray-400">Plataforma: {integration.platform}</p>
+                <div className="flex items-center mt-2">
+                  <p className="text-xs text-gray-500 mr-2">ID: {integration.id}</p>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6"
+                    onClick={() => handleCopyId(integration.id)}
+                  >
+                    <Copy className="h-4 w-4 text-gray-400 hover:text-white" />
+                  </Button>
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <span className={`px-2 py-1 rounded-full text-xs ${
