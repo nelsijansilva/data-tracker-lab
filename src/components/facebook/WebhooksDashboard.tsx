@@ -65,7 +65,7 @@ export const WebhooksDashboard = () => {
                               {format(new Date(event.created_at), 'dd/MM/yyyy HH:mm:ss')}
                             </CardDescription>
                           </div>
-                          <Badge variant={event.processed_at ? "success" : "secondary"}>
+                          <Badge variant={event.processed_at ? "default" : "secondary"}>
                             {event.processed_at ? "Processado" : "Pendente"}
                           </Badge>
                         </div>
@@ -102,7 +102,7 @@ export const WebhooksDashboard = () => {
                               {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss')}
                             </CardDescription>
                           </div>
-                          <Badge variant={log.status === 'success' ? "success" : "secondary"}>
+                          <Badge variant={log.status === 'success' ? "default" : "secondary"}>
                             {log.status}
                           </Badge>
                         </div>
