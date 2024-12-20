@@ -1,30 +1,34 @@
-import { supabase } from "@/integrations/supabase/client";
-import type { Metric } from "@/components/facebook/MetricSelector";
-import type { DateRange } from "react-day-picker";
-import { buildCampaignsEndpoint, buildAdSetsEndpoint, buildAdsEndpoint } from "./apiBuilder";
-import { FB_BASE_URL } from "./config";
-import { handleFacebookError } from "./errors";
+import { apiClient } from '@/lib/api/client';
+import type { Metric } from '@/components/facebook/MetricSelector';
+import type { DateRange } from 'react-day-picker';
+import { buildCampaignsEndpoint, buildAdSetsEndpoint, buildAdsEndpoint } from './apiBuilder';
+import { FB_BASE_URL } from './config';
+import { handleFacebookError } from './errors';
 
 export const getFacebookCredentials = async (accountId?: string) => {
-  let query = supabase.from('facebook_ad_accounts').select('*');
-  
-  if (accountId) {
-    query = query.eq('id', accountId);
-  }
-  
-  const { data, error } = await query.limit(1).single();
-
-  if (error) {
+  try {
+    const accounts = await apiClient.get('/api/facebook/accounts');
+    if (!accounts || accounts.length === 0) {
+      throw new Error('Nenhuma conta do Facebook configurada');
+    }
+    
+    const account = accountId 
+      ? accounts.find((acc: any) => acc.id === accountId)
+      : accounts[0];
+      
+    if (!account) {
+      throw new Error('Conta não encontrada');
+    }
+    
+    if (!account.access_token) {
+      throw new Error('Token de acesso do Facebook não encontrado. Por favor, configure suas credenciais.');
+    }
+    
+    return account;
+  } catch (error) {
     console.error('Error fetching Facebook credentials:', error);
-    throw new Error('Erro ao buscar credenciais do Facebook. Por favor, configure sua conta primeiro.');
+    throw error;
   }
-  if (!data) throw new Error('Nenhuma conta do Facebook configurada');
-  
-  if (!data.access_token) {
-    throw new Error('Token de acesso do Facebook não encontrado. Por favor, configure suas credenciais.');
-  }
-  
-  return data;
 };
 
 export const fetchFacebookData = async (endpoint: string, accessToken: string) => {

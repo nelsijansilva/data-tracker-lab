@@ -1,25 +1,19 @@
 import { FB_BASE_URL } from '../config';
 import { handleFacebookError } from '../errors';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api/client';
 
 export const getFacebookCredentials = async () => {
-  const { data, error } = await supabase
-    .from('facebook_ad_accounts')
-    .select('*')
-    .limit(1)
-    .single();
-
-  if (error) {
-    console.error('Error fetching Facebook credentials:', error);
-    throw new Error('Erro ao buscar credenciais do Facebook. Por favor, configure sua conta primeiro.');
-  }
-  if (!data) throw new Error('Nenhuma conta do Facebook configurada');
+  const data = await apiClient.get('/api/facebook/accounts');
   
-  if (!data.access_token) {
+  if (!data || data.length === 0) {
+    throw new Error('Nenhuma conta do Facebook configurada');
+  }
+  
+  if (!data[0].access_token) {
     throw new Error('Token de acesso do Facebook não encontrado. Por favor, configure suas credenciais.');
   }
   
-  return data;
+  return data[0];
 };
 
 export const fetchFacebookData = async (endpoint: string, credentials: { 
