@@ -3,8 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { createFacebookAccount, updateFacebookAccount } from "@/services/api";
 
 interface AccountCredentialsFormProps {
   initialData?: {
@@ -41,22 +41,41 @@ export const AccountCredentialsForm = ({ initialData, onSuccess }: AccountCreden
     e.preventDefault();
 
     try {
-      const accountData = {
-        account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
-        access_token: accessToken,
-        app_id: appId,
-        app_secret: appSecret,
-        account_name: accountName,
-      };
-
       if (initialData) {
-        await updateFacebookAccount(initialData.id, accountData);
+        // Update existing account
+        const { error } = await supabase
+          .from('facebook_ad_accounts')
+          .update({
+            account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
+            access_token: accessToken,
+            app_id: appId,
+            app_secret: appSecret,
+            account_name: accountName,
+          })
+          .eq('id', initialData.id);
+
+        if (error) throw error;
+
         toast({
           title: "Sucesso",
           description: "Credenciais atualizadas com sucesso",
         });
       } else {
-        await createFacebookAccount(accountData);
+        // Create new account
+        const { error } = await supabase
+          .from('facebook_ad_accounts')
+          .insert([
+            {
+              account_id: accountId.startsWith('act_') ? accountId : `act_${accountId}`,
+              access_token: accessToken,
+              app_id: appId,
+              app_secret: appSecret,
+              account_name: accountName,
+            }
+          ]);
+
+        if (error) throw error;
+
         toast({
           title: "Sucesso",
           description: "Credenciais salvas com sucesso",

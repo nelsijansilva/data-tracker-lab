@@ -1,7 +1,21 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        navigate("/dashboard");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-hacker-dark flex flex-col items-center justify-center p-4">
@@ -16,12 +30,31 @@ const Index = () => {
         </div>
         
         <div className="glass-card p-6 rounded-lg">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            Enter Dashboard
-          </button>
+          <Auth
+            supabaseClient={supabase}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#8B5CF6',
+                    brandAccent: '#7C3AED',
+                    inputBackground: '#1A1F2C',
+                    inputText: '#FFFFFF',
+                    inputPlaceholder: '#666666',
+                  },
+                },
+              },
+              className: {
+                container: 'auth-container',
+                button: 'cyber-button w-full',
+                input: 'bg-hacker-dark border-primary/30 text-white',
+                label: 'text-primary',
+              },
+            }}
+            theme="dark"
+            providers={[]}
+          />
         </div>
       </div>
     </div>

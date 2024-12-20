@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import { startOfMonth, endOfMonth } from "date-fns";
@@ -8,7 +9,6 @@ import { DashboardFilters } from "@/components/facebook/DashboardFilters";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "@/lib/api/client";
 
 type CampaignStatus = 'all' | 'active' | 'paused';
 
@@ -26,7 +26,12 @@ const Dashboard = () => {
   const { data: accounts } = useQuery({
     queryKey: ['fbAccounts'],
     queryFn: async () => {
-      return apiClient.get('/api/facebook/accounts');
+      const { data, error } = await supabase
+        .from('facebook_ad_accounts')
+        .select('*');
+      
+      if (error) throw error;
+      return data || [];
     }
   });
 
@@ -34,7 +39,8 @@ const Dashboard = () => {
     setActiveTab(value);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate('/');
   };
 
