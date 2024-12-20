@@ -265,6 +265,7 @@ export type Database = {
           account_name: string
           created_at: string
           id: string
+          token: string
           updated_at: string
           webhook_url: string | null
         }
@@ -272,6 +273,7 @@ export type Database = {
           account_name: string
           created_at?: string
           id?: string
+          token?: string
           updated_at?: string
           webhook_url?: string | null
         }
@@ -279,6 +281,7 @@ export type Database = {
           account_name?: string
           created_at?: string
           id?: string
+          token?: string
           updated_at?: string
           webhook_url?: string | null
         }
