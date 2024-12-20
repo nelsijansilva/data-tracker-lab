@@ -32,7 +32,7 @@ export const IntegrationForm = ({ open, onClose }: IntegrationFormProps) => {
             name,
             platform,
             webhook_token: webhookToken,
-            webhook_url: `${window.location.origin}/api/webhooks/${platform}?token=${webhookToken}`,
+            webhook_url: `https://avxgduktxkorwfmccwbs.supabase.co/functions/v1/${platform}-webhook?token=${webhookToken}`,
             is_active: true
           }
         ])
