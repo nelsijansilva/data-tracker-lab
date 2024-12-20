@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { IntegrationForm } from "./IntegrationForm";
 
 export const IntegrationsList = () => {
+  const [showForm, setShowForm] = useState(false);
   const { data: integrations, isLoading } = useQuery({
     queryKey: ['integrations'],
     queryFn: async () => {
@@ -25,7 +28,10 @@ export const IntegrationsList = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Integrações</h2>
-        <Button className="bg-blue-500 hover:bg-blue-600">
+        <Button 
+          className="bg-blue-500 hover:bg-blue-600"
+          onClick={() => setShowForm(true)}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Nova Integração
         </Button>
@@ -66,6 +72,11 @@ export const IntegrationsList = () => {
           </div>
         )}
       </div>
+
+      <IntegrationForm 
+        open={showForm} 
+        onClose={() => setShowForm(false)} 
+      />
     </div>
   );
 };
