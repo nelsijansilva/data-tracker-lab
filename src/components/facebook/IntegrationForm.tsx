@@ -25,6 +25,8 @@ export const IntegrationForm = ({ open, onClose }: IntegrationFormProps) => {
 
     try {
       const webhookToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      const webhookUrl = `https://avxgduktxkorwfmccwbs.supabase.co/functions/v1/${platform}-webhook?token=${webhookToken}`;
+      
       const { data, error } = await supabase
         .from('platform_integrations')
         .insert([
@@ -32,7 +34,7 @@ export const IntegrationForm = ({ open, onClose }: IntegrationFormProps) => {
             name,
             platform,
             webhook_token: webhookToken,
-            webhook_url: `https://avxgduktxkorwfmccwbs.supabase.co/functions/v1/${platform}-webhook?token=${webhookToken}`,
+            webhook_url: webhookUrl,
             is_active: true
           }
         ])
