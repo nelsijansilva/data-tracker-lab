@@ -6,11 +6,18 @@ import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
-import { TictoAccountForm } from "./ticto/AccountForm";
-import { TictoAccountCard } from "./ticto/AccountCard";
+import { AccountForm } from "./ticto/AccountForm";
+import { AccountCard } from "./ticto/AccountCard";
 import { CartPandaAccountForm } from "./cartpanda/AccountForm";
 import { CartPandaAccountCard } from "./cartpanda/AccountCard";
-import type { TictoAccount, CartPandaAccount } from "./ticto/types";
+import type { CartPandaAccount } from "./ticto/types";
+
+interface TictoAccount {
+  id: string;
+  account_name: string;
+  token?: string;
+  webhook_url?: string;
+}
 
 export const IntegrationsTab = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -190,7 +197,7 @@ export const IntegrationsTab = () => {
                 </DialogTitle>
               </DialogHeader>
               {activeIntegration === 'ticto' ? (
-                <TictoAccountForm
+                <AccountForm
                   account={selectedTictoAccount}
                   onSubmit={handleTictoSubmit}
                   onClose={() => {
@@ -216,7 +223,7 @@ export const IntegrationsTab = () => {
       <div className="grid gap-4">
         {activeIntegration === 'ticto' ? (
           tictoAccounts?.map((account) => (
-            <TictoAccountCard
+            <AccountCard
               key={account.id}
               account={account}
               onEdit={(account) => {
