@@ -55,7 +55,7 @@ serve(async (req) => {
     // Log the entire payload structure for debugging
     console.log('Received payload structure:', JSON.stringify(payload, null, 2));
 
-    // Validate token - checking token directly from payload, not in body
+    // Validate token
     const receivedToken = payload.token;
     const storedToken = tictoAccount.token;
     
@@ -93,7 +93,7 @@ serve(async (req) => {
 
     console.log('Order data saved successfully to ticto_orders table');
 
-    // Log webhook success - but don't include the full payload to avoid recursion
+    // Log webhook success
     await supabaseAdmin
       .from('webhook_logs')
       .insert([
@@ -128,7 +128,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error processing webhook:', error);
 
-    // Log error in webhook_logs - but only log the error message to avoid recursion
+    // Log error in webhook_logs
     if (error instanceof Error) {
       const supabaseAdmin = createSupabaseAdmin();
       

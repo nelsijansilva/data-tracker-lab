@@ -1,30 +1,28 @@
 export interface TictoWebhookPayload {
   token: string;
-  body: {
-    status: string;
-    payment_method: string;
-    order: {
-      hash: string;
-      paid_amount: number;
-      installments: number;
+  status: string;
+  payment_method: string;
+  order: {
+    hash: string;
+    paid_amount: number;
+    installments: number;
+  };
+  item: {
+    product_name: string;
+    product_id: number;
+    offer_name: string;
+    offer_id: number;
+  };
+  customer: {
+    name: string;
+    email: string;
+    phone: {
+      ddi: string;
+      ddd: string;
+      number: string;
     };
-    item: {
-      product_name: string;
-      product_id: number;
-      offer_name: string;
-      offer_id: number;
-    };
-    customer: {
-      name: string;
-      email: string;
-      phone: {
-        ddi: string;
-        ddd: string;
-        number: string;
-      };
-      cpf?: string;
-      cnpj?: string;
-    };
+    cpf?: string;
+    cnpj?: string;
   };
 }
 
