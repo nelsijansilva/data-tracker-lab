@@ -207,6 +207,39 @@ export type Database = {
           },
         ]
       }
+      platform_integrations: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          platform: Database["public"]["Enums"]["platform_type"]
+          updated_at: string
+          webhook_token: string
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          platform: Database["public"]["Enums"]["platform_type"]
+          updated_at?: string
+          webhook_token: string
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          platform?: Database["public"]["Enums"]["platform_type"]
+          updated_at?: string
+          webhook_token?: string
+          webhook_url?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -293,6 +326,51 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          integration_id: string
+          payload: Json
+          processed: boolean | null
+          processed_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          integration_id: string
+          payload: Json
+          processed?: boolean | null
+          processed_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          integration_id?: string
+          payload?: Json
+          processed?: boolean | null
+          processed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_integration"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "platform_integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_events_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "platform_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -301,7 +379,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      platform_type: "hotmart" | "eduzz" | "ticto" | "buygoods" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
