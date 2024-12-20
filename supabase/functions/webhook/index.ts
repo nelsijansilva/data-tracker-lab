@@ -92,7 +92,9 @@ serve(async (req) => {
       throw insertError;
     }
 
-    // Log webhook
+    console.log('Order data saved successfully');
+
+    // Log webhook success
     await supabaseAdmin
       .from('webhook_logs')
       .insert([
@@ -100,7 +102,7 @@ serve(async (req) => {
           method: req.method,
           url: req.url,
           status: 200,
-          payload: JSON.parse(rawBody), // Store the raw webhook payload directly
+          payload: JSON.parse(rawBody),
           ticto_account_id: tictoAccount.id
         }
       ]);
@@ -133,7 +135,7 @@ serve(async (req) => {
             method: req.method,
             url: req.url,
             status: 400,
-            payload: JSON.parse(await req.clone().text()), // Store the raw webhook payload
+            payload: { error: error.message },
             ticto_account_id: null
           }
         ]);
