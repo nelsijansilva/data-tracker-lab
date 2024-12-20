@@ -260,66 +260,6 @@ export type Database = {
           },
         ]
       }
-      webhook_events: {
-        Row: {
-          created_at: string
-          event: string
-          id: string
-          processed_at: string | null
-          raw_payload: Json
-          value: Json
-        }
-        Insert: {
-          created_at?: string
-          event: string
-          id?: string
-          processed_at?: string | null
-          raw_payload: Json
-          value: Json
-        }
-        Update: {
-          created_at?: string
-          event?: string
-          id?: string
-          processed_at?: string | null
-          raw_payload?: Json
-          value?: Json
-        }
-        Relationships: []
-      }
-      webhook_logs: {
-        Row: {
-          created_at: string | null
-          headers: Json
-          id: string
-          payload: Json
-          processed_at: string | null
-          source: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          headers: Json
-          id?: string
-          payload: Json
-          processed_at?: string | null
-          source?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          headers?: Json
-          id?: string
-          payload?: Json
-          processed_at?: string | null
-          source?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never

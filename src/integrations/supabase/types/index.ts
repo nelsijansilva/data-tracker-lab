@@ -6,7 +6,6 @@ import {
   FacebookCampaignsTable
 } from './facebook';
 import { ProfilesTable } from './profiles';
-import { TrackingRequestsTable } from './tracking';
 
 export type Json =
   | string
@@ -26,7 +25,6 @@ export type Database = {
       facebook_campaigns: FacebookCampaignsTable
       profiles: ProfilesTable
       selected_metrics: SelectedMetricsTable
-      tracking_requests: TrackingRequestsTable
     }
     Views: {
       [_ in never]: never
@@ -46,4 +44,3 @@ export type Database = {
 export * from './metrics';
 export * from './facebook';
 export * from './profiles';
-export * from './tracking';
