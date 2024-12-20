@@ -61,19 +61,3 @@ export const fetchMetrics = async () => {
   }
   return response.json();
 };
-
-export const fetchWebhookEvents = async () => {
-  const response = await fetch(`${API_URL}/api/webhook/events`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch webhook events');
-  }
-  return response.json();
-};
-
-export const fetchWebhookLogs = async () => {
-  const response = await fetch(`${API_URL}/api/webhook/logs`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch webhook logs');
-  }
-  return response.json();
-};
