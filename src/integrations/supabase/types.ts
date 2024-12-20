@@ -9,6 +9,104 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cartpanda_accounts: {
+        Row: {
+          account_name: string
+          created_at: string
+          id: string
+          store_slug: string
+          token: string
+          updated_at: string
+          webhook_url: string | null
+        }
+        Insert: {
+          account_name: string
+          created_at?: string
+          id?: string
+          store_slug: string
+          token: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Update: {
+          account_name?: string
+          created_at?: string
+          id?: string
+          store_slug?: string
+          token?: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      cartpanda_orders: {
+        Row: {
+          cart_token: string | null
+          cartpanda_account_id: string | null
+          created_at: string
+          currency: string | null
+          customer_document: string | null
+          customer_email: string | null
+          customer_name: string | null
+          email: string
+          id: string
+          order_id: number
+          payment_method: string | null
+          payment_status: string
+          phone: string | null
+          raw_data: Json | null
+          status: string
+          total_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          cart_token?: string | null
+          cartpanda_account_id?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_document?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          email: string
+          id?: string
+          order_id: number
+          payment_method?: string | null
+          payment_status: string
+          phone?: string | null
+          raw_data?: Json | null
+          status: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cart_token?: string | null
+          cartpanda_account_id?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_document?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          email?: string
+          id?: string
+          order_id?: number
+          payment_method?: string | null
+          payment_status?: string
+          phone?: string | null
+          raw_data?: Json | null
+          status?: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cartpanda_orders_cartpanda_account_id_fkey"
+            columns: ["cartpanda_account_id"]
+            isOneToOne: false
+            referencedRelation: "cartpanda_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_metrics: {
         Row: {
           created_at: string

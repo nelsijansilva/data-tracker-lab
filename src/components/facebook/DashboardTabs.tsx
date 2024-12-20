@@ -6,9 +6,9 @@ import { AdSetsList } from "./AdSetsList";
 import { AdsList } from "./AdsList";
 import { CustomMetricsDashboard } from "./CustomMetricsDashboard";
 import { LogsTab } from "./LogsTab";
+import { IntegrationsTab } from "./TictoIntegration";
 import { DateRange } from "react-day-picker";
 import { useEffect } from "react";
-import { TictoIntegration } from "./TictoIntegration";
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -148,7 +148,7 @@ export const DashboardTabs = ({
 
         <TabsContent value="integrations" className="mt-0">
           <div className="bg-[#2a2f3d] rounded-lg p-4">
-            <TictoIntegration />
+            <IntegrationsTab />
           </div>
         </TabsContent>
       </div>
