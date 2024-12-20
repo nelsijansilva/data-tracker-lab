@@ -70,6 +70,8 @@ function processWebhookData(payload: TictoWebhookPayload) {
 }
 
 serve(async (req) => {
+  console.log('Received webhook request:', req.method, req.url);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
@@ -111,11 +113,11 @@ serve(async (req) => {
 
     // Parse webhook payload
     const payload = await req.json() as TictoWebhookPayload;
-    console.log('Received webhook payload:', payload);
+    console.log('Received webhook payload:', JSON.stringify(payload, null, 2));
 
     // Validar o token
     if (!payload.body?.token || payload.body.token !== tictoAccount.token) {
-      console.error('Invalid token received');
+      console.error('Invalid token received:', payload.body?.token);
       throw new Error('Invalid token');
     }
 
