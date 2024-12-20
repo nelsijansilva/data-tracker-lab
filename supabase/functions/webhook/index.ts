@@ -79,7 +79,7 @@ serve(async (req) => {
     const processedData = processWebhookData(payload);
     console.log('Processed data:', processedData);
 
-    // Insert processed data
+    // Insert processed data into ticto_orders
     const { error: insertError } = await supabaseAdmin
       .from('ticto_orders')
       .insert([{
@@ -92,7 +92,7 @@ serve(async (req) => {
       throw insertError;
     }
 
-    console.log('Order data saved successfully');
+    console.log('Order data saved successfully to ticto_orders table');
 
     // Log webhook success
     await supabaseAdmin
@@ -106,6 +106,8 @@ serve(async (req) => {
           ticto_account_id: tictoAccount.id
         }
       ]);
+
+    console.log('Webhook log saved successfully');
 
     // Return success response
     return new Response(
