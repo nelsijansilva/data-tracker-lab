@@ -6,37 +6,23 @@ serve(async (req) => {
   console.log('=== Webhook Request Details ===');
   console.log('Method:', req.method);
   console.log('URL:', req.url);
-  console.log('Headers:', Object.fromEntries(req.headers.entries()));
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      }
+      headers: corsHeaders
     });
   }
 
   try {
-    // Clone the request to read the body multiple times if needed
-    const clonedReq = req.clone();
-    const rawBody = await clonedReq.text();
-    console.log('Raw request body:', rawBody);
-
     // Parse URL and validate account parameter
     const url = new URL(req.url);
-    console.log('Full URL:', url.toString());
-    console.log('Search params:', Object.fromEntries(url.searchParams.entries()));
-    
     const accountName = url.searchParams.get('account');
     console.log('Account name from URL:', accountName);
     
     if (!accountName) {
       throw new Error('Account name is required in query parameters');
     }
-
-    console.log('Processing webhook for account:', accountName);
 
     const supabaseAdmin = createSupabaseAdmin();
 
@@ -55,21 +41,23 @@ serve(async (req) => {
     console.log('Found Ticto account:', tictoAccount.id);
 
     // Parse webhook payload
+    const rawBody = await req.text();
+    console.log('Raw request body:', rawBody);
+
     let payload: TictoWebhookPayload;
     try {
-      payload = JSON.parse(rawBody) as TictoWebhookPayload;
+      payload = JSON.parse(rawBody);
     } catch (e) {
       console.error('Error parsing JSON payload:', e);
       throw new Error('Invalid JSON payload');
     }
-    console.log('Received webhook payload:', JSON.stringify(payload, null, 2));
 
-    // Validate token
+    // Validate token - now comparing with the stored token directly
     const receivedToken = payload.body?.token;
-    console.log('Comparing tokens - Received:', receivedToken, 'Stored:', tictoAccount.token);
+    console.log('Token validation - Received:', receivedToken, 'Stored:', tictoAccount.token);
     
     if (!receivedToken || receivedToken !== tictoAccount.token) {
-      console.error('Token validation failed - Received:', receivedToken);
+      console.error('Token validation failed');
       throw new Error('Invalid token');
     }
 
@@ -79,7 +67,7 @@ serve(async (req) => {
     const processedData = processWebhookData(payload);
     console.log('Processed data:', processedData);
 
-    // Insert processed data into ticto_orders
+    // Insert order data first
     const { error: insertError } = await supabaseAdmin
       .from('ticto_orders')
       .insert([{
@@ -94,7 +82,7 @@ serve(async (req) => {
 
     console.log('Order data saved successfully to ticto_orders table');
 
-    // Log webhook success
+    // Log webhook success - but don't include the full payload to avoid recursion
     await supabaseAdmin
       .from('webhook_logs')
       .insert([
@@ -102,7 +90,10 @@ serve(async (req) => {
           method: req.method,
           url: req.url,
           status: 200,
-          payload: JSON.parse(rawBody),
+          payload: { 
+            success: true,
+            order_hash: processedData.order_hash 
+          },
           ticto_account_id: tictoAccount.id
         }
       ]);
@@ -126,7 +117,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error processing webhook:', error);
 
-    // Log error in webhook_logs
+    // Log error in webhook_logs - but only log the error message to avoid recursion
     if (error instanceof Error) {
       const supabaseAdmin = createSupabaseAdmin();
       
