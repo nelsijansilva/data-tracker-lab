@@ -36,9 +36,19 @@ export const CartPandaAccountCard = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-sm text-muted-foreground">
-          <p>Store Slug: {account.store_slug}</p>
-          <p>Token: {account.token.substring(0, 10)}...</p>
+        <div className="space-y-2">
+          <div className="text-sm text-muted-foreground">
+            <p>Store Slug: {account.store_slug}</p>
+            <p>Token: {account.token.substring(0, 10)}...</p>
+          </div>
+          {account.webhook_url && (
+            <div className="mt-4">
+              <p className="text-sm font-medium mb-2">Webhook URL:</p>
+              <div className="bg-gray-800 p-3 rounded-md">
+                <code className="text-sm break-all">{account.webhook_url}</code>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
