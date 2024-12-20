@@ -6,6 +6,72 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface TictoWebhookPayload {
+  body: {
+    token: string;
+    status: string;
+    payment_method: string;
+    order: {
+      hash: string;
+      paid_amount: number;
+      installments: number;
+    };
+    item: {
+      product_name: string;
+      product_id: number;
+      offer_name: string;
+      offer_id: number;
+    };
+    customer: {
+      name: string;
+      email: string;
+      phone: {
+        ddi: string;
+        ddd: string;
+        number: string;
+      };
+      cpf?: string;
+      cnpj?: string;
+    };
+  };
+}
+
+// Função para validar e processar os dados antes de salvar
+function processWebhookData(payload: TictoWebhookPayload) {
+  const { body } = payload;
+  
+  // Validações básicas
+  if (!body.order?.hash) {
+    throw new Error('Order hash is required');
+  }
+
+  if (!body.status) {
+    throw new Error('Status is required');
+  }
+
+  if (!body.payment_method) {
+    throw new Error('Payment method is required');
+  }
+
+  // Processar e formatar os dados
+  return {
+    order_hash: body.order.hash,
+    status: body.status.toLowerCase(),
+    payment_method: body.payment_method.toLowerCase(),
+    paid_amount: body.order.paid_amount || 0,
+    installments: body.order.installments || 1,
+    product_name: body.item?.product_name || null,
+    product_id: body.item?.product_id || null,
+    offer_name: body.item?.offer_name || null,
+    offer_id: body.item?.offer_id || null,
+    customer_name: body.customer?.name || null,
+    customer_email: body.customer?.email || null,
+    customer_phone: body.customer?.phone ? 
+      `${body.customer.phone.ddi}${body.customer.phone.ddd}${body.customer.phone.number}` : null,
+    customer_document: body.customer?.cpf || body.customer?.cnpj || null
+  };
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -17,7 +83,7 @@ serve(async (req) => {
     const accountName = url.searchParams.get('account');
     
     if (!accountName) {
-      throw new Error('Account name is required');
+      throw new Error('Account name is required in query parameters');
     }
 
     console.log('Processing webhook for account:', accountName);
@@ -28,7 +94,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get the Ticto account
+    // Get the Ticto account configuration
     const { data: tictoAccount, error: accountError } = await supabaseClient
       .from('ticto_accounts')
       .select('id, token')
@@ -41,37 +107,26 @@ serve(async (req) => {
     }
 
     // Parse webhook payload
-    const payload = await req.json();
+    const payload = await req.json() as TictoWebhookPayload;
     console.log('Received webhook payload:', payload);
 
-    // Validate token if provided in the payload
+    // Validar o token
     if (payload.body?.token !== tictoAccount.token) {
       console.error('Invalid token received');
       throw new Error('Invalid token');
     }
 
-    // Extract order data
-    const orderData = {
-      ticto_account_id: tictoAccount.id,
-      order_hash: payload.body.order.hash,
-      status: payload.body.status,
-      payment_method: payload.body.payment_method,
-      paid_amount: payload.body.order.paid_amount,
-      installments: payload.body.order.installments,
-      product_name: payload.body.item.product_name,
-      product_id: payload.body.item.product_id,
-      offer_name: payload.body.item.offer_name,
-      offer_id: payload.body.item.offer_id,
-      customer_name: payload.body.customer.name,
-      customer_email: payload.body.customer.email,
-      customer_phone: `${payload.body.customer.phone.ddi}${payload.body.customer.phone.ddd}${payload.body.customer.phone.number}`,
-      customer_document: payload.body.customer.cpf || payload.body.customer.cnpj
-    };
+    // Processar e validar os dados
+    const processedData = processWebhookData(payload);
+    console.log('Processed data:', processedData);
 
-    // Insert order data
+    // Inserir dados processados
     const { error: insertError } = await supabaseClient
       .from('ticto_orders')
-      .insert([orderData]);
+      .insert([{
+        ...processedData,
+        ticto_account_id: tictoAccount.id
+      }]);
 
     if (insertError) {
       console.error('Error inserting order:', insertError);
@@ -79,7 +134,7 @@ serve(async (req) => {
     }
 
     // Log webhook
-    const { error: logError } = await supabaseClient
+    await supabaseClient
       .from('webhook_logs')
       .insert([
         {
@@ -91,13 +146,13 @@ serve(async (req) => {
         }
       ]);
 
-    if (logError) {
-      console.error('Error logging webhook:', logError);
-    }
-
     // Return success response
     return new Response(
-      JSON.stringify({ message: 'Webhook processed successfully' }),
+      JSON.stringify({ 
+        success: true,
+        message: 'Webhook processed successfully',
+        order_hash: processedData.order_hash
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -107,11 +162,33 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error processing webhook:', error);
 
+    // Log error no webhook_logs
+    if (error instanceof Error) {
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      await supabaseClient
+        .from('webhook_logs')
+        .insert([
+          {
+            method: req.method,
+            url: req.url,
+            status: 400,
+            payload: { error: error.message }
+          }
+        ]);
+    }
+
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 400,
       }
     );
   }
