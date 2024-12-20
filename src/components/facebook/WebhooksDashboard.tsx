@@ -1,36 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
+import { fetchWebhookEvents, fetchWebhookLogs } from "@/services/api";
 
 export const WebhooksDashboard = () => {
   const { data: webhookEvents } = useQuery({
     queryKey: ['webhookEvents'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('webhook_events')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    }
+    queryFn: fetchWebhookEvents
   });
 
   const { data: webhookLogs } = useQuery({
     queryKey: ['webhookLogs'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('webhook_logs')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    }
+    queryFn: fetchWebhookLogs
   });
 
   return (
@@ -142,7 +126,7 @@ export const WebhooksDashboard = () => {
                 <div>
                   <h4 className="text-sm font-medium mb-2">URL do Webhook</h4>
                   <pre className="bg-[#2a2f3d] p-4 rounded-lg">
-                    <code>https://avxgduktxkorwfmccwbs.supabase.co/functions/v1/webhook</code>
+                    <code>{`${import.meta.env.VITE_API_URL}/api/webhook`}</code>
                   </pre>
                 </div>
                 <div>
