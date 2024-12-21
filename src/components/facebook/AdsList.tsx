@@ -48,38 +48,72 @@ export const AdsList = ({ dateRange, selectedAccountId }: AdsListProps) => {
     );
   }
 
+  // Calcular totais
+  const totals = selectedMetrics.reduce((acc, metric) => {
+    acc[metric.field] = ads.reduce((sum, ad) => {
+      const value = parseFloat(ad[metric.field]) || 0;
+      return sum + value;
+    }, 0);
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-gray-700">
-            {selectedMetrics.map((metric) => (
-              <TableHead key={metric.id} className="text-gray-400">
-                {metric.name.toUpperCase()}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {ads.map((ad: any) => (
-            <TableRow 
-              key={ad.id}
-              className={`cursor-pointer transition-colors border-gray-700 ${
-                selectedAdId === ad.id 
-                  ? "bg-[#3b82f6]/10" 
-                  : "hover:bg-[#2f3850]"
-              }`}
-              onClick={() => handleRowClick(ad)}
-            >
+      <div className="max-h-[600px] overflow-y-auto relative border border-gray-700 rounded-lg">
+        <Table>
+          <TableHeader className="sticky top-0 bg-[#1a1f2e] z-10">
+            <TableRow className="border-gray-700">
               {selectedMetrics.map((metric) => (
-                <TableCell key={metric.id} className="text-gray-400">
-                  <MetricValue value={ad[metric.field]} metric={metric} />
-                </TableCell>
+                <TableHead 
+                  key={metric.id} 
+                  className="text-gray-400 border-r border-gray-700 last:border-r-0"
+                >
+                  {metric.name.toUpperCase()}
+                </TableHead>
               ))}
             </TableRow>
+          </TableHeader>
+          <TableBody>
+            {ads.map((ad: any) => (
+              <TableRow 
+                key={ad.id}
+                className={`cursor-pointer transition-colors border-gray-700 ${
+                  selectedAdId === ad.id 
+                    ? "bg-[#3b82f6]/10" 
+                    : "hover:bg-[#2f3850]"
+                }`}
+                onClick={() => handleRowClick(ad)}
+              >
+                {selectedMetrics.map((metric) => (
+                  <TableCell 
+                    key={metric.id} 
+                    className="text-gray-400 border-r border-gray-700 last:border-r-0"
+                  >
+                    <MetricValue value={ad[metric.field]} metric={metric} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Footer com totais */}
+      <div className="sticky bottom-0 bg-[#1a1f2e] border border-gray-700 rounded-lg p-4">
+        <div className="flex">
+          {selectedMetrics.map((metric) => (
+            <div 
+              key={metric.id} 
+              className="flex-1 px-4 border-r border-gray-700 last:border-r-0"
+            >
+              <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
+              <div className="font-medium text-gray-300">
+                <MetricValue value={totals[metric.field]} metric={metric} />
+              </div>
+            </div>
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      </div>
     </div>
   );
 };

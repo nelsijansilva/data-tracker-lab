@@ -27,9 +27,9 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
     const currentTime = new Date().getTime();
     const timeDiff = currentTime - lastClickTime;
     
-    if (timeDiff < 300) { // Double click detected (within 300ms)
+    if (timeDiff < 300) {
       setSelectedAdSetId(adSetId);
-      onTabChange?.('ads'); // Navigate to ads tab
+      onTabChange?.('ads');
     } else {
       setSelectedAdSetId(adSetId === selectedAdSetId ? null : adSetId);
     }
@@ -60,38 +60,72 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
     );
   }
 
+  // Calcular totais
+  const totals = selectedMetrics.reduce((acc, metric) => {
+    acc[metric.field] = adSets.reduce((sum, adSet) => {
+      const value = parseFloat(adSet[metric.field]) || 0;
+      return sum + value;
+    }, 0);
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-gray-700">
-            {selectedMetrics.map((metric) => (
-              <TableHead key={metric.id} className="text-gray-400">
-                {metric.name.toUpperCase()}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {adSets.map((adSet: any) => (
-            <TableRow 
-              key={adSet.id}
-              className={`cursor-pointer transition-colors border-gray-700 ${
-                selectedAdSetId === adSet.id 
-                  ? "bg-[#3b82f6]/10" 
-                  : "hover:bg-[#2f3850]"
-              }`}
-              onClick={() => handleRowClick(adSet.id)}
-            >
+      <div className="max-h-[600px] overflow-y-auto relative border border-gray-700 rounded-lg">
+        <Table>
+          <TableHeader className="sticky top-0 bg-[#1a1f2e] z-10">
+            <TableRow className="border-gray-700">
               {selectedMetrics.map((metric) => (
-                <TableCell key={metric.id} className="text-gray-400">
-                  <MetricValue value={adSet[metric.field]} metric={metric} />
-                </TableCell>
+                <TableHead 
+                  key={metric.id} 
+                  className="text-gray-400 border-r border-gray-700 last:border-r-0"
+                >
+                  {metric.name.toUpperCase()}
+                </TableHead>
               ))}
             </TableRow>
+          </TableHeader>
+          <TableBody>
+            {adSets.map((adSet: any) => (
+              <TableRow 
+                key={adSet.id}
+                className={`cursor-pointer transition-colors border-gray-700 ${
+                  selectedAdSetId === adSet.id 
+                    ? "bg-[#3b82f6]/10" 
+                    : "hover:bg-[#2f3850]"
+                }`}
+                onClick={() => handleRowClick(adSet.id)}
+              >
+                {selectedMetrics.map((metric) => (
+                  <TableCell 
+                    key={metric.id} 
+                    className="text-gray-400 border-r border-gray-700 last:border-r-0"
+                  >
+                    <MetricValue value={adSet[metric.field]} metric={metric} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Footer com totais */}
+      <div className="sticky bottom-0 bg-[#1a1f2e] border border-gray-700 rounded-lg p-4">
+        <div className="flex">
+          {selectedMetrics.map((metric) => (
+            <div 
+              key={metric.id} 
+              className="flex-1 px-4 border-r border-gray-700 last:border-r-0"
+            >
+              <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
+              <div className="font-medium text-gray-300">
+                <MetricValue value={totals[metric.field]} metric={metric} />
+              </div>
+            </div>
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      </div>
     </div>
   );
 };

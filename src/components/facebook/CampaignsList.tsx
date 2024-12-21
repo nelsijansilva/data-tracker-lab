@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { DateRange } from "react-day-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -22,7 +22,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
   const { selectedCampaignId, setSelectedCampaignId } = useCampaignStore();
   const [lastClickTime, setLastClickTime] = React.useState<number>(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     initializeDefaultMetrics();
   }, [initializeDefaultMetrics]);
 
@@ -32,9 +32,9 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
     const currentTime = new Date().getTime();
     const timeDiff = currentTime - lastClickTime;
     
-    if (timeDiff < 300) { // Double click detected (within 300ms)
+    if (timeDiff < 300) {
       setSelectedCampaignId(campaignId);
-      onTabChange?.('adsets'); // Navigate to adsets tab
+      onTabChange?.('adsets');
     } else {
       setSelectedCampaignId(campaignId === selectedCampaignId ? null : campaignId);
     }
@@ -69,39 +69,73 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
     );
   }
 
+  // Calcular totais
+  const totals = selectedMetrics.reduce((acc, metric) => {
+    acc[metric.field] = filteredCampaigns.reduce((sum, campaign) => {
+      const value = parseFloat(campaign[metric.field]) || 0;
+      return sum + value;
+    }, 0);
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-gray-700">
-            {selectedMetrics.map((metric) => (
-              <TableHead key={metric.id} className="text-gray-400">
-                {metric.name.toUpperCase()}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredCampaigns?.map((campaign: any) => (
-            <TableRow 
-              key={campaign.id}
-              className={cn(
-                "cursor-pointer transition-colors border-gray-700",
-                selectedCampaignId === campaign.id 
-                  ? "bg-[#3b82f6]/10" 
-                  : "hover:bg-[#2f3850]"
-              )}
-              onClick={() => handleRowClick(campaign.id)}
-            >
+      <div className="max-h-[600px] overflow-y-auto relative border border-gray-700 rounded-lg">
+        <Table>
+          <TableHeader className="sticky top-0 bg-[#1a1f2e] z-10">
+            <TableRow className="border-gray-700">
               {selectedMetrics.map((metric) => (
-                <TableCell key={metric.id} className="text-gray-400">
-                  <MetricValue value={campaign[metric.field]} metric={metric} />
-                </TableCell>
+                <TableHead 
+                  key={metric.id} 
+                  className="text-gray-400 border-r border-gray-700 last:border-r-0"
+                >
+                  {metric.name.toUpperCase()}
+                </TableHead>
               ))}
             </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredCampaigns?.map((campaign: any) => (
+              <TableRow 
+                key={campaign.id}
+                className={cn(
+                  "cursor-pointer transition-colors border-gray-700",
+                  selectedCampaignId === campaign.id 
+                    ? "bg-[#3b82f6]/10" 
+                    : "hover:bg-[#2f3850]"
+                )}
+                onClick={() => handleRowClick(campaign.id)}
+              >
+                {selectedMetrics.map((metric) => (
+                  <TableCell 
+                    key={metric.id} 
+                    className="text-gray-400 border-r border-gray-700 last:border-r-0"
+                  >
+                    <MetricValue value={campaign[metric.field]} metric={metric} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      
+      {/* Footer com totais */}
+      <div className="sticky bottom-0 bg-[#1a1f2e] border border-gray-700 rounded-lg p-4">
+        <div className="flex">
+          {selectedMetrics.map((metric) => (
+            <div 
+              key={metric.id} 
+              className="flex-1 px-4 border-r border-gray-700 last:border-r-0"
+            >
+              <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
+              <div className="font-medium text-gray-300">
+                <MetricValue value={totals[metric.field]} metric={metric} />
+              </div>
+            </div>
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      </div>
     </div>
   );
 };
