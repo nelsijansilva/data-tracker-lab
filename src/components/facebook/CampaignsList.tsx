@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { DateRange } from "react-day-picker";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
@@ -42,6 +42,20 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
     setLastClickTime(currentTime);
   };
 
+  const calculateTotals = (campaigns: any[]) => {
+    return selectedMetrics.reduce((acc: any, metric) => {
+      if (metric.field === 'name') {
+        acc[metric.field] = `Total (${campaigns.length})`;
+      } else {
+        acc[metric.field] = campaigns.reduce((sum: number, campaign: any) => {
+          const value = parseFloat(campaign[metric.field]) || 0;
+          return sum + value;
+        }, 0);
+      }
+      return acc;
+    }, {});
+  };
+
   if (isLoading) return <div className="text-gray-400">Carregando campanhas...</div>;
   
   if (error) {
@@ -68,6 +82,8 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
       </div>
     );
   }
+
+  const totals = calculateTotals(filteredCampaigns);
 
   return (
     <div className="space-y-4">
@@ -101,6 +117,15 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
             </TableRow>
           ))}
         </TableBody>
+        <TableFooter>
+          <TableRow className="border-t border-gray-700 font-semibold">
+            {selectedMetrics.map((metric) => (
+              <TableCell key={metric.id} className="text-primary">
+                <MetricValue value={totals[metric.field]} metric={metric} />
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableFooter>
       </Table>
     </div>
   );
