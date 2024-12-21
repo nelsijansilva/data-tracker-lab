@@ -37,23 +37,6 @@
     background-size: 50px 50px;
     background-image: radial-gradient(circle, #8B5CF610 1px, transparent 1px);
   }
-
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    @apply bg-gray-800/50 rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-gray-600/80 rounded-full hover:bg-gray-500 transition-colors;
-  }
-
-  ::-webkit-scrollbar-corner {
-    @apply bg-transparent;
-  }
 }
 
 .glass-card {
@@ -108,44 +91,4 @@
 
 .animate-fade-up {
   animation: fade-up 0.5s ease-out;
-}
-
-/* Classes para tabelas */
-.table-container {
-  @apply relative rounded-lg;
-  height: calc(100vh - 300px);
-  min-height: 400px;
-}
-
-.table-content {
-  @apply relative overflow-auto;
-  height: 100%;
-  width: 100%;
-}
-
-.table-header {
-  @apply sticky top-0 bg-[#1a1f2e] z-10;
-}
-
-.table-header th {
-  @apply text-gray-300 font-medium py-3 px-4 text-left;
-  white-space: nowrap;
-}
-
-.table-footer {
-  @apply sticky bottom-0 bg-[#1a1f2e] z-10 border-t border-gray-700;
-}
-
-.table-footer td {
-  @apply py-2;
-}
-
-.table-footer .metric-total-label {
-  @apply text-xs text-gray-400;
-  line-height: 1;
-}
-
-.table-footer .metric-total-value {
-  @apply text-sm text-gray-300 font-medium;
-  line-height: 1.2;
 }
