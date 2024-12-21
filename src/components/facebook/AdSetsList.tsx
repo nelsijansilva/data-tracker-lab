@@ -62,7 +62,7 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
 
   // Calcular totais
   const totals = selectedMetrics.reduce((acc, metric) => {
-    acc[metric.field] = adSets.reduce((sum, adSet) => {
+    acc[metric.field] = adSets?.reduce((sum, adSet) => {
       const value = parseFloat(adSet[metric.field]) || 0;
       return sum + value;
     }, 0);
@@ -86,7 +86,7 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
             </TableRow>
           </TableHeader>
           <TableBody>
-            {adSets.map((adSet: any) => (
+            {adSets?.map((adSet: any) => (
               <TableRow 
                 key={adSet.id}
                 className={`cursor-pointer transition-colors border-gray-700 ${
@@ -106,25 +106,20 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
                 ))}
               </TableRow>
             ))}
+            {/* Linha de totais dentro da tabela */}
+            <TableRow className="bg-[#1a1f2e] border-t-2 border-gray-700 font-medium">
+              {selectedMetrics.map((metric) => (
+                <TableCell 
+                  key={metric.id} 
+                  className="text-gray-300 border-r border-gray-700 last:border-r-0"
+                >
+                  <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
+                  <MetricValue value={totals[metric.field]} metric={metric} />
+                </TableCell>
+              ))}
+            </TableRow>
           </TableBody>
         </Table>
-      </div>
-
-      {/* Footer com totais dentro do container principal */}
-      <div className="sticky bottom-0 bg-[#1a1f2e] border-t border-gray-700">
-        <div className="grid" style={{ gridTemplateColumns: `repeat(${selectedMetrics.length}, 1fr)` }}>
-          {selectedMetrics.map((metric) => (
-            <div 
-              key={metric.id} 
-              className="p-4 border-r border-gray-700 last:border-r-0"
-            >
-              <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
-              <div className="font-medium text-gray-300">
-                <MetricValue value={totals[metric.field]} metric={metric} />
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
