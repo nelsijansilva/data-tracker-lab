@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, ArrowUp, Layers, RefreshCw, LineChart, List, Link } from "lucide-react";
+import { Settings, ArrowUp, Layers, RefreshCw, LineChart, List, Link, ShoppingCart } from "lucide-react";
 import { AccountsList } from "./AccountsList";
 import { CampaignsList } from "./CampaignsList";
 import { AdSetsList } from "./AdSetsList";
@@ -7,6 +7,7 @@ import { AdsList } from "./AdsList";
 import { CustomMetricsDashboard } from "./CustomMetricsDashboard";
 import { LogsTab } from "./LogsTab";
 import { IntegrationsTab } from "./TictoIntegration";
+import { SalesList } from "./cartpanda/SalesList";
 import { DateRange } from "react-day-picker";
 import { useEffect } from "react";
 
@@ -82,6 +83,13 @@ export const DashboardTabs = ({
               Métricas
             </TabsTrigger>
             <TabsTrigger 
+              value="sales"
+              className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Vendas
+            </TabsTrigger>
+            <TabsTrigger 
               value="logs"
               className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
             >
@@ -137,6 +145,12 @@ export const DashboardTabs = ({
         <TabsContent value="metrics" className="mt-0">
           <div className="bg-[#2a2f3d] rounded-lg p-4">
             <CustomMetricsDashboard />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="sales" className="mt-0">
+          <div className="bg-[#2a2f3d] rounded-lg p-4">
+            <SalesList />
           </div>
         </TabsContent>
 
