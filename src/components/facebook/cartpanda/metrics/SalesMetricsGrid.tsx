@@ -2,13 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, ShoppingCart, CreditCard } from "lucide-react";
 import type { SalesMetrics } from "../types";
 
-interface SalesMetricsGridProps {
-  totalSales: number;
-  totalRevenue: number;
-  averageTicket: number;
-  salesByPlatform: Record<string, number>;
-  paymentMethodStats: Record<string, number>;
-}
+interface SalesMetricsGridProps extends SalesMetrics {}
 
 export const SalesMetricsGrid = ({
   totalSales,

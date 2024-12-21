@@ -15,3 +15,12 @@ export interface UnifiedSale {
   updated_at: string;
   raw_data?: any;
 }
+
+// Add the SalesMetrics interface to resolve the import error
+export interface SalesMetrics {
+  totalSales: number;
+  totalRevenue: number;
+  averageTicket: number;
+  salesByPlatform: Record<string, number>;
+  paymentMethodStats: Record<string, number>;
+}
