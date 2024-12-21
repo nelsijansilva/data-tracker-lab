@@ -90,8 +90,14 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
       <Table>
         <TableHeader>
           <TableRow className="border-b-2 border-primary/50">
-            {selectedMetrics.map((metric) => (
-              <TableHead key={metric.id} className="text-gray-400">
+            {selectedMetrics.map((metric, index) => (
+              <TableHead 
+                key={metric.id} 
+                className={cn(
+                  "text-gray-400",
+                  index !== selectedMetrics.length - 1 && "border-r border-primary/20"
+                )}
+              >
                 {metric.name.toUpperCase()}
               </TableHead>
             ))}
@@ -109,8 +115,14 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
               )}
               onClick={() => handleRowClick(campaign.id)}
             >
-              {selectedMetrics.map((metric) => (
-                <TableCell key={metric.id} className="text-gray-400">
+              {selectedMetrics.map((metric, index) => (
+                <TableCell 
+                  key={metric.id} 
+                  className={cn(
+                    "text-gray-400",
+                    index !== selectedMetrics.length - 1 && "border-r border-primary/20"
+                  )}
+                >
                   <MetricValue value={campaign[metric.field]} metric={metric} />
                 </TableCell>
               ))}
@@ -119,8 +131,14 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
         </TableBody>
         <TableFooter>
           <TableRow className="border-t-2 border-primary/50 font-semibold">
-            {selectedMetrics.map((metric) => (
-              <TableCell key={metric.id} className="text-primary">
+            {selectedMetrics.map((metric, index) => (
+              <TableCell 
+                key={metric.id} 
+                className={cn(
+                  "text-primary",
+                  index !== selectedMetrics.length - 1 && "border-r border-primary/20"
+                )}
+              >
                 <MetricValue value={totals[metric.field]} metric={metric} />
               </TableCell>
             ))}
