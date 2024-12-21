@@ -1,26 +1,5 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-function createSupabaseAdmin() {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase environment variables');
-  }
-
-  return createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
-}
+import { corsHeaders, createSupabaseAdmin, logWebhookRequest } from './utils.ts';
 
 serve(async (req) => {
   console.log('=== CartPanda Webhook Request Details ===');
@@ -28,12 +7,14 @@ serve(async (req) => {
   console.log('URL:', req.url);
   console.log('Headers:', JSON.stringify(Object.fromEntries(req.headers.entries()), null, 2));
 
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const supabaseAdmin = createSupabaseAdmin();
 
   try {
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+
     // Parse URL and validate account parameter
     const url = new URL(req.url);
     const accountName = url.searchParams.get('account');
@@ -42,8 +23,6 @@ serve(async (req) => {
     if (!accountName) {
       throw new Error('Account name is required in query parameters');
     }
-
-    const supabaseAdmin = createSupabaseAdmin();
 
     // Get the CartPanda account configuration
     const { data: cartPandaAccount, error: accountError } = await supabaseAdmin
@@ -71,32 +50,53 @@ serve(async (req) => {
       throw new Error('Invalid JSON payload');
     }
 
-    // Log the authorization header for debugging
+    // Validate token from Authorization header
     const authHeader = req.headers.get('Authorization');
     console.log('Authorization header received:', authHeader ? 'Present' : 'Missing');
-    console.log('Expected token format:', `Bearer ${cartPandaAccount.token}`);
 
-    // Validate token from Authorization header
     if (!authHeader) {
       const error = new Error('Authorization header is missing');
       error.name = 'AuthorizationError';
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: 401,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload,
+        error,
+        cartpandaAccountId: cartPandaAccount.id
+      });
       throw error;
     }
 
     if (!authHeader.startsWith('Bearer ')) {
       const error = new Error('Invalid Authorization header format. Must start with "Bearer "');
       error.name = 'AuthorizationError';
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: 401,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload,
+        error,
+        cartpandaAccountId: cartPandaAccount.id
+      });
       throw error;
     }
 
     const token = authHeader.replace('Bearer ', '');
     if (token !== cartPandaAccount.token) {
-      console.error('Token mismatch:', { 
-        receivedToken: token.substring(0, 10) + '...',
-        expectedToken: cartPandaAccount.token.substring(0, 10) + '...'
-      });
       const error = new Error('Invalid token');
       error.name = 'AuthorizationError';
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: 401,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload,
+        error,
+        cartpandaAccountId: cartPandaAccount.id
+      });
       throw error;
     }
 
@@ -130,25 +130,14 @@ serve(async (req) => {
     console.log('Order data saved successfully');
 
     // Log webhook success
-    await supabaseAdmin
-      .from('webhook_logs')
-      .insert([{
-        method: req.method,
-        url: req.url,
-        status: 200,
-        payload: {
-          request: {
-            method: req.method,
-            url: req.url,
-            headers: Object.fromEntries(req.headers.entries()),
-            body: payload
-          },
-          response: {
-            success: true,
-            message: 'Webhook processed successfully'
-          }
-        }
-      }]);
+    await logWebhookRequest(supabaseAdmin, {
+      method: req.method,
+      url: req.url,
+      status: 200,
+      headers: Object.fromEntries(req.headers.entries()),
+      payload,
+      cartpandaAccountId: cartPandaAccount.id
+    });
 
     return new Response(
       JSON.stringify({ 
@@ -166,28 +155,6 @@ serve(async (req) => {
     
     const statusCode = error.name === 'AuthorizationError' ? 401 : 400;
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-    // Log webhook error with detailed information
-    const supabaseAdmin = createSupabaseAdmin();
-    await supabaseAdmin
-      .from('webhook_logs')
-      .insert([{
-        method: req.method,
-        url: req.url,
-        status: statusCode,
-        payload: {
-          request: {
-            method: req.method,
-            url: req.url,
-            headers: Object.fromEntries(req.headers.entries())
-          },
-          error: {
-            message: errorMessage,
-            name: error.name,
-            stack: error.stack
-          }
-        }
-      }]);
 
     return new Response(
       JSON.stringify({ 
