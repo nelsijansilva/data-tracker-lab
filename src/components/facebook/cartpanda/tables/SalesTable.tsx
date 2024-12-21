@@ -17,6 +17,9 @@ export const SalesTable = ({ sales }: SalesTableProps) => {
           <TableHead className="text-gray-400">Status</TableHead>
           <TableHead className="text-gray-400">Pagamento</TableHead>
           <TableHead className="text-gray-400">Data</TableHead>
+          <TableHead className="text-gray-400">UTM Source</TableHead>
+          <TableHead className="text-gray-400">UTM Medium</TableHead>
+          <TableHead className="text-gray-400">UTM Campaign</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -50,6 +53,15 @@ export const SalesTable = ({ sales }: SalesTableProps) => {
             </TableCell>
             <TableCell className="text-gray-400">
               {new Date(sale.created_at).toLocaleDateString('pt-BR')}
+            </TableCell>
+            <TableCell className="text-gray-400">
+              {sale.utm_source || 'N/A'}
+            </TableCell>
+            <TableCell className="text-gray-400">
+              {sale.utm_medium || 'N/A'}
+            </TableCell>
+            <TableCell className="text-gray-400">
+              {sale.utm_campaign || 'N/A'}
             </TableCell>
           </TableRow>
         ))}
