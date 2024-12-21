@@ -63,6 +63,10 @@ serve(async (req) => {
     let payload;
     try {
       payload = JSON.parse(rawBody);
+      // Se for um array, pega o primeiro item
+      if (Array.isArray(payload)) {
+        payload = payload[0];
+      }
     } catch (e) {
       console.error('Error parsing JSON payload:', e);
       const error = new Error('Invalid JSON payload');
@@ -123,23 +127,28 @@ serve(async (req) => {
 
     console.log('Token validation successful');
 
+    const orderData = payload.body?.order;
+    if (!orderData) {
+      throw new Error('Order data is missing in payload');
+    }
+
     // Insert order data
     const { error: insertError } = await supabaseAdmin
       .from('cartpanda_orders')
       .insert([{
         cartpanda_account_id: cartPandaAccount.id,
-        order_id: payload.order.id,
-        cart_token: payload.cart_token,
-        email: payload.email,
-        phone: payload.phone,
-        status: payload.order_status || 'pending',
-        payment_status: payload.payment_status,
-        total_amount: payload.total_amount,
-        currency: payload.currency,
-        customer_name: payload.customer?.name,
-        customer_email: payload.customer?.email,
-        customer_document: payload.customer?.cpf?.toString(),
-        payment_method: payload.payment?.type,
+        order_id: orderData.id,
+        cart_token: orderData.cart_token,
+        email: orderData.email,
+        phone: orderData.phone,
+        status: orderData.status_id?.toLowerCase() || 'pending',
+        payment_status: String(orderData.payment_status || 'pending'),
+        total_amount: orderData.total_price || 0,
+        currency: orderData.currency || 'BRL',
+        customer_name: `${orderData.customer?.first_name || ''} ${orderData.customer?.last_name || ''}`.trim(),
+        customer_email: orderData.customer?.email,
+        customer_document: orderData.customer?.cpf || orderData.customer?.cnpj,
+        payment_method: orderData.payment?.type || orderData.payment_type,
         raw_data: payload
       }]);
 
