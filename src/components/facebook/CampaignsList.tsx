@@ -1,13 +1,11 @@
 import React, { useEffect } from "react";
 import { DateRange } from "react-day-picker";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCampaigns } from "@/hooks/useCampaigns";
-import { MetricValue } from "@/components/facebook/MetricValue";
-import { cn } from "@/lib/utils";
+import { MetricsTable } from "./MetricsTable";
 
 interface CampaignsListProps {
   dateRange: DateRange;
@@ -16,10 +14,12 @@ interface CampaignsListProps {
   onTabChange?: (value: string) => void;
 }
 
-// Métricas que devem usar média ao invés de soma
-const AVERAGE_METRICS = ['ctr', 'cpm', 'cpc', 'unique_ctr', 'total_ctr', 'frequency', 'unique_cpc'];
-
-export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccountId, onTabChange }: CampaignsListProps) => {
+export const CampaignsList = ({ 
+  dateRange, 
+  campaignStatus = 'all', 
+  selectedAccountId, 
+  onTabChange 
+}: CampaignsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const initializeDefaultMetrics = useMetricsStore(state => state.initializeDefaultMetrics);
   const { selectedCampaignId, setSelectedCampaignId } = useCampaignStore();
@@ -35,46 +35,14 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
     const currentTime = new Date().getTime();
     const timeDiff = currentTime - lastClickTime;
     
-    if (timeDiff < 300) { // Double click detected (within 300ms)
+    if (timeDiff < 300) {
       setSelectedCampaignId(campaignId);
-      onTabChange?.('adsets'); // Navigate to adsets tab
+      onTabChange?.('adsets');
     } else {
       setSelectedCampaignId(campaignId === selectedCampaignId ? null : campaignId);
     }
     
     setLastClickTime(currentTime);
-  };
-
-  const calculateTotals = (campaigns: any[]) => {
-    return selectedMetrics.reduce((acc: any, metric) => {
-      if (metric.field === 'name') {
-        acc[metric.field] = `Total (${campaigns.length})`;
-      } else {
-        // Verifica se a métrica deve usar média
-        const shouldUseAverage = AVERAGE_METRICS.includes(metric.field.toLowerCase());
-        
-        if (shouldUseAverage) {
-          // Calcula a média excluindo valores nulos, undefined ou zero
-          const validValues = campaigns
-            .map(campaign => {
-              const value = parseFloat(campaign[metric.field]);
-              return !isNaN(value) && value !== 0 ? value : null;
-            })
-            .filter((value): value is number => value !== null);
-            
-          acc[metric.field] = validValues.length > 0
-            ? validValues.reduce((sum, value) => sum + value, 0) / validValues.length
-            : 0;
-        } else {
-          // Soma normal para outras métricas
-          acc[metric.field] = campaigns.reduce((sum: number, campaign: any) => {
-            const value = parseFloat(campaign[metric.field]) || 0;
-            return sum + value;
-          }, 0);
-        }
-      }
-      return acc;
-    }, {});
   };
 
   if (isLoading) return <div className="text-gray-400">Carregando campanhas...</div>;
@@ -104,68 +72,15 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
     );
   }
 
-  const totals = calculateTotals(filteredCampaigns);
-
   return (
     <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-b-2 border-primary/50">
-            {selectedMetrics.map((metric, index) => (
-              <TableHead 
-                key={metric.id} 
-                className={cn(
-                  "text-gray-400",
-                  index !== selectedMetrics.length - 1 && "border-r border-primary/20"
-                )}
-              >
-                {metric.name.toUpperCase()}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredCampaigns?.map((campaign: any) => (
-            <TableRow 
-              key={campaign.id}
-              className={cn(
-                "cursor-pointer transition-colors border-b border-primary/20",
-                selectedCampaignId === campaign.id 
-                  ? "bg-[#3b82f6]/10" 
-                  : "hover:bg-[#2f3850]"
-              )}
-              onClick={() => handleRowClick(campaign.id)}
-            >
-              {selectedMetrics.map((metric, index) => (
-                <TableCell 
-                  key={metric.id} 
-                  className={cn(
-                    "text-gray-400",
-                    index !== selectedMetrics.length - 1 && "border-r border-primary/20"
-                  )}
-                >
-                  <MetricValue value={campaign[metric.field]} metric={metric} />
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow className="border-t-2 border-primary/50 font-semibold">
-            {selectedMetrics.map((metric, index) => (
-              <TableCell 
-                key={metric.id} 
-                className={cn(
-                  "text-primary",
-                  index !== selectedMetrics.length - 1 && "border-r border-primary/20"
-                )}
-              >
-                <MetricValue value={totals[metric.field]} metric={metric} />
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableFooter>
-      </Table>
+      <MetricsTable
+        data={filteredCampaigns}
+        metrics={selectedMetrics}
+        onRowClick={handleRowClick}
+        selectedId={selectedCampaignId}
+        getRowId={(campaign) => campaign.id}
+      />
     </div>
   );
 };

@@ -1,19 +1,41 @@
 import type { Metric } from "@/components/facebook/MetricSelector";
 
-export const calculateMetricValue = (data: any, metric: Metric) => {
-  // If there's no formula, return the direct field value
-  if (!metric.formula) {
-    return data[metric.field];
-  }
+// Métricas que devem usar média ao invés de soma
+export const AVERAGE_METRICS = [
+  'ctr', 
+  'cpm', 
+  'cpc', 
+  'unique_ctr', 
+  'total_ctr', 
+  'frequency', 
+  'unique_cpc'
+];
 
-  try {
-    // If there is a formula, evaluate it by replacing field names with their values
-    const formula = metric.formula.replace(/[a-zA-Z_]+/g, (match) => {
-      return data[match] || 0;
-    });
-    return eval(formula);
-  } catch (error) {
-    console.error(`Error calculating metric ${metric.name}:`, error);
-    return 0;
-  }
+export const calculateMetricTotals = (items: any[], metrics: Metric[]) => {
+  return metrics.reduce((acc: any, metric) => {
+    if (metric.field === 'name') {
+      acc[metric.field] = `Total (${items.length})`;
+    } else {
+      const shouldUseAverage = AVERAGE_METRICS.includes(metric.field.toLowerCase());
+      
+      if (shouldUseAverage) {
+        const validValues = items
+          .map(item => {
+            const value = parseFloat(item[metric.field]);
+            return !isNaN(value) && value !== 0 ? value : null;
+          })
+          .filter((value): value is number => value !== null);
+          
+        acc[metric.field] = validValues.length > 0
+          ? validValues.reduce((sum, value) => sum + value, 0) / validValues.length
+          : 0;
+      } else {
+        acc[metric.field] = items.reduce((sum: number, item: any) => {
+          const value = parseFloat(item[metric.field]) || 0;
+          return sum + value;
+        }, 0);
+      }
+    }
+    return acc;
+  }, {});
 };
