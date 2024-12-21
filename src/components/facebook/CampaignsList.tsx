@@ -17,7 +17,7 @@ interface CampaignsListProps {
 }
 
 // Métricas que devem usar média ao invés de soma
-const AVERAGE_METRICS = ['ctr', 'cpm', 'cpc'];
+const AVERAGE_METRICS = ['ctr', 'cpm', 'cpc', 'unique_ctr', 'total_ctr', 'frequency', 'unique_cpc'];
 
 export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccountId, onTabChange }: CampaignsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);

@@ -17,7 +17,7 @@ interface AdSetsListProps {
 }
 
 // Métricas que devem usar média ao invés de soma
-const AVERAGE_METRICS = ['ctr', 'cpm', 'cpc'];
+const AVERAGE_METRICS = ['ctr', 'cpm', 'cpc', 'unique_ctr', 'total_ctr', 'frequency', 'unique_cpc'];
 
 export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSetsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
