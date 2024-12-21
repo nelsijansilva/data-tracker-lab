@@ -16,6 +16,9 @@ interface CampaignsListProps {
   onTabChange?: (value: string) => void;
 }
 
+// Métricas que devem usar média ao invés de soma
+const AVERAGE_METRICS = ['ctr', 'cpm', 'cpc'];
+
 export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccountId, onTabChange }: CampaignsListProps) => {
   const selectedMetrics = useMetricsStore(state => state.selectedMetrics);
   const initializeDefaultMetrics = useMetricsStore(state => state.initializeDefaultMetrics);
@@ -47,10 +50,25 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
       if (metric.field === 'name') {
         acc[metric.field] = `Total (${campaigns.length})`;
       } else {
-        acc[metric.field] = campaigns.reduce((sum: number, campaign: any) => {
-          const value = parseFloat(campaign[metric.field]) || 0;
-          return sum + value;
-        }, 0);
+        // Verifica se a métrica deve usar média
+        const shouldUseAverage = AVERAGE_METRICS.includes(metric.field.toLowerCase());
+        
+        if (shouldUseAverage) {
+          // Calcula a média excluindo valores nulos ou undefined
+          const validValues = campaigns
+            .map(campaign => parseFloat(campaign[metric.field]))
+            .filter(value => !isNaN(value));
+            
+          acc[metric.field] = validValues.length > 0
+            ? validValues.reduce((sum, value) => sum + value, 0) / validValues.length
+            : 0;
+        } else {
+          // Soma normal para outras métricas
+          acc[metric.field] = campaigns.reduce((sum: number, campaign: any) => {
+            const value = parseFloat(campaign[metric.field]) || 0;
+            return sum + value;
+          }, 0);
+        }
       }
       return acc;
     }, {});
