@@ -1,26 +1,32 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link2, Globe, Target } from "lucide-react";
 
+interface Sale {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+}
+
 interface TrackingMetricsProps {
-  sales: any[];
+  sales: Sale[];
 }
 
 export const TrackingMetrics = ({ sales }: TrackingMetricsProps) => {
-  // Agrupa vendas por UTM source
+  // Agrupa vendas por UTM source com tipagem segura
   const utmSourceStats = sales?.reduce((acc: Record<string, number>, sale) => {
     const source = sale.utm_source || 'Não Informado';
     acc[source] = (acc[source] || 0) + 1;
     return acc;
   }, {});
 
-  // Agrupa vendas por UTM medium
+  // Agrupa vendas por UTM medium com tipagem segura
   const utmMediumStats = sales?.reduce((acc: Record<string, number>, sale) => {
     const medium = sale.utm_medium || 'Não Informado';
     acc[medium] = (acc[medium] || 0) + 1;
     return acc;
   }, {});
 
-  // Agrupa vendas por UTM campaign
+  // Agrupa vendas por UTM campaign com tipagem segura
   const utmCampaignStats = sales?.reduce((acc: Record<string, number>, sale) => {
     const campaign = sale.utm_campaign || 'Não Informado';
     acc[campaign] = (acc[campaign] || 0) + 1;
