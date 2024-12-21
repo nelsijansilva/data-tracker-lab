@@ -3,28 +3,37 @@ import { corsHeaders, createSupabaseAdmin, processWebhookData } from './utils.ts
 import type { TictoWebhookPayload } from './types.ts';
 
 serve(async (req) => {
+  // Log detalhado da requisição recebida
   console.log('=== Webhook Request Details ===');
   console.log('Method:', req.method);
   console.log('URL:', req.url);
+  console.log('Headers:', JSON.stringify(Object.fromEntries(req.headers.entries()), null, 2));
 
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      headers: corsHeaders
-    });
-  }
+  const supabaseAdmin = createSupabaseAdmin();
 
   try {
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+
     // Parse URL and validate account parameter
     const url = new URL(req.url);
     const accountName = url.searchParams.get('account');
     console.log('Account name from URL:', accountName);
     
     if (!accountName) {
-      throw new Error('Account name is required in query parameters');
+      const error = new Error('Account name is required in query parameters');
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: 400,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload: { error: error.message },
+        tictoAccountId: null
+      });
+      throw error;
     }
-
-    const supabaseAdmin = createSupabaseAdmin();
 
     // Get the Ticto account configuration
     const { data: tictoAccount, error: accountError } = await supabaseAdmin
@@ -35,7 +44,16 @@ serve(async (req) => {
 
     if (accountError || !tictoAccount) {
       console.error('Error finding Ticto account:', accountError);
-      throw new Error(`Ticto account not found for account name: ${accountName}`);
+      const error = new Error(`Ticto account not found for account name: ${accountName}`);
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: 404,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload: { error: error.message },
+        tictoAccountId: null
+      });
+      throw error;
     }
 
     console.log('Found Ticto account:', tictoAccount.id);
@@ -49,7 +67,16 @@ serve(async (req) => {
       payload = JSON.parse(rawBody);
     } catch (e) {
       console.error('Error parsing JSON payload:', e);
-      throw new Error('Invalid JSON payload');
+      const error = new Error('Invalid JSON payload');
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: 400,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload: { error: error.message, rawBody },
+        tictoAccountId: tictoAccount.id
+      });
+      throw error;
     }
 
     // Log the entire payload structure for debugging
@@ -78,12 +105,13 @@ serve(async (req) => {
     const processedData = processWebhookData(payload);
     console.log('Processed data:', processedData);
 
-    // Insert order data first
+    // Insert order data
     const { error: insertError } = await supabaseAdmin
       .from('ticto_orders')
       .insert([{
         ...processedData,
-        ticto_account_id: tictoAccount.id
+        ticto_account_id: tictoAccount.id,
+        raw_data: payload
       }]);
 
     if (insertError) {
@@ -91,33 +119,23 @@ serve(async (req) => {
       throw insertError;
     }
 
-    console.log('Order data saved successfully to ticto_orders table');
+    console.log('Order data saved successfully');
 
     // Log webhook success
-    await supabaseAdmin
-      .from('webhook_logs')
-      .insert([
-        {
-          method: req.method,
-          url: req.url,
-          status: 200,
-          payload: { 
-            success: true,
-            order_hash: processedData.order_hash 
-          },
-          ticto_account_id: tictoAccount.id
-        }
-      ]);
+    await logWebhookRequest(supabaseAdmin, {
+      method: req.method,
+      url: req.url,
+      status: 200,
+      headers: Object.fromEntries(req.headers.entries()),
+      payload,
+      tictoAccountId: tictoAccount.id
+    });
 
-    console.log('Webhook log saved successfully');
-
-    // Return success response
     return new Response(
       JSON.stringify({ 
         success: true,
         message: 'Webhook processed successfully',
-        order_hash: processedData.order_hash,
-        account_name: accountName
+        order_hash: processedData.order_hash
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -127,33 +145,73 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error processing webhook:', error);
+    
+    const statusCode = error.name === 'AuthorizationError' ? 401 : 400;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
     // Log error in webhook_logs
     if (error instanceof Error) {
-      const supabaseAdmin = createSupabaseAdmin();
-      
-      await supabaseAdmin
-        .from('webhook_logs')
-        .insert([
-          {
-            method: req.method,
-            url: req.url,
-            status: 400,
-            payload: { error: error.message },
-            ticto_account_id: null
-          }
-        ]);
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: statusCode,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload: { error: errorMessage },
+        tictoAccountId: null
+      });
     }
 
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: statusCode,
       }
     );
   }
 });
+
+async function logWebhookRequest(supabaseAdmin: any, {
+  method,
+  url,
+  status,
+  headers,
+  payload,
+  tictoAccountId = null
+}: {
+  method: string;
+  url: string;
+  status: number;
+  headers: any;
+  payload: any;
+  tictoAccountId?: string | null;
+}) {
+  try {
+    await supabaseAdmin
+      .from('webhook_logs')
+      .insert([{
+        method,
+        url,
+        status,
+        payload: {
+          request: {
+            method,
+            url,
+            headers,
+            payload
+          },
+          response: {
+            success: status >= 200 && status < 300,
+            status,
+            message: status >= 200 && status < 300 ? 'Webhook processed successfully' : 'Error processing webhook'
+          }
+        },
+        ticto_account_id: tictoAccountId
+      }]);
+  } catch (error) {
+    console.error('Error logging webhook request:', error);
+  }
+}

@@ -23,6 +23,8 @@ export function createSupabaseAdmin() {
 }
 
 export function processWebhookData(payload: TictoWebhookPayload): ProcessedWebhookData {
+  console.log('Processing webhook data:', JSON.stringify(payload, null, 2));
+
   if (!payload.order?.hash) {
     throw new Error('Order hash is required');
   }
@@ -35,7 +37,7 @@ export function processWebhookData(payload: TictoWebhookPayload): ProcessedWebho
     throw new Error('Payment method is required');
   }
 
-  return {
+  const processedData = {
     order_hash: payload.order.hash,
     status: payload.status.toLowerCase(),
     payment_method: payload.payment_method.toLowerCase(),
@@ -49,6 +51,10 @@ export function processWebhookData(payload: TictoWebhookPayload): ProcessedWebho
     customer_email: payload.customer?.email || null,
     customer_phone: payload.customer?.phone ? 
       `${payload.customer.phone.ddi}${payload.customer.phone.ddd}${payload.customer.phone.number}` : null,
-    customer_document: payload.customer?.cpf || payload.customer?.cnpj || null
+    customer_document: payload.customer?.cpf || payload.customer?.cnpj || null,
+    raw_data: payload
   };
+
+  console.log('Processed webhook data:', JSON.stringify(processedData, null, 2));
+  return processedData;
 }
