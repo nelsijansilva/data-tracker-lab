@@ -70,14 +70,22 @@ serve(async (req) => {
       throw new Error('Invalid JSON payload');
     }
 
-    // Validate token from Authorization header
+    // Log the authorization header for debugging
     const authHeader = req.headers.get('Authorization');
+    console.log('Auth header:', authHeader);
+    console.log('Expected token:', `Bearer ${cartPandaAccount.token}`);
+
+    // Validate token from Authorization header
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new Error('Missing or invalid Authorization header');
+      throw new Error('Missing or invalid Authorization header format');
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.replace('Bearer ', '');
     if (token !== cartPandaAccount.token) {
+      console.error('Token mismatch:', { 
+        received: token, 
+        expected: cartPandaAccount.token 
+      });
       throw new Error('Invalid token');
     }
 
@@ -108,6 +116,16 @@ serve(async (req) => {
 
     console.log('Order data saved successfully');
 
+    // Log webhook success
+    await supabaseAdmin
+      .from('webhook_logs')
+      .insert([{
+        method: req.method,
+        url: req.url,
+        status: 200,
+        payload: payload,
+      }]);
+
     return new Response(
       JSON.stringify({ 
         success: true,
@@ -121,6 +139,17 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error processing webhook:', error);
+
+    // Log webhook error
+    const supabaseAdmin = createSupabaseAdmin();
+    await supabaseAdmin
+      .from('webhook_logs')
+      .insert([{
+        method: req.method,
+        url: req.url,
+        status: 400,
+        payload: { error: error instanceof Error ? error.message : 'Unknown error' },
+      }]);
 
     return new Response(
       JSON.stringify({ 
