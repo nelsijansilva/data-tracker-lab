@@ -27,7 +27,6 @@ export async function logWebhookRequest(supabaseAdmin: any, {
   status,
   headers,
   payload,
-  error = null,
   cartpandaAccountId = null
 }: {
   method: string;
@@ -35,22 +34,9 @@ export async function logWebhookRequest(supabaseAdmin: any, {
   status: number;
   headers: any;
   payload: any;
-  error?: any;
   cartpandaAccountId?: string | null;
 }) {
-  const logPayload = error ? {
-    request: {
-      method,
-      url,
-      headers,
-      payload
-    },
-    error: {
-      message: error.message,
-      name: error.name,
-      stack: error.stack
-    }
-  } : {
+  const logPayload = {
     request: {
       method,
       url,
@@ -58,8 +44,9 @@ export async function logWebhookRequest(supabaseAdmin: any, {
       payload
     },
     response: {
-      success: true,
-      message: 'Webhook processed successfully'
+      success: status >= 200 && status < 300,
+      status,
+      message: status >= 200 && status < 300 ? 'Webhook processed successfully' : 'Error processing webhook'
     }
   };
 
