@@ -79,7 +79,7 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
                 key={metric.id} 
                 className="text-gray-400 border-r border-gray-700 last:border-r-0"
               >
-                {metric.name.toUpperCase()}
+                {metric.name}
               </TableHead>
             ))}
           </TableRow>
@@ -114,8 +114,10 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
               key={metric.id} 
               className="text-gray-300 border-r border-gray-700 last:border-r-0"
             >
-              <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
-              <MetricValue value={totals[metric.field]} metric={metric} />
+              <div className="metric-total-label">{metric.name} Total</div>
+              <div className="metric-total-value">
+                <MetricValue value={totals[metric.field]} metric={metric} />
+              </div>
             </TableCell>
           ))}
         </TableRow>

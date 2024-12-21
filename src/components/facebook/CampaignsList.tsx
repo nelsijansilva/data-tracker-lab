@@ -86,9 +86,9 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
             {selectedMetrics.map((metric) => (
               <TableHead 
                 key={metric.id} 
-                className="text-gray-400 border-r border-gray-700 last:border-r-0 whitespace-nowrap"
+                className="text-gray-400 border-r border-gray-700 last:border-r-0"
               >
-                {metric.name.toUpperCase()}
+                {metric.name}
               </TableHead>
             ))}
           </TableRow>
