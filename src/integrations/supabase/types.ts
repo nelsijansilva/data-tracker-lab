@@ -401,6 +401,7 @@ export type Database = {
           payment_method: string
           product_id: number | null
           product_name: string | null
+          raw_data: Json | null
           status: string
           ticto_account_id: string | null
           updated_at: string
@@ -420,6 +421,7 @@ export type Database = {
           payment_method: string
           product_id?: number | null
           product_name?: string | null
+          raw_data?: Json | null
           status: string
           ticto_account_id?: string | null
           updated_at?: string
@@ -439,6 +441,7 @@ export type Database = {
           payment_method?: string
           product_id?: number | null
           product_name?: string | null
+          raw_data?: Json | null
           status?: string
           ticto_account_id?: string | null
           updated_at?: string
