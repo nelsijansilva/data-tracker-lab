@@ -453,6 +453,60 @@ export type Database = {
           },
         ]
       }
+      unified_sales: {
+        Row: {
+          created_at: string
+          currency: string | null
+          customer_document: string | null
+          customer_email: string | null
+          customer_name: string | null
+          id: string
+          order_id: string
+          payment_method: string | null
+          payment_status: string
+          platform: string
+          platform_account_id: string | null
+          raw_data: Json | null
+          status: string
+          total_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          customer_document?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          id?: string
+          order_id: string
+          payment_method?: string | null
+          payment_status: string
+          platform: string
+          platform_account_id?: string | null
+          raw_data?: Json | null
+          status: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          customer_document?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          id?: string
+          order_id?: string
+          payment_method?: string | null
+          payment_status?: string
+          platform?: string
+          platform_account_id?: string | null
+          raw_data?: Json | null
+          status?: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       webhook_logs: {
         Row: {
           created_at: string

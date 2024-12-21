@@ -8,22 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const SalesList = () => {
   const { data: sales, isLoading, error } = useQuery({
-    queryKey: ['cartpanda-sales'],
+    queryKey: ['unified-sales'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('cartpanda_orders')
-        .select(`
-          id,
-          order_id,
-          status,
-          payment_status,
-          total_amount,
-          currency,
-          customer_name,
-          payment_method,
-          created_at,
-          raw_data
-        `)
+        .from('unified_sales')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -35,6 +24,12 @@ export const SalesList = () => {
   const totalSales = sales?.length || 0;
   const totalRevenue = sales?.reduce((acc, sale) => acc + (sale.total_amount || 0), 0) || 0;
   const averageTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
+
+  // Agrupar vendas por plataforma
+  const salesByPlatform = sales?.reduce((acc, sale) => {
+    acc[sale.platform] = (acc[sale.platform] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>) || {};
 
   if (isLoading) return <div className="text-gray-400">Carregando vendas...</div>;
   
@@ -59,6 +54,11 @@ export const SalesList = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalSales}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {Object.entries(salesByPlatform).map(([platform, count]) => (
+                <div key={platform}>{platform}: {count}</div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
@@ -91,6 +91,7 @@ export const SalesList = () => {
         <TableHeader>
           <TableRow className="border-gray-700">
             <TableHead className="text-gray-400">ID do Pedido</TableHead>
+            <TableHead className="text-gray-400">Plataforma</TableHead>
             <TableHead className="text-gray-400">Cliente</TableHead>
             <TableHead className="text-gray-400">Valor</TableHead>
             <TableHead className="text-gray-400">Status</TableHead>
@@ -102,6 +103,9 @@ export const SalesList = () => {
           {sales?.map((sale) => (
             <TableRow key={sale.id} className="border-gray-700">
               <TableCell className="text-gray-400">#{sale.order_id}</TableCell>
+              <TableCell className="text-gray-400">
+                <span className="capitalize">{sale.platform}</span>
+              </TableCell>
               <TableCell className="text-gray-400">{sale.customer_name || 'N/A'}</TableCell>
               <TableCell className="text-gray-400">
                 R$ {sale.total_amount?.toFixed(2) || '0.00'}
