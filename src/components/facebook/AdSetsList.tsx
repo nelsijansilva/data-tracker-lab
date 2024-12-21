@@ -50,10 +50,13 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
         const shouldUseAverage = AVERAGE_METRICS.includes(metric.field.toLowerCase());
         
         if (shouldUseAverage) {
-          // Calcula a média excluindo valores nulos ou undefined
+          // Calcula a média excluindo valores nulos, undefined ou zero
           const validValues = adSets
-            .map(adSet => parseFloat(adSet[metric.field]))
-            .filter(value => !isNaN(value));
+            .map(adSet => {
+              const value = parseFloat(adSet[metric.field]);
+              return !isNaN(value) && value !== 0 ? value : null;
+            })
+            .filter((value): value is number => value !== null);
             
           acc[metric.field] = validValues.length > 0
             ? validValues.reduce((sum, value) => sum + value, 0) / validValues.length

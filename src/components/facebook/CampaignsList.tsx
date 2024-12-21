@@ -54,10 +54,13 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
         const shouldUseAverage = AVERAGE_METRICS.includes(metric.field.toLowerCase());
         
         if (shouldUseAverage) {
-          // Calcula a média excluindo valores nulos ou undefined
+          // Calcula a média excluindo valores nulos, undefined ou zero
           const validValues = campaigns
-            .map(campaign => parseFloat(campaign[metric.field]))
-            .filter(value => !isNaN(value));
+            .map(campaign => {
+              const value = parseFloat(campaign[metric.field]);
+              return !isNaN(value) && value !== 0 ? value : null;
+            })
+            .filter((value): value is number => value !== null);
             
           acc[metric.field] = validValues.length > 0
             ? validValues.reduce((sum, value) => sum + value, 0) / validValues.length
