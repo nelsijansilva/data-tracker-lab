@@ -50,13 +50,19 @@ export async function logWebhookRequest(supabaseAdmin: any, {
     }
   };
 
-  await supabaseAdmin
-    .from('webhook_logs')
-    .insert([{
-      method,
-      url,
-      status,
-      payload: logPayload,
-      cartpanda_account_id: cartpandaAccountId
-    }]);
+  try {
+    await supabaseAdmin
+      .from('webhook_logs')
+      .insert([{
+        method,
+        url,
+        status,
+        payload: logPayload,
+        cartpanda_account_id: cartpandaAccountId
+      }]);
+    
+    console.log('Webhook log saved successfully');
+  } catch (error) {
+    console.error('Error saving webhook log:', error);
+  }
 }
