@@ -79,21 +79,21 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
   }, {} as Record<string, number>);
 
   return (
-    <div className="relative overflow-hidden border border-gray-700 rounded-lg">
-      <div className="max-h-[600px] overflow-auto">
-        <Table>
-          <TableHeader className="sticky top-0 bg-[#1a1f2e] z-10">
-            <TableRow className="border-gray-700">
-              {selectedMetrics.map((metric) => (
-                <TableHead 
-                  key={metric.id} 
-                  className="text-gray-400 border-r border-gray-700 last:border-r-0"
-                >
-                  {metric.name.toUpperCase()}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
+    <div className="table-container">
+      <Table>
+        <TableHeader className="table-header">
+          <TableRow className="border-gray-700">
+            {selectedMetrics.map((metric) => (
+              <TableHead 
+                key={metric.id} 
+                className="text-gray-400 border-r border-gray-700 last:border-r-0"
+              >
+                {metric.name.toUpperCase()}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <div className="table-content">
           <TableBody>
             {filteredCampaigns?.map((campaign: any) => (
               <TableRow 
@@ -116,21 +116,20 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
                 ))}
               </TableRow>
             ))}
-            {/* Linha de totais dentro da tabela */}
-            <TableRow className="bg-[#1a1f2e] border-t-2 border-gray-700 font-medium">
-              {selectedMetrics.map((metric) => (
-                <TableCell 
-                  key={metric.id} 
-                  className="text-gray-300 border-r border-gray-700 last:border-r-0"
-                >
-                  <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
-                  <MetricValue value={totals[metric.field]} metric={metric} />
-                </TableCell>
-              ))}
-            </TableRow>
           </TableBody>
-        </Table>
-      </div>
+        </div>
+        <TableRow className="table-footer">
+          {selectedMetrics.map((metric) => (
+            <TableCell 
+              key={metric.id} 
+              className="text-gray-300 border-r border-gray-700 last:border-r-0"
+            >
+              <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
+              <MetricValue value={totals[metric.field]} metric={metric} />
+            </TableCell>
+          ))}
+        </TableRow>
+      </Table>
     </div>
   );
 };

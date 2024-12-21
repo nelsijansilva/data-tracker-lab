@@ -37,6 +37,24 @@
     background-size: 50px 50px;
     background-image: radial-gradient(circle, #8B5CF610 1px, transparent 1px);
   }
+
+  /* Estilização das barras de rolagem */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-800 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 rounded-full hover:bg-gray-500 transition-colors;
+  }
+
+  ::-webkit-scrollbar-corner {
+    @apply bg-transparent;
+  }
 }
 
 .glass-card {
@@ -91,4 +109,25 @@
 
 .animate-fade-up {
   animation: fade-up 0.5s ease-out;
+}
+
+/* Classes para tabelas com totais fixos */
+.table-container {
+  @apply relative overflow-hidden border border-gray-700 rounded-lg;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  max-height: 600px;
+}
+
+.table-content {
+  @apply overflow-auto;
+  max-height: calc(600px - 80px); /* Ajuste conforme necessário para o cabeçalho e rodapé */
+}
+
+.table-header {
+  @apply sticky top-0 bg-[#1a1f2e] z-10;
+}
+
+.table-footer {
+  @apply sticky bottom-0 bg-[#1a1f2e] border-t-2 border-gray-700 font-medium z-10;
 }
