@@ -89,7 +89,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
     <div className="space-y-4">
       <Table>
         <TableHeader>
-          <TableRow className="border-b-2 border-gray-700">
+          <TableRow className="border-b-2 border-primary/50">
             {selectedMetrics.map((metric) => (
               <TableHead key={metric.id} className="text-gray-400">
                 {metric.name.toUpperCase()}
@@ -102,7 +102,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
             <TableRow 
               key={campaign.id}
               className={cn(
-                "cursor-pointer transition-colors border-b border-gray-700/50",
+                "cursor-pointer transition-colors border-b border-primary/20",
                 selectedCampaignId === campaign.id 
                   ? "bg-[#3b82f6]/10" 
                   : "hover:bg-[#2f3850]"
@@ -118,7 +118,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
           ))}
         </TableBody>
         <TableFooter>
-          <TableRow className="border-t-2 border-gray-700 font-semibold">
+          <TableRow className="border-t-2 border-primary/50 font-semibold">
             {selectedMetrics.map((metric) => (
               <TableCell key={metric.id} className="text-primary">
                 <MetricValue value={totals[metric.field]} metric={metric} />
