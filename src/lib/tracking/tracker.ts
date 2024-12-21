@@ -25,7 +25,7 @@ class Tracker {
   }
 
   private async initSession() {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('tracking_sessions')
       .insert({
         id: this.sessionId,
@@ -36,6 +36,8 @@ class Tracker {
         screen_resolution: this.getScreenResolution(),
         language: navigator.language
       })
+      .select()
+      .single()
 
     if (error) {
       console.error('Error initializing session:', error)
@@ -95,7 +97,7 @@ class Tracker {
     const event = this.queue.shift()
 
     try {
-      const { error } = await supabase.functions.invoke('track', {
+      const { data, error } = await supabase.functions.invoke('track', {
         body: {
           ...event,
           session_id: this.sessionId,
@@ -132,8 +134,8 @@ class Tracker {
     this.processQueue()
   }
 
-  public trackPageView(title: string) {
-    const { error } = supabase
+  public async trackPageView(title: string) {
+    const { error } = await supabase
       .from('tracking_pageviews')
       .insert({
         session_id: this.sessionId,
