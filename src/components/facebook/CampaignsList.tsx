@@ -82,11 +82,11 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
     <div className="table-container">
       <Table>
         <TableHeader className="table-header">
-          <TableRow className="border-gray-700">
+          <TableRow>
             {selectedMetrics.map((metric) => (
               <TableHead 
                 key={metric.id} 
-                className="text-gray-400 border-r border-gray-700 last:border-r-0 whitespace-nowrap px-4 py-3 text-left"
+                className="text-gray-400 whitespace-nowrap px-4 py-3 text-left"
               >
                 {metric.name}
               </TableHead>
@@ -99,7 +99,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
               <TableRow 
                 key={campaign.id}
                 className={cn(
-                  "cursor-pointer transition-colors border-gray-700",
+                  "cursor-pointer transition-colors",
                   selectedCampaignId === campaign.id 
                     ? "bg-[#3b82f6]/10" 
                     : "hover:bg-[#2f3850]"
@@ -109,7 +109,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
                 {selectedMetrics.map((metric) => (
                   <TableCell 
                     key={metric.id} 
-                    className="text-gray-400 border-r border-gray-700 last:border-r-0 px-4"
+                    className="text-gray-400 px-4"
                   >
                     <MetricValue value={campaign[metric.field]} metric={metric} />
                   </TableCell>
@@ -122,7 +122,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
           {selectedMetrics.map((metric) => (
             <TableCell 
               key={metric.id} 
-              className="text-gray-300 border-r border-gray-700 last:border-r-0 px-4"
+              className="text-gray-300 px-4"
             >
               <div className="metric-total-label">{metric.name} Total</div>
               <div className="metric-total-value">
