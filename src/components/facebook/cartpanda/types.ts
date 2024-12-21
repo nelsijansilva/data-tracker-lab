@@ -14,9 +14,11 @@ export interface UnifiedSale {
   created_at: string;
   updated_at: string;
   raw_data?: any;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
 }
 
-// Add the SalesMetrics interface to resolve the import error
 export interface SalesMetrics {
   totalSales: number;
   totalRevenue: number;
