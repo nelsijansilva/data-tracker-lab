@@ -116,7 +116,7 @@
   @apply relative overflow-hidden border border-gray-700 rounded-lg;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  height: 400px; /* Altura fixa para mostrar ~4 linhas */
+  height: 800px; /* Altura dobrada para mostrar mais linhas */
 }
 
 .table-content {
