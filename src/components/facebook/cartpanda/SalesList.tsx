@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, DollarSign, ShoppingCart, TrendingUp } from "lucide-react";
+import { AlertTriangle, DollarSign, ShoppingCart, TrendingUp, CreditCard, Package2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const SalesList = () => {
@@ -20,14 +20,26 @@ export const SalesList = () => {
     }
   });
 
-  // Cálculo de métricas
+  // Cálculos de métricas básicas
   const totalSales = sales?.length || 0;
   const totalRevenue = sales?.reduce((acc, sale) => acc + (sale.total_amount || 0), 0) || 0;
   const averageTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
 
-  // Agrupar vendas por plataforma
+  // Métricas por plataforma
   const salesByPlatform = sales?.reduce((acc, sale) => {
     acc[sale.platform] = (acc[sale.platform] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>) || {};
+
+  // Métricas de pagamento
+  const paymentMethodStats = sales?.reduce((acc, sale) => {
+    acc[sale.payment_method || 'outros'] = (acc[sale.payment_method || 'outros'] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>) || {};
+
+  // Status das vendas
+  const salesStatus = sales?.reduce((acc, sale) => {
+    acc[sale.status] = (acc[sale.status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>) || {};
 
@@ -56,7 +68,7 @@ export const SalesList = () => {
             <div className="text-2xl font-bold">{totalSales}</div>
             <div className="text-xs text-muted-foreground mt-1">
               {Object.entries(salesByPlatform).map(([platform, count]) => (
-                <div key={platform}>{platform}: {count}</div>
+                <div key={platform} className="capitalize">{platform}: {count}</div>
               ))}
             </div>
           </CardContent>
@@ -71,17 +83,50 @@ export const SalesList = () => {
             <div className="text-2xl font-bold">
               R$ {totalRevenue.toFixed(2)}
             </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Ticket Médio: R$ {averageTicket.toFixed(2)}
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Métodos de Pagamento</CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              R$ {averageTicket.toFixed(2)}
+            <div className="space-y-1">
+              {Object.entries(paymentMethodStats).map(([method, count]) => (
+                <div key={method} className="flex justify-between items-center text-sm">
+                  <span className="capitalize">{method || 'Outros'}</span>
+                  <span className="font-medium">{count}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Status das Vendas</CardTitle>
+            <Package2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {Object.entries(salesStatus).map(([status, count]) => (
+                <div key={status} className="flex justify-between items-center text-sm">
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    status === 'completed' ? 'bg-green-500/20 text-green-500' :
+                    status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
+                    'bg-red-500/20 text-red-500'
+                  }`}>
+                    {status}
+                  </span>
+                  <span className="font-medium">{count}</span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
