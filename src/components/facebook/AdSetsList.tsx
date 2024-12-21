@@ -70,8 +70,8 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
   }, {} as Record<string, number>);
 
   return (
-    <div className="space-y-4">
-      <div className="max-h-[600px] overflow-y-auto relative border border-gray-700 rounded-lg">
+    <div className="relative overflow-hidden border border-gray-700 rounded-lg">
+      <div className="max-h-[600px] overflow-auto">
         <Table>
           <TableHeader className="sticky top-0 bg-[#1a1f2e] z-10">
             <TableRow className="border-gray-700">
@@ -110,13 +110,13 @@ export const AdSetsList = ({ dateRange, selectedAccountId, onTabChange }: AdSets
         </Table>
       </div>
 
-      {/* Footer com totais */}
-      <div className="sticky bottom-0 bg-[#1a1f2e] border border-gray-700 rounded-lg p-4">
-        <div className="flex">
+      {/* Footer com totais dentro do container principal */}
+      <div className="sticky bottom-0 bg-[#1a1f2e] border-t border-gray-700">
+        <div className="grid" style={{ gridTemplateColumns: `repeat(${selectedMetrics.length}, 1fr)` }}>
           {selectedMetrics.map((metric) => (
             <div 
               key={metric.id} 
-              className="flex-1 px-4 border-r border-gray-700 last:border-r-0"
+              className="p-4 border-r border-gray-700 last:border-r-0"
             >
               <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
               <div className="font-medium text-gray-300">
