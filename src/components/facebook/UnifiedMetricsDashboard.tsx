@@ -37,10 +37,10 @@ export const UnifiedMetricsDashboard = ({ dateRange, selectedAccountId }: Unifie
     enabled: !!dateRange?.from && !!dateRange?.to
   });
 
-  // Calculate metrics
-  const totalSpent = campaigns?.reduce((acc, campaign) => acc + (campaign.spend || 0), 0) || 0;
+  // Calculate metrics with proper type handling
+  const totalSpent = campaigns?.reduce((acc, campaign) => acc + (Number(campaign.spend) || 0), 0) || 0;
   const totalSales = sales?.length || 0;
-  const totalRevenue = sales?.reduce((acc, sale) => acc + (sale.total_amount || 0), 0) || 0;
+  const totalRevenue = sales?.reduce((acc, sale) => acc + (Number(sale.total_amount) || 0), 0) || 0;
   const roas = totalSpent > 0 ? (totalRevenue / totalSpent) : 0;
 
   if (isLoadingCampaigns || isLoadingSales) {
