@@ -71,7 +71,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
 
   // Calcular totais
   const totals = selectedMetrics.reduce((acc, metric) => {
-    acc[metric.field] = filteredCampaigns?.reduce((sum, campaign) => {
+    acc[metric.field] = campaigns?.reduce((sum, campaign) => {
       const value = parseFloat(campaign[metric.field]) || 0;
       return sum + value;
     }, 0);
@@ -86,7 +86,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
             {selectedMetrics.map((metric) => (
               <TableHead 
                 key={metric.id} 
-                className="text-gray-400 border-r border-gray-700 last:border-r-0"
+                className="text-gray-400 border-r border-gray-700 last:border-r-0 whitespace-nowrap"
               >
                 {metric.name.toUpperCase()}
               </TableHead>
@@ -95,7 +95,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
         </TableHeader>
         <div className="table-content">
           <TableBody>
-            {filteredCampaigns?.map((campaign: any) => (
+            {campaigns?.map((campaign: any) => (
               <TableRow 
                 key={campaign.id}
                 className={cn(
@@ -124,8 +124,10 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
               key={metric.id} 
               className="text-gray-300 border-r border-gray-700 last:border-r-0"
             >
-              <div className="text-sm text-gray-400 mb-1">{metric.name} Total:</div>
-              <MetricValue value={totals[metric.field]} metric={metric} />
+              <div className="metric-total-label">{metric.name} Total</div>
+              <div className="metric-total-value">
+                <MetricValue value={totals[metric.field]} metric={metric} />
+              </div>
             </TableCell>
           ))}
         </TableRow>

@@ -40,16 +40,16 @@
 
   /* Estilização das barras de rolagem */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-gray-800 rounded-full;
+    @apply bg-gray-800/50 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-600 rounded-full hover:bg-gray-500 transition-colors;
+    @apply bg-gray-600/80 rounded-full hover:bg-gray-500 transition-colors;
   }
 
   ::-webkit-scrollbar-corner {
@@ -116,12 +116,12 @@
   @apply relative overflow-hidden border border-gray-700 rounded-lg;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  max-height: 600px;
+  height: 400px; /* Altura fixa para mostrar ~4 linhas */
 }
 
 .table-content {
   @apply overflow-auto;
-  max-height: calc(600px - 80px); /* Ajuste conforme necessário para o cabeçalho e rodapé */
+  height: calc(100% - 80px); /* Ajuste para cabeçalho e rodapé */
 }
 
 .table-header {
@@ -129,5 +129,20 @@
 }
 
 .table-footer {
-  @apply sticky bottom-0 bg-[#1a1f2e] border-t-2 border-gray-700 font-medium z-10;
+  @apply sticky bottom-0 bg-[#1a1f2e] border-t border-gray-700 z-10;
+  max-height: 60px; /* Reduz a altura do footer */
+}
+
+.table-footer td {
+  @apply py-2; /* Reduz o padding vertical */
+}
+
+.table-footer .metric-total-label {
+  @apply text-xs text-gray-400;
+  line-height: 1;
+}
+
+.table-footer .metric-total-value {
+  @apply text-sm text-gray-300 font-medium;
+  line-height: 1.2;
 }
