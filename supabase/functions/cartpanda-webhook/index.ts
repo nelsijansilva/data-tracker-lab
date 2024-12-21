@@ -21,7 +21,16 @@ serve(async (req) => {
     console.log('Account name from URL:', accountName);
     
     if (!accountName) {
-      throw new Error('Account name is required in query parameters');
+      const error = new Error('Account name is required in query parameters');
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: 400,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload: { error: error.message },
+        cartpandaAccountId: null
+      });
+      throw error;
     }
 
     // Get the CartPanda account configuration
@@ -33,7 +42,16 @@ serve(async (req) => {
 
     if (accountError || !cartPandaAccount) {
       console.error('Error finding CartPanda account:', accountError);
-      throw new Error(`CartPanda account not found for account name: ${accountName}`);
+      const error = new Error(`CartPanda account not found for account name: ${accountName}`);
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: 404,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload: { error: error.message },
+        cartpandaAccountId: null
+      });
+      throw error;
     }
 
     console.log('Found CartPanda account:', cartPandaAccount.id);
@@ -47,7 +65,16 @@ serve(async (req) => {
       payload = JSON.parse(rawBody);
     } catch (e) {
       console.error('Error parsing JSON payload:', e);
-      throw new Error('Invalid JSON payload');
+      const error = new Error('Invalid JSON payload');
+      await logWebhookRequest(supabaseAdmin, {
+        method: req.method,
+        url: req.url,
+        status: 400,
+        headers: Object.fromEntries(req.headers.entries()),
+        payload: { error: error.message, rawBody },
+        cartpandaAccountId: cartPandaAccount.id
+      });
+      throw error;
     }
 
     // Validate token from Authorization header
@@ -56,14 +83,12 @@ serve(async (req) => {
 
     if (!authHeader) {
       const error = new Error('Authorization header is missing');
-      error.name = 'AuthorizationError';
       await logWebhookRequest(supabaseAdmin, {
         method: req.method,
         url: req.url,
         status: 401,
         headers: Object.fromEntries(req.headers.entries()),
-        payload,
-        error,
+        payload: { error: error.message, ...payload },
         cartpandaAccountId: cartPandaAccount.id
       });
       throw error;
@@ -71,14 +96,12 @@ serve(async (req) => {
 
     if (!authHeader.startsWith('Bearer ')) {
       const error = new Error('Invalid Authorization header format. Must start with "Bearer "');
-      error.name = 'AuthorizationError';
       await logWebhookRequest(supabaseAdmin, {
         method: req.method,
         url: req.url,
         status: 401,
         headers: Object.fromEntries(req.headers.entries()),
-        payload,
-        error,
+        payload: { error: error.message, ...payload },
         cartpandaAccountId: cartPandaAccount.id
       });
       throw error;
@@ -87,14 +110,12 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '');
     if (token !== cartPandaAccount.token) {
       const error = new Error('Invalid token');
-      error.name = 'AuthorizationError';
       await logWebhookRequest(supabaseAdmin, {
         method: req.method,
         url: req.url,
         status: 401,
         headers: Object.fromEntries(req.headers.entries()),
-        payload,
-        error,
+        payload: { error: error.message, ...payload },
         cartpandaAccountId: cartPandaAccount.id
       });
       throw error;
