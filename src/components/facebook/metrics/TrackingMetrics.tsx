@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UnifiedSale } from "@/integrations/supabase/types";
+import type { UnifiedSale } from "@/components/facebook/cartpanda/types";
 
 interface TrackingMetricsProps {
   sales: UnifiedSale[];
