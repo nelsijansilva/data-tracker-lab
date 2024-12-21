@@ -4,11 +4,12 @@ import { DollarSign, ShoppingCart, TrendingUp, PieChart } from "lucide-react";
 interface RevenueMetricsProps {
   totalRevenue: number;
   totalSales: number;
+  totalSpent: number;
   roas: number;
   profit: number;
 }
 
-export const RevenueMetrics = ({ totalRevenue, totalSales, roas, profit }: RevenueMetricsProps) => {
+export const RevenueMetrics = ({ totalRevenue, totalSales, totalSpent, roas, profit }: RevenueMetricsProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       <Card className="bg-[#2a2f3d] border-gray-700">
@@ -28,7 +29,7 @@ export const RevenueMetrics = ({ totalRevenue, totalSales, roas, profit }: Reven
           <ShoppingCart className="h-4 w-4 text-blue-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-white">R$ {totalRevenue.toFixed(2)}</div>
+          <div className="text-2xl font-bold text-white">R$ {totalSpent.toFixed(2)}</div>
         </CardContent>
       </Card>
 
