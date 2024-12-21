@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, ArrowUp, Layers, RefreshCw, LineChart, List, Link, ShoppingCart } from "lucide-react";
+import { Settings, ArrowUp, Layers, RefreshCw, LineChart, List, Link, ShoppingCart, BarChart } from "lucide-react";
 import { AccountsList } from "./AccountsList";
 import { CampaignsList } from "./CampaignsList";
 import { AdSetsList } from "./AdSetsList";
@@ -8,6 +8,7 @@ import { CustomMetricsDashboard } from "./CustomMetricsDashboard";
 import { LogsTab } from "./LogsTab";
 import { IntegrationsTab } from "./TictoIntegration";
 import { SalesList } from "./cartpanda/SalesList";
+import { UnifiedMetricsDashboard } from "./UnifiedMetricsDashboard";
 import { DateRange } from "react-day-picker";
 import { useEffect } from "react";
 
@@ -47,6 +48,13 @@ export const DashboardTabs = ({
       <nav className="border-b border-gray-700">
         <div className="container mx-auto">
           <TabsList className="h-16 bg-transparent">
+            <TabsTrigger 
+              value="unified"
+              className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
+            >
+              <BarChart className="w-4 h-4 mr-2" />
+              Dashboard Unificado
+            </TabsTrigger>
             <TabsTrigger 
               value="accounts"
               className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
@@ -108,6 +116,14 @@ export const DashboardTabs = ({
       </nav>
 
       <div className="container mx-auto py-6 space-y-6">
+        <TabsContent value="unified" className="mt-0">
+          <div className="bg-[#2a2f3d] rounded-lg p-4">
+            <UnifiedMetricsDashboard 
+              dateRange={dateRange}
+              selectedAccountId={selectedAccountId}
+            />
+          </div>
+        </TabsContent>
         <TabsContent value="accounts" className="mt-0">
           <AccountsList />
         </TabsContent>
