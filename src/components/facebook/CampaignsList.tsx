@@ -86,7 +86,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
             {selectedMetrics.map((metric) => (
               <TableHead 
                 key={metric.id} 
-                className="text-gray-400 border-r border-gray-700 last:border-r-0 whitespace-nowrap px-4 py-3"
+                className="text-gray-400 border-r border-gray-700 last:border-r-0 whitespace-nowrap px-4 py-3 text-left"
               >
                 {metric.name}
               </TableHead>
@@ -109,7 +109,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
                 {selectedMetrics.map((metric) => (
                   <TableCell 
                     key={metric.id} 
-                    className="text-gray-400 border-r border-gray-700 last:border-r-0"
+                    className="text-gray-400 border-r border-gray-700 last:border-r-0 px-4"
                   >
                     <MetricValue value={campaign[metric.field]} metric={metric} />
                   </TableCell>
@@ -122,7 +122,7 @@ export const CampaignsList = ({ dateRange, campaignStatus = 'all', selectedAccou
           {selectedMetrics.map((metric) => (
             <TableCell 
               key={metric.id} 
-              className="text-gray-300 border-r border-gray-700 last:border-r-0"
+              className="text-gray-300 border-r border-gray-700 last:border-r-0 px-4"
             >
               <div className="metric-total-label">{metric.name} Total</div>
               <div className="metric-total-value">
