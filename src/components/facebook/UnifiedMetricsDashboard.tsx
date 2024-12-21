@@ -2,11 +2,9 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DateRange } from "react-day-picker";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMetricsStore } from "@/stores/metricsStore";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { RevenueMetrics } from "./metrics/RevenueMetrics";
-import { TrackingMetrics } from "./metrics/TrackingMetrics";
 import { SalesMetricsGrid } from "./cartpanda/metrics/SalesMetricsGrid";
 import { SalesStatusCard } from "./cartpanda/metrics/SalesStatusCard";
 
@@ -58,8 +56,6 @@ export const UnifiedMetricsDashboard = ({ dateRange, selectedAccountId }: Unifie
         roas={roas}
         profit={profit}
       />
-
-      <TrackingMetrics sales={sales || []} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SalesStatusCard salesStatus={

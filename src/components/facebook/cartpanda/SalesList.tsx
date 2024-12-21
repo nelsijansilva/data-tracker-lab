@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
 import { SalesMetricsGrid } from "./metrics/SalesMetricsGrid";
 import { SalesStatusCard } from "./metrics/SalesStatusCard";
 import { SalesTable } from "./tables/SalesTable";
 import { SalesFilters } from "./filters/SalesFilters";
+import { TrackingMetrics } from "../metrics/TrackingMetrics";
 import type { UnifiedSale } from "./types";
 import { DateRange } from "react-day-picker";
 import { startOfDay, endOfDay } from "date-fns";
@@ -117,6 +116,8 @@ export const SalesList = () => {
         salesByPlatform={salesByPlatform}
         paymentMethodStats={paymentMethodStats}
       />
+
+      <TrackingMetrics sales={sales || []} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <SalesStatusCard salesStatus={salesStatus} />
