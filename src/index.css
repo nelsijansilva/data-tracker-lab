@@ -112,13 +112,15 @@
 
 /* Classes para tabelas */
 .table-container {
-  @apply relative overflow-x-auto;
-  width: 100%;
+  @apply relative rounded-lg;
+  height: calc(100vh - 300px);
+  min-height: 400px;
 }
 
 .table-content {
-  @apply w-full;
-  min-width: 100%;
+  @apply relative overflow-auto;
+  height: 100%;
+  width: 100%;
 }
 
 .table-header {
@@ -131,7 +133,7 @@
 }
 
 .table-footer {
-  @apply sticky bottom-0 bg-[#1a1f2e] z-10;
+  @apply sticky bottom-0 bg-[#1a1f2e] z-10 border-t border-gray-700;
 }
 
 .table-footer td {
