@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -6,19 +6,68 @@ import { AlertTriangle } from "lucide-react";
 import { SalesMetricsGrid } from "./metrics/SalesMetricsGrid";
 import { SalesStatusCard } from "./metrics/SalesStatusCard";
 import { SalesTable } from "./tables/SalesTable";
+import { SalesFilters } from "./filters/SalesFilters";
 import type { UnifiedSale } from "./types";
+import { DateRange } from "react-day-picker";
+import { startOfDay, endOfDay } from "date-fns";
 
 export const SalesList = () => {
-  const { data: sales, isLoading, error } = useQuery({
-    queryKey: ['unified-sales'],
+  const [nameFilter, setNameFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [accountFilter, setAccountFilter] = useState("all");
+
+  // Fetch sales data
+  const { data: sales, isLoading: isLoadingSales } = useQuery({
+    queryKey: ['unified-sales', nameFilter, statusFilter, dateRange, accountFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('unified_sales')
         .select('*')
         .order('created_at', { ascending: false });
 
+      if (nameFilter) {
+        query = query.ilike('customer_name', `%${nameFilter}%`);
+      }
+
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      if (dateRange?.from) {
+        query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
+      }
+
+      if (dateRange?.to) {
+        query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
+      }
+
+      if (accountFilter !== 'all') {
+        query = query.eq('platform_account_id', accountFilter);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
       return data as UnifiedSale[];
+    }
+  });
+
+  // Fetch accounts data
+  const { data: accounts } = useQuery({
+    queryKey: ['sales-accounts'],
+    queryFn: async () => {
+      const cartpandaAccounts = await supabase
+        .from('cartpanda_accounts')
+        .select('id, account_name')
+        .then(({ data }) => data?.map(acc => ({ ...acc, platform: 'cartpanda' })) || []);
+
+      const tictoAccounts = await supabase
+        .from('ticto_accounts')
+        .select('id, account_name')
+        .then(({ data }) => data?.map(acc => ({ ...acc, platform: 'ticto' })) || []);
+
+      return [...cartpandaAccounts, ...tictoAccounts];
     }
   });
 
@@ -45,21 +94,22 @@ export const SalesList = () => {
     return acc;
   }, {} as Record<string, number>) || {};
 
-  if (isLoading) return <div className="text-gray-400">Carregando vendas...</div>;
-  
-  if (error) {
-    return (
-      <Alert variant="destructive" className="mb-4">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          {error instanceof Error ? error.message : 'Erro ao carregar vendas'}
-        </AlertDescription>
-      </Alert>
-    );
-  }
+  if (isLoadingSales) return <div className="text-gray-400">Carregando vendas...</div>;
 
   return (
     <div className="space-y-6">
+      <SalesFilters
+        nameFilter={nameFilter}
+        setNameFilter={setNameFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        accountFilter={accountFilter}
+        setAccountFilter={setAccountFilter}
+        accounts={accounts || []}
+      />
+
       <SalesMetricsGrid
         totalSales={totalSales}
         totalRevenue={totalRevenue}
