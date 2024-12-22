@@ -1,33 +1,37 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-export const createSupabaseAdmin = () => {
-  return createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
-};
+export function createSupabaseAdmin() {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-export const validateWebhookUrl = (url: string): string => {
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+
+  return createClient(supabaseUrl, supabaseKey);
+}
+
+export function validateWebhookUrl(url: string): string {
   try {
     const parsedUrl = new URL(url);
-    // Remove qualquer porta vazia
+    // Remove any empty port
     if (parsedUrl.port === '') {
       parsedUrl.port = '';
     }
-    // Garante que não tenha barra dupla no final
+    // Ensure no double slash at the end
     return parsedUrl.toString().replace(/\/{2,}$/, '/');
   } catch (error) {
     console.error('Invalid webhook URL:', error);
     throw new Error('Invalid webhook URL format');
   }
-};
+}
 
-export const processWebhookData = (payload: any) => {
+export function processWebhookData(payload: any) {
   const orderData = payload.body?.order;
   if (!orderData) {
     throw new Error('Order data is missing in payload');
@@ -47,4 +51,4 @@ export const processWebhookData = (payload: any) => {
     customer_document: orderData.customer?.cpf || orderData.customer?.cnpj,
     payment_method: orderData.payment?.type || orderData.payment_type,
   };
-};
+}

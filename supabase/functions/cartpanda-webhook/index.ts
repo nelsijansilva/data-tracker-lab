@@ -1,5 +1,5 @@
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { corsHeaders, createSupabaseAdmin, validateWebhookUrl, processWebhookData } from './utils.ts';
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { processWebhookData, validateWebhookUrl, corsHeaders, createSupabaseAdmin } from './utils.ts'
 
 serve(async (req) => {
   try {
@@ -40,7 +40,7 @@ serve(async (req) => {
     let payload;
     try {
       payload = JSON.parse(rawBody);
-      // Se for um array, pega o primeiro item
+      // If it's an array, get the first item
       if (Array.isArray(payload)) {
         payload = payload[0];
       }
