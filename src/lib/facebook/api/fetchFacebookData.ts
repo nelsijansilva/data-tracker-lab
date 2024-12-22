@@ -28,9 +28,10 @@ export const fetchFacebookData = async (endpoint: string, credentials: {
   app_secret: string;
 }) => {
   try {
-    console.log('Making Facebook API request to:', `${FB_BASE_URL}/${endpoint}`);
+    const url = `${FB_BASE_URL}/${endpoint}`;
+    console.log('Making Facebook API request to:', url);
     
-    const response = await fetch(`${FB_BASE_URL}/${endpoint}`, {
+    const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${credentials.access_token}`,
         'Content-Type': 'application/json',

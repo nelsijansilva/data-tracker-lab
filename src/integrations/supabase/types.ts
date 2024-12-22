@@ -470,9 +470,15 @@ export type Database = {
           platform: string
           platform_account_id: string | null
           raw_data: Json | null
+          source: string | null
           status: string
           total_amount: number | null
           updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
         }
         Insert: {
           created_at?: string
@@ -487,9 +493,15 @@ export type Database = {
           platform: string
           platform_account_id?: string | null
           raw_data?: Json | null
+          source?: string | null
           status: string
           total_amount?: number | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Update: {
           created_at?: string
@@ -504,9 +516,15 @@ export type Database = {
           platform?: string
           platform_account_id?: string | null
           raw_data?: Json | null
+          source?: string | null
           status?: string
           total_amount?: number | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: []
       }
