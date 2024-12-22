@@ -456,188 +456,6 @@ export type Database = {
           },
         ]
       }
-      tracking_conversions: {
-        Row: {
-          conversion_data: Json | null
-          conversion_type: string
-          conversion_value: number | null
-          created_at: string
-          event_id: string
-          id: string
-          session_id: string
-        }
-        Insert: {
-          conversion_data?: Json | null
-          conversion_type: string
-          conversion_value?: number | null
-          created_at?: string
-          event_id: string
-          id?: string
-          session_id: string
-        }
-        Update: {
-          conversion_data?: Json | null
-          conversion_type?: string
-          conversion_value?: number | null
-          created_at?: string
-          event_id?: string
-          id?: string
-          session_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tracking_conversions_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "tracking_events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tracking_conversions_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "tracking_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tracking_events: {
-        Row: {
-          created_at: string
-          event_data: Json | null
-          event_name: string
-          event_type: string
-          id: string
-          ip_address: string | null
-          location: Json | null
-          path: string | null
-          referrer: string | null
-          session_id: string
-          url: string | null
-          user_agent: string | null
-          utm_campaign: string | null
-          utm_content: string | null
-          utm_medium: string | null
-          utm_source: string | null
-          utm_term: string | null
-        }
-        Insert: {
-          created_at?: string
-          event_data?: Json | null
-          event_name: string
-          event_type: string
-          id?: string
-          ip_address?: string | null
-          location?: Json | null
-          path?: string | null
-          referrer?: string | null
-          session_id: string
-          url?: string | null
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_term?: string | null
-        }
-        Update: {
-          created_at?: string
-          event_data?: Json | null
-          event_name?: string
-          event_type?: string
-          id?: string
-          ip_address?: string | null
-          location?: Json | null
-          path?: string | null
-          referrer?: string | null
-          session_id?: string
-          url?: string | null
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_term?: string | null
-        }
-        Relationships: []
-      }
-      tracking_pageviews: {
-        Row: {
-          created_at: string
-          id: string
-          path: string
-          session_id: string
-          time_on_page: number | null
-          title: string | null
-          url: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          path: string
-          session_id: string
-          time_on_page?: number | null
-          title?: string | null
-          url: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          path?: string
-          session_id?: string
-          time_on_page?: number | null
-          title?: string | null
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tracking_pageviews_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "tracking_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tracking_sessions: {
-        Row: {
-          browser: string | null
-          device_type: string | null
-          duration: number | null
-          ended_at: string | null
-          id: string
-          language: string | null
-          os: string | null
-          screen_resolution: string | null
-          started_at: string
-          visitor_id: string
-        }
-        Insert: {
-          browser?: string | null
-          device_type?: string | null
-          duration?: number | null
-          ended_at?: string | null
-          id?: string
-          language?: string | null
-          os?: string | null
-          screen_resolution?: string | null
-          started_at?: string
-          visitor_id: string
-        }
-        Update: {
-          browser?: string | null
-          device_type?: string | null
-          duration?: number | null
-          ended_at?: string | null
-          id?: string
-          language?: string | null
-          os?: string | null
-          screen_resolution?: string | null
-          started_at?: string
-          visitor_id?: string
-        }
-        Relationships: []
-      }
       unified_sales: {
         Row: {
           created_at: string
@@ -652,15 +470,9 @@ export type Database = {
           platform: string
           platform_account_id: string | null
           raw_data: Json | null
-          source: string | null
           status: string
           total_amount: number | null
           updated_at: string
-          utm_campaign: string | null
-          utm_content: string | null
-          utm_medium: string | null
-          utm_source: string | null
-          utm_term: string | null
         }
         Insert: {
           created_at?: string
@@ -675,15 +487,9 @@ export type Database = {
           platform: string
           platform_account_id?: string | null
           raw_data?: Json | null
-          source?: string | null
           status: string
           total_amount?: number | null
           updated_at?: string
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_term?: string | null
         }
         Update: {
           created_at?: string
@@ -698,15 +504,9 @@ export type Database = {
           platform?: string
           platform_account_id?: string | null
           raw_data?: Json | null
-          source?: string | null
           status?: string
           total_amount?: number | null
           updated_at?: string
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_term?: string | null
         }
         Relationships: []
       }
