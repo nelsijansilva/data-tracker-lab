@@ -43,7 +43,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 // Create a separate component for the app's main content
 const AppContent: React.FC = () => {
-  const queryClient = React.useState(() => new QueryClient())[0];
+  // Move queryClient initialization outside of the component
+  const queryClient = new QueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
