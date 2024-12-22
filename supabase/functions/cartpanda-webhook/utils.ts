@@ -13,7 +13,12 @@ export function createSupabaseAdmin() {
     throw new Error('Missing Supabase environment variables');
   }
 
-  return createClient(supabaseUrl, supabaseKey);
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
 }
 
 export function validateWebhookUrl(url: string): string {
@@ -32,12 +37,22 @@ export function validateWebhookUrl(url: string): string {
 }
 
 export function processWebhookData(payload: any) {
+  console.log('Processing CartPanda webhook data:', JSON.stringify(payload, null, 2));
+
   const orderData = payload.body?.order;
   if (!orderData) {
     throw new Error('Order data is missing in payload');
   }
 
-  return {
+  // Extract UTM parameters from query_params if available
+  const queryParams = payload.query_params || {};
+  const utmSource = queryParams.utm_source || 'Não Informado';
+  const utmMedium = queryParams.utm_medium || 'Não Informado';
+  const utmCampaign = queryParams.utm_campaign || 'Não Informado';
+  const utmContent = queryParams.utm_content || 'Não Informado';
+  const utmTerm = queryParams.utm_term || 'Não Informado';
+
+  const processedData = {
     order_id: orderData.id,
     cart_token: orderData.cart_token,
     email: orderData.email,
@@ -50,5 +65,13 @@ export function processWebhookData(payload: any) {
     customer_email: orderData.customer?.email,
     customer_document: orderData.customer?.cpf || orderData.customer?.cnpj,
     payment_method: orderData.payment?.type || orderData.payment_type,
+    utm_source: utmSource,
+    utm_medium: utmMedium,
+    utm_campaign: utmCampaign,
+    utm_content: utmContent,
+    utm_term: utmTerm
   };
+
+  console.log('Processed CartPanda data:', processedData);
+  return processedData;
 }

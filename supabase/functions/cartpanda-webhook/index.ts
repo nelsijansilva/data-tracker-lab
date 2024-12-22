@@ -2,6 +2,12 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { processWebhookData, validateWebhookUrl, corsHeaders, createSupabaseAdmin } from './utils.ts'
 
 serve(async (req) => {
+  // Log detalhado da requisição recebida
+  console.log('=== CartPanda Webhook Request Details ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Headers:', JSON.stringify(Object.fromEntries(req.headers.entries()), null, 2));
+
   try {
     // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
@@ -49,6 +55,9 @@ serve(async (req) => {
       throw new Error('Invalid JSON payload');
     }
 
+    // Log the entire payload structure for debugging
+    console.log('Received payload structure:', JSON.stringify(payload, null, 2));
+
     // Validate token
     const receivedToken = payload.token;
     const storedToken = cartPandaAccount.token;
@@ -56,6 +65,7 @@ serve(async (req) => {
     console.log('Token validation:');
     console.log('- Received token:', receivedToken);
     console.log('- Stored token:', storedToken);
+    console.log('- Token match:', receivedToken === storedToken);
 
     if (!receivedToken || receivedToken !== storedToken) {
       throw new Error('Invalid token');
@@ -68,6 +78,7 @@ serve(async (req) => {
 
     // Process webhook data
     const orderData = processWebhookData(payload);
+    console.log('Processed order data:', orderData);
 
     // Insert order data
     const { error: insertError } = await supabaseAdmin
