@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UnifiedSale } from "@/integrations/supabase/types";
+import { Tables } from "@/integrations/supabase/types";
+
+type UnifiedSale = Tables<"unified_sales">;
 
 interface TrackingMetricsProps {
   sales: UnifiedSale[];
