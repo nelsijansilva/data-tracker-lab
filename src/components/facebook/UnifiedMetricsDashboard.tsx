@@ -38,12 +38,7 @@ export const UnifiedMetricsDashboard = ({ dateRange, selectedAccountId }: Unifie
   });
 
   // Calculate metrics
-  const totalSpent = campaigns?.reduce((acc, campaign) => {
-    // Get spend from insights data if available
-    const spend = campaign.insights?.data?.[0]?.spend || campaign.spend || 0;
-    return acc + Number(spend);
-  }, 0) || 0;
-
+  const totalSpent = campaigns?.reduce((acc, campaign) => acc + (Number(campaign.spend) || 0), 0) || 0;
   const totalSales = sales?.length || 0;
   const totalRevenue = sales?.reduce((acc, sale) => acc + (Number(sale.total_amount) || 0), 0) || 0;
   const roas = totalSpent > 0 ? (totalRevenue / totalSpent) : 0;
@@ -58,7 +53,6 @@ export const UnifiedMetricsDashboard = ({ dateRange, selectedAccountId }: Unifie
       <RevenueMetrics 
         totalRevenue={totalRevenue}
         totalSales={totalSales}
-        totalSpent={totalSpent}
         roas={roas}
         profit={profit}
       />
