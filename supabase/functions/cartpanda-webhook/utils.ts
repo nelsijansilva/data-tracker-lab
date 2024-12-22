@@ -1,68 +1,50 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { createClient } from '@supabase/supabase-js';
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-export function createSupabaseAdmin() {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+export const createSupabaseAdmin = () => {
+  return createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+};
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase environment variables');
-  }
-
-  return createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
-}
-
-export async function logWebhookRequest(supabaseAdmin: any, {
-  method,
-  url,
-  status,
-  headers,
-  payload,
-  cartpandaAccountId = null
-}: {
-  method: string;
-  url: string;
-  status: number;
-  headers: any;
-  payload: any;
-  cartpandaAccountId?: string | null;
-}) {
-  const logPayload = {
-    request: {
-      method,
-      url,
-      headers,
-      payload
-    },
-    response: {
-      success: status >= 200 && status < 300,
-      status,
-      message: status >= 200 && status < 300 ? 'Webhook processed successfully' : 'Error processing webhook'
-    }
-  };
-
+export const validateWebhookUrl = (url: string): string => {
   try {
-    await supabaseAdmin
-      .from('webhook_logs')
-      .insert([{
-        method,
-        url,
-        status,
-        payload: logPayload,
-        cartpanda_account_id: cartpandaAccountId
-      }]);
-    
-    console.log('Webhook log saved successfully');
+    const parsedUrl = new URL(url);
+    // Remove qualquer porta vazia
+    if (parsedUrl.port === '') {
+      parsedUrl.port = '';
+    }
+    // Garante que não tenha barra dupla no final
+    return parsedUrl.toString().replace(/\/{2,}$/, '/');
   } catch (error) {
-    console.error('Error saving webhook log:', error);
+    console.error('Invalid webhook URL:', error);
+    throw new Error('Invalid webhook URL format');
   }
-}
+};
+
+export const processWebhookData = (payload: any) => {
+  const orderData = payload.body?.order;
+  if (!orderData) {
+    throw new Error('Order data is missing in payload');
+  }
+
+  return {
+    order_id: orderData.id,
+    cart_token: orderData.cart_token,
+    email: orderData.email,
+    phone: orderData.phone,
+    status: orderData.status_id?.toLowerCase() || 'pending',
+    payment_status: String(orderData.payment_status || 'pending'),
+    total_amount: orderData.total_price || 0,
+    currency: orderData.currency || 'BRL',
+    customer_name: `${orderData.customer?.first_name || ''} ${orderData.customer?.last_name || ''}`.trim(),
+    customer_email: orderData.customer?.email,
+    customer_document: orderData.customer?.cpf || orderData.customer?.cnpj,
+    payment_method: orderData.payment?.type || orderData.payment_type,
+  };
+};
