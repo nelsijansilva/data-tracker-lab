@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, ArrowUp, Layers, RefreshCw, LineChart, List, Link, ShoppingCart } from "lucide-react";
+import { Settings, ArrowUp, Layers, RefreshCw, LineChart, List, Link, ShoppingCart, BarChart, Code, BarChart2 } from "lucide-react";
 import { AccountsList } from "./AccountsList";
 import { CampaignsList } from "./CampaignsList";
 import { AdSetsList } from "./AdSetsList";
@@ -9,6 +9,8 @@ import { LogsTab } from "./LogsTab";
 import { IntegrationsTab } from "./TictoIntegration";
 import { SalesList } from "./cartpanda/SalesList";
 import { UnifiedMetricsDashboard } from "./UnifiedMetricsDashboard";
+import { ScriptGenerator } from "./ScriptGenerator";
+import { AnalyticsTab } from "./AnalyticsTab";
 import { DateRange } from "react-day-picker";
 import { useEffect } from "react";
 
@@ -52,7 +54,7 @@ export const DashboardTabs = ({
               value="unified"
               className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
             >
-              <LineChart className="w-4 h-4 mr-2" />
+              <BarChart className="w-4 h-4 mr-2" />
               Dashboard Unificado
             </TabsTrigger>
             <TabsTrigger 
@@ -98,6 +100,13 @@ export const DashboardTabs = ({
               Vendas
             </TabsTrigger>
             <TabsTrigger 
+              value="script"
+              className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
+            >
+              <Code className="w-4 h-4 mr-2" />
+              Script
+            </TabsTrigger>
+            <TabsTrigger 
               value="logs"
               className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
             >
@@ -110,6 +119,13 @@ export const DashboardTabs = ({
             >
               <Link className="w-4 h-4 mr-2" />
               Integrações
+            </TabsTrigger>
+            <TabsTrigger 
+              value="analytics"
+              className="data-[state=active]:text-[#3b82f6] data-[state=active]:border-b-2 data-[state=active]:border-[#3b82f6] px-4"
+            >
+              <BarChart2 className="w-4 h-4 mr-2" />
+              Analytics
             </TabsTrigger>
           </TabsList>
         </div>
@@ -170,6 +186,10 @@ export const DashboardTabs = ({
           </div>
         </TabsContent>
 
+        <TabsContent value="script" className="mt-0">
+          <ScriptGenerator />
+        </TabsContent>
+
         <TabsContent value="logs" className="mt-0">
           <div className="bg-[#2a2f3d] rounded-lg p-4">
             <LogsTab />
@@ -179,6 +199,12 @@ export const DashboardTabs = ({
         <TabsContent value="integrations" className="mt-0">
           <div className="bg-[#2a2f3d] rounded-lg p-4">
             <IntegrationsTab />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-0">
+          <div className="bg-[#2a2f3d] rounded-lg p-4">
+            <AnalyticsTab />
           </div>
         </TabsContent>
       </div>
