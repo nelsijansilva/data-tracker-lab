@@ -22,6 +22,15 @@ export const MetricsTable = ({
 }: MetricsTableProps) => {
   const totals = calculateMetricTotals(data, metrics);
 
+  const getCellValue = (item: any, metric: Metric) => {
+    // Para campos básicos, retornar diretamente o valor
+    if (['name', 'status', 'objective'].includes(metric.field)) {
+      return item[metric.field] || '-';
+    }
+    // Para outras métricas, usar o componente MetricValue
+    return <MetricValue value={item[metric.field]} metric={metric} />;
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -59,7 +68,7 @@ export const MetricsTable = ({
                   index !== metrics.length - 1 && "border-r border-primary/20"
                 )}
               >
-                <MetricValue value={item[metric.field]} metric={metric} />
+                {getCellValue(item, metric)}
               </TableCell>
             ))}
           </TableRow>
@@ -75,7 +84,10 @@ export const MetricsTable = ({
                 index !== metrics.length - 1 && "border-r border-primary/20"
               )}
             >
-              <MetricValue value={totals[metric.field]} metric={metric} />
+              {['name', 'status', 'objective'].includes(metric.field) ? 
+                'Total' : 
+                <MetricValue value={totals[metric.field]} metric={metric} />
+              }
             </TableCell>
           ))}
         </TableRow>

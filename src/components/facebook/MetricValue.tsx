@@ -8,6 +8,11 @@ interface MetricValueProps {
 }
 
 export const MetricValue: React.FC<MetricValueProps> = ({ value, metric }) => {
+  // Para campos básicos, retornar o valor diretamente
+  if (['name', 'status', 'objective'].includes(metric.field)) {
+    return <span>{value || '-'}</span>;
+  }
+
   if (!value) return <span>0</span>;
 
   // Se o valor for um array de objetos (comum em métricas do Facebook como 'actions')

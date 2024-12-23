@@ -9,6 +9,18 @@ export type Metric = {
   isCustom?: boolean;
 };
 
+const DEFAULT_METRIC_FIELDS = [
+  'name',
+  'objective',
+  'status',
+  'spend',
+  'impressions',
+  'clicks',
+  'ctr',
+  'cpc',
+  'reach'
+];
+
 interface MetricsState {
   metrics: Metric[];
   selectedMetrics: Metric[];
@@ -20,15 +32,6 @@ interface MetricsState {
   persistSelectedMetrics: (metrics: Metric[]) => Promise<void>;
   loadPersistedMetrics: () => Promise<void>;
 }
-
-const DEFAULT_METRIC_FIELDS = [
-  'spend',
-  'impressions',
-  'clicks',
-  'ctr',
-  'cpc',
-  'reach'
-];
 
 const handleApiError = (error: any, message: string) => {
   console.error(message, error);
