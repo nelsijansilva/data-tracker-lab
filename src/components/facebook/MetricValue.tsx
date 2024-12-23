@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Metric } from './MetricSelector';
-import { getMetricCategory, processMetricValue } from '@/lib/facebook/metricProcessing';
 
 interface MetricValueProps {
   value: any;
@@ -8,11 +7,6 @@ interface MetricValueProps {
 }
 
 export const MetricValue: React.FC<MetricValueProps> = ({ value, metric }) => {
-  // Para campos básicos, retornar o valor diretamente
-  if (['name', 'status', 'objective'].includes(metric.field)) {
-    return <span>{value || '-'}</span>;
-  }
-
   if (!value) return <span>0</span>;
 
   // Se o valor for um array de objetos (comum em métricas do Facebook como 'actions')
@@ -28,10 +22,40 @@ export const MetricValue: React.FC<MetricValueProps> = ({ value, metric }) => {
     return <span>-</span>;
   }
 
-  // Para valores numéricos, usar nossa nova lógica de processamento
+  // Para valores numéricos, formatar adequadamente
   if (typeof value === 'number') {
-    const category = getMetricCategory(metric.field);
-    return <span>{processMetricValue(value, category)}</span>;
+    // Para CTR, CPM e CPC, sempre mostrar 2 casas decimais sem arredondamento adicional
+    if (
+      metric.field.toLowerCase().includes('ctr') || 
+      metric.field.toLowerCase().includes('cpm') || 
+      metric.field.toLowerCase().includes('cpc')
+    ) {
+      // Força exatamente 2 casas decimais usando string
+      const fixedValue = value.toString().match(/^\d+(?:\.\d{0,2})?/);
+      return <span>{fixedValue ? fixedValue[0] : value.toFixed(2)}</span>;
+    }
+    
+    // Para percentuais (taxas), sempre mostrar 2 casas decimais
+    if (metric.field.includes('rate')) {
+      return <span>{(value * 100).toFixed(2)}%</span>;
+    }
+    
+    // Para valores monetários (spend, cost), sempre mostrar 2 casas decimais
+    if (
+      metric.field.includes('spend') || 
+      metric.field.includes('cost') || 
+      metric.field.includes('budget')
+    ) {
+      return <span>R$ {value.toFixed(2)}</span>;
+    }
+    
+    // Para números inteiros (impressions, clicks), usar separador de milhares
+    if (Number.isInteger(value)) {
+      return <span>{value.toLocaleString()}</span>;
+    }
+    
+    // Para outros números decimais, mostrar 2 casas decimais
+    return <span>{value.toFixed(2)}</span>;
   }
 
   // Para strings e outros tipos

@@ -22,20 +22,6 @@ export const MetricsTable = ({
 }: MetricsTableProps) => {
   const totals = calculateMetricTotals(data, metrics);
 
-  const getCellValue = (item: any, metric: Metric) => {
-    if (['name', 'status', 'objective'].includes(metric.field)) {
-      return item[metric.field] || '-';
-    }
-    return <MetricValue value={item[metric.field]} metric={metric} />;
-  };
-
-  const getCellAlignment = (metric: Metric) => {
-    if (['name', 'status', 'objective'].includes(metric.field)) {
-      return "text-left";
-    }
-    return "text-right pr-4";
-  };
-
   return (
     <Table>
       <TableHeader>
@@ -44,12 +30,11 @@ export const MetricsTable = ({
             <TableHead 
               key={metric.id} 
               className={cn(
-                "text-gray-400 whitespace-nowrap font-semibold",
-                getCellAlignment(metric),
+                "text-gray-400",
                 index !== metrics.length - 1 && "border-r border-primary/20"
               )}
             >
-              {metric.name}
+              {metric.name.toUpperCase()}
             </TableHead>
           ))}
         </TableRow>
@@ -70,12 +55,11 @@ export const MetricsTable = ({
               <TableCell 
                 key={metric.id} 
                 className={cn(
-                  "text-gray-400 whitespace-nowrap",
-                  getCellAlignment(metric),
+                  "text-gray-400",
                   index !== metrics.length - 1 && "border-r border-primary/20"
                 )}
               >
-                {getCellValue(item, metric)}
+                <MetricValue value={item[metric.field]} metric={metric} />
               </TableCell>
             ))}
           </TableRow>
@@ -87,15 +71,11 @@ export const MetricsTable = ({
             <TableCell 
               key={metric.id} 
               className={cn(
-                "text-primary whitespace-nowrap",
-                getCellAlignment(metric),
+                "text-primary",
                 index !== metrics.length - 1 && "border-r border-primary/20"
               )}
             >
-              {['name', 'status', 'objective'].includes(metric.field) ? 
-                'Total' : 
-                <MetricValue value={totals[metric.field]} metric={metric} />
-              }
+              <MetricValue value={totals[metric.field]} metric={metric} />
             </TableCell>
           ))}
         </TableRow>

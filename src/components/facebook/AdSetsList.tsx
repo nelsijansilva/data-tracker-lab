@@ -29,11 +29,8 @@ export const AdSetsList = ({
     const timeDiff = currentTime - lastClickTime;
     
     if (timeDiff < 300) {
-      const selectedAdSet = adSets?.find(adSet => adSet.id === adSetId);
-      if (selectedAdSet) {
-        setSelectedAdSetId(selectedAdSet.ad_set_id);
-        onTabChange?.('ads');
-      }
+      setSelectedAdSetId(adSetId);
+      onTabChange?.('ads');
     } else {
       setSelectedAdSetId(adSetId === selectedAdSetId ? null : adSetId);
     }

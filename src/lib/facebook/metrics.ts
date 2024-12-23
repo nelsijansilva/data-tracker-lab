@@ -10,9 +10,6 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   name: { field: 'name', isInsightMetric: false },
   status: { field: 'status', isInsightMetric: false },
   objective: { field: 'objective', isInsightMetric: false },
-  daily_budget: { field: 'daily_budget', isInsightMetric: false },
-  lifetime_budget: { field: 'lifetime_budget', isInsightMetric: false },
-  budget_remaining: { field: 'budget_remaining', isInsightMetric: false },
   
   // Valid insight metrics with appropriate levels
   spend: { field: 'spend', isInsightMetric: true },
@@ -25,10 +22,7 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   frequency: { field: 'frequency', isInsightMetric: true },
   cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true },
   unique_clicks: { field: 'unique_clicks', isInsightMetric: true },
-  unique_ctr: { field: 'unique_ctr', isInsightMetric: true },
-  actions: { field: 'actions', isInsightMetric: true },
-  cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true },
-  cost_per_conversion: { field: 'cost_per_conversion', isInsightMetric: true }
+  unique_ctr: { field: 'unique_ctr', isInsightMetric: true }
 };
 
 export const getMetricMapping = (field: string): FacebookMetricMapping => {
@@ -41,13 +35,12 @@ export const getMetricMapping = (field: string): FacebookMetricMapping => {
 };
 
 export const buildFieldsParameter = (metrics: string[]): string => {
-  const basicFields = ['name', 'status', 'objective'];
-  const additionalFields = metrics
+  const basicFields = metrics
     .map(field => getMetricMapping(field))
     .filter(mapping => !mapping.isInsightMetric)
     .map(mapping => mapping.field);
 
-  return [...new Set([...basicFields, ...additionalFields])].join(',');
+  return [...new Set(basicFields)].join(',');
 };
 
 export const buildInsightsFieldsParameter = (metrics: string[], level?: 'account' | 'campaign' | 'adset' | 'ad'): string => {
