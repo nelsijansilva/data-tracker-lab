@@ -9,7 +9,7 @@ const ensureActPrefix = (accountId: string) => {
 
 export const buildCampaignsEndpoint = (accountId: string, selectedMetrics: Metric[], dateRange?: DateRange): string => {
   const formattedAccountId = ensureActPrefix(accountId);
-  let endpoint = `${formattedAccountId}/campaigns?fields=name,status`;
+  let endpoint = `${formattedAccountId}/campaigns?fields=name,status,objective`;
 
   if (dateRange?.from && dateRange?.to) {
     const insights = buildInsightsFieldsParameter(selectedMetrics.map(m => m.field), 'campaign');

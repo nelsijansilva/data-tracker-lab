@@ -46,7 +46,7 @@ export const buildFieldsParameter = (metrics: string[]): string => {
     .filter(mapping => !mapping.isInsightMetric)
     .map(mapping => mapping.field);
 
-  return [...new Set(basicFields)].join(',');
+  return [...new Set(['name', 'status', 'objective', ...basicFields])].join(',');
 };
 
 export const buildInsightsFieldsParameter = (metrics: string[], level?: 'account' | 'campaign' | 'adset' | 'ad'): string => {
