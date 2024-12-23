@@ -30,7 +30,8 @@ export const MetricValue: React.FC<MetricValueProps> = ({ value, metric }) => {
       metric.field.toLowerCase().includes('cpm') || 
       metric.field.toLowerCase().includes('cpc')
     ) {
-      return <span>{value.toFixed(2)}</span>;
+      // Primeiro converte para string com muitas casas decimais e depois limita a 2
+      return <span>{Number(value.toFixed(2))}</span>;
     }
     
     // Para percentuais (taxas), sempre mostrar 2 casas decimais
