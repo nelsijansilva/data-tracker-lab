@@ -36,8 +36,12 @@ export const CampaignsList = ({
     const timeDiff = currentTime - lastClickTime;
     
     if (timeDiff < 300) {
-      setSelectedCampaignId(campaignId);
-      onTabChange?.('adsets');
+      // Encontrar a campanha selecionada para pegar o campaign_id correto
+      const selectedCampaign = campaigns?.find(campaign => campaign.id === campaignId);
+      if (selectedCampaign) {
+        setSelectedCampaignId(selectedCampaign.campaign_id);
+        onTabChange?.('adsets');
+      }
     } else {
       setSelectedCampaignId(campaignId === selectedCampaignId ? null : campaignId);
     }
