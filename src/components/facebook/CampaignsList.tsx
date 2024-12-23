@@ -1,11 +1,17 @@
 import React, { useEffect } from "react";
 import { DateRange } from "react-day-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, HelpCircle } from "lucide-react";
 import { useMetricsStore } from "@/stores/metricsStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { MetricsTable } from "./MetricsTable";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CampaignsListProps {
   dateRange: DateRange;
@@ -36,7 +42,6 @@ export const CampaignsList = ({
     const timeDiff = currentTime - lastClickTime;
     
     if (timeDiff < 300) {
-      // Encontrar a campanha selecionada para pegar o campaign_id correto
       const selectedCampaign = campaigns?.find(campaign => campaign.id === campaignId);
       if (selectedCampaign) {
         setSelectedCampaignId(selectedCampaign.campaign_id);
@@ -49,7 +54,13 @@ export const CampaignsList = ({
     setLastClickTime(currentTime);
   };
 
-  if (isLoading) return <div className="text-gray-400">Carregando campanhas...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-pulse text-gray-400">Carregando campanhas...</div>
+      </div>
+    );
+  }
   
   if (error) {
     return (
@@ -71,7 +82,24 @@ export const CampaignsList = ({
     return (
       <div className="text-center py-8 text-gray-400">
         <p>Nenhuma campanha encontrada no período selecionado.</p>
-        <p className="text-sm mt-2">Por que as campanhas não estão aparecendo?</p>
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <p className="text-sm">Por que as campanhas não estão aparecendo?</p>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <HelpCircle className="h-4 w-4" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Verifique se:</p>
+                <ul className="list-disc ml-4 mt-1">
+                  <li>O período selecionado está correto</li>
+                  <li>A conta do Facebook está conectada</li>
+                  <li>Existem campanhas ativas no período</li>
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
     );
   }
