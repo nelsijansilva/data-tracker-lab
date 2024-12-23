@@ -5,6 +5,8 @@ import { DateRange } from "react-day-picker";
 import { useMetricsStore } from "@/stores/metricsStore";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { RevenueMetrics } from "./metrics/RevenueMetrics";
+import { Card } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 interface UnifiedMetricsDashboardProps {
   dateRange: DateRange;
@@ -27,7 +29,8 @@ export const UnifiedMetricsDashboard = ({ dateRange, selectedAccountId }: Unifie
         .from('unified_sales')
         .select('*')
         .gte('created_at', dateRange.from.toISOString())
-        .lte('created_at', dateRange.to.toISOString());
+        .lte('created_at', dateRange.to.toISOString())
+        .eq('payment_status', 'paid');
 
       if (error) throw error;
       return data || [];
@@ -43,7 +46,14 @@ export const UnifiedMetricsDashboard = ({ dateRange, selectedAccountId }: Unifie
   const profit = totalRevenue - totalSpent;
 
   if (isLoadingCampaigns || isLoadingSales) {
-    return <div className="text-gray-400">Carregando métricas...</div>;
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-center space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Carregando métricas...</span>
+        </div>
+      </Card>
+    );
   }
 
   return (
@@ -53,6 +63,7 @@ export const UnifiedMetricsDashboard = ({ dateRange, selectedAccountId }: Unifie
         totalSales={totalSales}
         roas={roas}
         profit={profit}
+        totalSpent={totalSpent}
       />
     </div>
   );
