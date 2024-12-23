@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UnifiedSale } from "@/integrations/supabase/types";
+import { UnifiedSale } from "@/integrations/supabase/types/sales";
+import { ReactNode } from "react";
 
 interface TrackingMetricsProps {
   sales: UnifiedSale[];
@@ -27,6 +28,13 @@ export const TrackingMetrics = ({ sales }: TrackingMetricsProps) => {
     return acc;
   }, {});
 
+  const renderMetricItem = (label: string, value: number): ReactNode => (
+    <div key={label} className="flex justify-between">
+      <span className="text-gray-400">{label}</span>
+      <span className="text-gray-400">{value}</span>
+    </div>
+  );
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <Card>
@@ -35,12 +43,9 @@ export const TrackingMetrics = ({ sales }: TrackingMetricsProps) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {Object.entries(utmSourceMetrics).map(([source, count]) => (
-              <div key={source} className="flex justify-between">
-                <span className="text-gray-400">{source}</span>
-                <span className="text-gray-400">{count}</span>
-              </div>
-            ))}
+            {Object.entries(utmSourceMetrics).map(([source, count]) => 
+              renderMetricItem(source, count)
+            )}
           </div>
         </CardContent>
       </Card>
@@ -51,12 +56,9 @@ export const TrackingMetrics = ({ sales }: TrackingMetricsProps) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {Object.entries(utmMediumMetrics).map(([medium, count]) => (
-              <div key={medium} className="flex justify-between">
-                <span className="text-gray-400">{medium}</span>
-                <span className="text-gray-400">{count}</span>
-              </div>
-            ))}
+            {Object.entries(utmMediumMetrics).map(([medium, count]) => 
+              renderMetricItem(medium, count)
+            )}
           </div>
         </CardContent>
       </Card>
@@ -67,12 +69,9 @@ export const TrackingMetrics = ({ sales }: TrackingMetricsProps) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {Object.entries(utmCampaignMetrics).map(([campaign, count]) => (
-              <div key={campaign} className="flex justify-between">
-                <span className="text-gray-400">{campaign}</span>
-                <span className="text-gray-400">{count}</span>
-              </div>
-            ))}
+            {Object.entries(utmCampaignMetrics).map(([campaign, count]) => 
+              renderMetricItem(campaign, count)
+            )}
           </div>
         </CardContent>
       </Card>
