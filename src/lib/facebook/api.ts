@@ -4,6 +4,7 @@ import type { DateRange } from "react-day-picker";
 import { buildCampaignsEndpoint, buildAdSetsEndpoint, buildAdsEndpoint } from "./apiBuilder";
 import { FB_BASE_URL } from "./config";
 import { handleFacebookError } from "./errors";
+import { processInsightsData } from "./metricProcessing";
 
 export const getFacebookCredentials = async (accountId?: string) => {
   let query = supabase.from('facebook_ad_accounts').select('*');
@@ -61,9 +62,7 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
     const credentials = await getFacebookCredentials(selectedAccountId);
     const { account_id, access_token } = credentials;
 
-    // Remove any existing 'act_' prefix to prevent duplication
     const cleanAccountId = account_id.replace('act_', '');
-    
     const endpoint = buildCampaignsEndpoint(cleanAccountId, selectedMetrics, dateRange);
     console.log("Fetching campaigns with endpoint:", endpoint);
     
@@ -85,12 +84,8 @@ export const fetchCampaigns = async (selectedMetrics: Metric[], dateRange?: Date
       };
 
       if (campaign.insights?.data?.[0]) {
-        const insights = campaign.insights.data[0];
-        selectedMetrics.forEach(metric => {
-          if (!['name', 'status', 'objective', 'daily_budget', 'lifetime_budget', 'budget_remaining'].includes(metric.field)) {
-            result[metric.field] = insights[metric.field] || 0;
-          }
-        });
+        const processedInsights = processInsightsData(campaign.insights.data[0], selectedMetrics);
+        Object.assign(result, processedInsights);
       }
 
       return result;
