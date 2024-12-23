@@ -33,7 +33,7 @@ export const MetricsTable = ({
     if (['name', 'status', 'objective'].includes(metric.field)) {
       return "text-left";
     }
-    return "text-right";
+    return "text-right pr-4";
   };
 
   return (
@@ -44,7 +44,7 @@ export const MetricsTable = ({
             <TableHead 
               key={metric.id} 
               className={cn(
-                "text-gray-400",
+                "text-gray-400 whitespace-nowrap",
                 getCellAlignment(metric),
                 index !== metrics.length - 1 && "border-r border-primary/20"
               )}
@@ -70,7 +70,7 @@ export const MetricsTable = ({
               <TableCell 
                 key={metric.id} 
                 className={cn(
-                  "text-gray-400",
+                  "text-gray-400 whitespace-nowrap",
                   getCellAlignment(metric),
                   index !== metrics.length - 1 && "border-r border-primary/20"
                 )}
@@ -87,7 +87,7 @@ export const MetricsTable = ({
             <TableCell 
               key={metric.id} 
               className={cn(
-                "text-primary",
+                "text-primary whitespace-nowrap",
                 getCellAlignment(metric),
                 index !== metrics.length - 1 && "border-r border-primary/20"
               )}
