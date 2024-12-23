@@ -1,46 +1,24 @@
-import { CustomMetricsTable, SelectedMetricsTable } from './metrics';
-import {
-  FacebookAdAccountsTable,
-  FacebookAdSetsTable,
-  FacebookAdsTable,
-  FacebookCampaignsTable
-} from './facebook';
-import { ProfilesTable } from './profiles';
-
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
-
-export type Database = {
-  public: {
-    Tables: {
-      custom_metrics: CustomMetricsTable
-      facebook_ad_accounts: FacebookAdAccountsTable
-      facebook_ad_sets: FacebookAdSetsTable
-      facebook_ads: FacebookAdsTable
-      facebook_campaigns: FacebookCampaignsTable
-      profiles: ProfilesTable
-      selected_metrics: SelectedMetricsTable
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
-
-export * from './metrics';
+export * from './common';
 export * from './facebook';
 export * from './profiles';
+
+export interface UnifiedSale {
+  id: string;
+  order_id: string;
+  platform: string;
+  platform_account_id?: string;
+  customer_name?: string;
+  customer_email?: string;
+  customer_document?: string;
+  total_amount?: number;
+  currency?: string;
+  status: string;
+  payment_status: string;
+  payment_method?: string;
+  created_at: string;
+  updated_at: string;
+  raw_data?: any;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+}
