@@ -41,12 +41,13 @@ export const getMetricMapping = (field: string): FacebookMetricMapping => {
 };
 
 export const buildFieldsParameter = (metrics: string[]): string => {
-  const basicFields = metrics
+  const basicFields = ['name', 'status', 'objective'];
+  const additionalFields = metrics
     .map(field => getMetricMapping(field))
     .filter(mapping => !mapping.isInsightMetric)
     .map(mapping => mapping.field);
 
-  return [...new Set(['name', 'status', 'objective', ...basicFields])].join(',');
+  return [...new Set([...basicFields, ...additionalFields])].join(',');
 };
 
 export const buildInsightsFieldsParameter = (metrics: string[], level?: 'account' | 'campaign' | 'adset' | 'ad'): string => {
