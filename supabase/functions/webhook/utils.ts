@@ -1,5 +1,22 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { TictoWebhookPayload, ProcessedWebhookData } from './types.ts';
+import { createClient } from '@supabase/supabase-js';
+import { CartpandaWebhookPayload, ProcessedWebhookData } from './types';
+
+interface Env {
+  get: (key: string) => string | undefined;
+}
+
+const env: Env = {
+  get: (key: string) => {
+    switch (key) {
+      case 'SUPABASE_URL':
+        return process.env.SUPABASE_URL;
+      case 'SUPABASE_SERVICE_ROLE_KEY':
+        return process.env.SUPABASE_SERVICE_ROLE_KEY;
+      default:
+        return undefined;
+    }
+  },
+};
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,8 +24,8 @@ export const corsHeaders = {
 };
 
 export function createSupabaseAdmin() {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const supabaseUrl = env.get('SUPABASE_URL');
+  const supabaseKey = env.get('SUPABASE_SERVICE_ROLE_KEY');
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error('Missing Supabase environment variables');
@@ -17,12 +34,12 @@ export function createSupabaseAdmin() {
   return createClient(supabaseUrl, supabaseKey, {
     auth: {
       autoRefreshToken: false,
-      persistSession: false
-    }
+      persistSession: false,
+    },
   });
 }
 
-export function processWebhookData(payload: TictoWebhookPayload): ProcessedWebhookData {
+export function processWebhookData(payload: CartpandaWebhookPayload): ProcessedWebhookData {
   console.log('Processing webhook data:', JSON.stringify(payload, null, 2));
 
   if (!payload.order?.hash) {
@@ -49,10 +66,11 @@ export function processWebhookData(payload: TictoWebhookPayload): ProcessedWebho
     offer_id: payload.item?.offer_id || null,
     customer_name: payload.customer?.name || null,
     customer_email: payload.customer?.email || null,
-    customer_phone: payload.customer?.phone ? 
-      `${payload.customer.phone.ddi}${payload.customer.phone.ddd}${payload.customer.phone.number}` : null,
+    customer_phone: payload.customer?.phone
+      ? `${payload.customer.phone.ddi || ''}${payload.customer.phone.ddd || ''}${payload.customer.phone.number || ''}`.trim()
+      : null,
     customer_document: payload.customer?.cpf || payload.customer?.cnpj || null,
-    raw_data: payload
+    raw_data: payload,
   };
 
   console.log('Processed webhook data:', JSON.stringify(processedData, null, 2));

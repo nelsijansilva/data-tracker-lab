@@ -1,0 +1,9 @@
+@echo off
+mkdir "src\components\ui"
+mkdir "src\components\feature"
+mkdir "src\hooks"
+mkdir "src\lib"
+mkdir "src\pages"
+mkdir "src\services"
+mkdir "src\types"
+mkdir "src\utils"
