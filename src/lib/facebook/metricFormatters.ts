@@ -1,5 +1,5 @@
-import { Metric } from "@/components/facebook/MetricSelector";
-import { getMetricMapping } from "./metrics";
+import { Metric } from '@/components/facebook/MetricSelector';
+import { getMetricMapping } from './metrics';
 
 export type CurrencyConfig = {
   currency: string;
@@ -46,11 +46,12 @@ export const formatMetricValue = (value: any, metric: Metric, currencyConfig: Cu
       }).format(numericValue);
 
     case 'percentage':
+      // Divide por 100 para converter o valor decimal em percentual
       return new Intl.NumberFormat(locale, {
         style: 'percent',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(numericValue);
+      }).format(numericValue / 100);
 
     case 'decimal':
       return new Intl.NumberFormat(locale, {
