@@ -44,12 +44,12 @@ export const MetricsTable = ({
             <TableHead 
               key={metric.id} 
               className={cn(
-                "text-gray-400 whitespace-nowrap",
+                "text-gray-400 whitespace-nowrap font-semibold",
                 getCellAlignment(metric),
                 index !== metrics.length - 1 && "border-r border-primary/20"
               )}
             >
-              {metric.name.toUpperCase()}
+              {metric.name}
             </TableHead>
           ))}
         </TableRow>
