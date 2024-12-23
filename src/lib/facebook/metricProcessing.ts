@@ -1,4 +1,4 @@
-import type { Metric } from "@/components/facebook/MetricSelector";
+import type { Metric } from '@/components/facebook/MetricSelector';
 
 export type MetricCategory = 'monetary' | 'percentage' | 'count' | 'rate';
 
