@@ -12,6 +12,16 @@ interface CampaignRowProps {
 }
 
 export const CampaignRow = ({ campaign, metrics, isSelected, onClick }: CampaignRowProps) => {
+  const getCellValue = (metric: Metric) => {
+    const value = campaign[metric.field];
+    
+    if (metric.field === 'name') {
+      return value || '(Sem nome)';
+    }
+    
+    return <MetricValue value={value} metric={metric} />;
+  };
+
   return (
     <TableRow 
       className={cn(
@@ -31,7 +41,7 @@ export const CampaignRow = ({ campaign, metrics, isSelected, onClick }: Campaign
             index !== metrics.length - 1 && "border-r border-primary/20"
           )}
         >
-          <MetricValue value={campaign[metric.field]} metric={metric} />
+          {getCellValue(metric)}
         </TableCell>
       ))}
     </TableRow>
