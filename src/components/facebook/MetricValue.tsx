@@ -13,5 +13,6 @@ export const MetricValue: React.FC<MetricValueProps> = ({
   metric, 
   currencyConfig 
 }) => {
-  return <span>{formatMetricValue(value, metric, currencyConfig)}</span>;
+  const formattedValue = formatMetricValue(value, metric, currencyConfig);
+  return <span>{formattedValue}</span>;
 };

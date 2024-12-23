@@ -3,6 +3,7 @@ export type FacebookMetricMapping = {
   apiField?: string;
   isInsightMetric?: boolean;
   level?: 'account' | 'campaign' | 'adset' | 'ad';
+  format?: 'currency' | 'percentage' | 'number' | 'decimal';
 };
 
 export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
@@ -11,18 +12,23 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   status: { field: 'status', isInsightMetric: false },
   objective: { field: 'objective', isInsightMetric: false },
   
-  // Valid insight metrics with appropriate levels
-  spend: { field: 'spend', isInsightMetric: true },
-  impressions: { field: 'impressions', isInsightMetric: true },
-  clicks: { field: 'clicks', isInsightMetric: true },
-  cpc: { field: 'cpc', isInsightMetric: true },
-  ctr: { field: 'ctr', isInsightMetric: true },
-  cpm: { field: 'cpm', isInsightMetric: true },
-  reach: { field: 'reach', isInsightMetric: true },
-  frequency: { field: 'frequency', isInsightMetric: true },
-  cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true },
-  unique_clicks: { field: 'unique_clicks', isInsightMetric: true },
-  unique_ctr: { field: 'unique_ctr', isInsightMetric: true }
+  // Budget metrics
+  budget_remaining: { field: 'budget_remaining', isInsightMetric: false, format: 'currency' },
+  daily_budget: { field: 'daily_budget', isInsightMetric: false, format: 'currency' },
+  lifetime_budget: { field: 'lifetime_budget', isInsightMetric: false, format: 'currency' },
+  
+  // Valid insight metrics with appropriate levels and formats
+  spend: { field: 'spend', isInsightMetric: true, format: 'currency' },
+  impressions: { field: 'impressions', isInsightMetric: true, format: 'number' },
+  clicks: { field: 'clicks', isInsightMetric: true, format: 'number' },
+  cpc: { field: 'cpc', isInsightMetric: true, format: 'currency' },
+  ctr: { field: 'ctr', isInsightMetric: true, format: 'percentage' },
+  cpm: { field: 'cpm', isInsightMetric: true, format: 'currency' },
+  reach: { field: 'reach', isInsightMetric: true, format: 'number' },
+  frequency: { field: 'frequency', isInsightMetric: true, format: 'decimal' },
+  cost_per_unique_click: { field: 'cost_per_unique_click', isInsightMetric: true, format: 'currency' },
+  unique_clicks: { field: 'unique_clicks', isInsightMetric: true, format: 'number' },
+  unique_ctr: { field: 'unique_ctr', isInsightMetric: true, format: 'percentage' }
 };
 
 export const getMetricMapping = (field: string): FacebookMetricMapping => {

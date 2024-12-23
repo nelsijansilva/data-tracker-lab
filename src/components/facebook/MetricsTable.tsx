@@ -21,7 +21,7 @@ export const MetricsTable = ({
   onRowClick, 
   selectedId,
   getRowId,
-  currencyConfig
+  currencyConfig = { currency: 'BRL', locale: 'pt-BR' }
 }: MetricsTableProps) => {
   const totals = calculateMetricTotals(data, metrics);
 

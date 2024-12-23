@@ -1,4 +1,5 @@
 import { Metric } from "@/components/facebook/MetricSelector";
+import { getMetricMapping } from "./metrics";
 
 export type CurrencyConfig = {
   currency: string;
@@ -11,7 +12,7 @@ const DEFAULT_CURRENCY: CurrencyConfig = {
 };
 
 export const formatMetricValue = (value: any, metric: Metric, currencyConfig: CurrencyConfig = DEFAULT_CURRENCY) => {
-  if (!value) return '0';
+  if (value === null || value === undefined) return '0';
 
   // Se o valor for um array de objetos (comum em métricas do Facebook como 'actions')
   if (Array.isArray(value)) {
@@ -26,47 +27,43 @@ export const formatMetricValue = (value: any, metric: Metric, currencyConfig: Cu
     return '-';
   }
 
-  // Para valores numéricos, formatar adequadamente
-  if (typeof value === 'number') {
-    const { currency, locale } = currencyConfig;
+  const metricMapping = getMetricMapping(metric.field);
+  const numericValue = Number(value);
 
-    // Para métricas monetárias (spend, cost), usar formatação de moeda sem arredondamento
-    if (
-      metric.field.includes('spend') || 
-      metric.field.includes('cost') || 
-      metric.field.includes('budget')
-    ) {
+  if (isNaN(numericValue)) {
+    return String(value);
+  }
+
+  const { currency, locale } = currencyConfig;
+
+  switch (metricMapping.format) {
+    case 'currency':
       return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: currency,
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(value);
-    }
-    
-    // Para CTR, CPM e CPC, mostrar exatamente como está, sem arredondamento
-    if (
-      metric.field.toLowerCase().includes('ctr') || 
-      metric.field.toLowerCase().includes('cpm') || 
-      metric.field.toLowerCase().includes('cpc')
-    ) {
-      return value.toString();
-    }
-    
-    // Para percentuais (taxas), mostrar valor exato
-    if (metric.field.includes('rate')) {
-      return `${(value * 100).toString()}%`;
-    }
-    
-    // Para números inteiros (impressions, clicks), usar separador de milhares
-    if (Number.isInteger(value)) {
-      return new Intl.NumberFormat(locale).format(value);
-    }
-    
-    // Para outros números decimais, mostrar valor exato
-    return value.toString();
-  }
+      }).format(numericValue);
 
-  // Para strings e outros tipos
-  return String(value);
+    case 'percentage':
+      return new Intl.NumberFormat(locale, {
+        style: 'percent',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(numericValue);
+
+    case 'decimal':
+      return new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(numericValue);
+
+    case 'number':
+      return new Intl.NumberFormat(locale, {
+        maximumFractionDigits: 0
+      }).format(numericValue);
+
+    default:
+      return String(value);
+  }
 };
