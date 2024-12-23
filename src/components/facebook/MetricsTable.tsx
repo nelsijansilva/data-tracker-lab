@@ -4,6 +4,7 @@ import { MetricValue } from "@/components/facebook/MetricValue";
 import { calculateMetricTotals } from "@/utils/metricCalculations";
 import { cn } from "@/lib/utils";
 import type { Metric } from "./MetricSelector";
+import type { CurrencyConfig } from "@/lib/facebook/metricFormatters";
 
 interface MetricsTableProps {
   data: any[];
@@ -11,6 +12,7 @@ interface MetricsTableProps {
   onRowClick?: (id: string) => void;
   selectedId?: string | null;
   getRowId: (item: any) => string;
+  currencyConfig?: CurrencyConfig;
 }
 
 export const MetricsTable = ({ 
@@ -18,7 +20,8 @@ export const MetricsTable = ({
   metrics, 
   onRowClick, 
   selectedId,
-  getRowId 
+  getRowId,
+  currencyConfig
 }: MetricsTableProps) => {
   const totals = calculateMetricTotals(data, metrics);
 
@@ -59,7 +62,11 @@ export const MetricsTable = ({
                   index !== metrics.length - 1 && "border-r border-primary/20"
                 )}
               >
-                <MetricValue value={item[metric.field]} metric={metric} />
+                <MetricValue 
+                  value={item[metric.field]} 
+                  metric={metric} 
+                  currencyConfig={currencyConfig}
+                />
               </TableCell>
             ))}
           </TableRow>
@@ -75,7 +82,11 @@ export const MetricsTable = ({
                 index !== metrics.length - 1 && "border-r border-primary/20"
               )}
             >
-              <MetricValue value={totals[metric.field]} metric={metric} />
+              <MetricValue 
+                value={totals[metric.field]} 
+                metric={metric}
+                currencyConfig={currencyConfig}
+              />
             </TableCell>
           ))}
         </TableRow>
