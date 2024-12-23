@@ -5,8 +5,6 @@ import { DateRange } from "react-day-picker";
 import { useMetricsStore } from "@/stores/metricsStore";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { RevenueMetrics } from "./metrics/RevenueMetrics";
-import { SalesMetricsGrid } from "./cartpanda/metrics/SalesMetricsGrid";
-import { SalesStatusCard } from "./cartpanda/metrics/SalesStatusCard";
 
 interface UnifiedMetricsDashboardProps {
   dateRange: DateRange;
@@ -56,15 +54,6 @@ export const UnifiedMetricsDashboard = ({ dateRange, selectedAccountId }: Unifie
         roas={roas}
         profit={profit}
       />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SalesStatusCard salesStatus={
-          sales?.reduce((acc: Record<string, number>, sale) => {
-            acc[sale.status] = (acc[sale.status] || 0) + 1;
-            return acc;
-          }, {})
-        } />
-      </div>
     </div>
   );
 };
