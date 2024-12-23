@@ -24,14 +24,15 @@ export const MetricValue: React.FC<MetricValueProps> = ({ value, metric }) => {
 
   // Para valores numéricos, formatar adequadamente
   if (typeof value === 'number') {
-    // Para CTR, CPM e CPC, sempre mostrar 2 casas decimais
+    // Para CTR, CPM e CPC, sempre mostrar 2 casas decimais sem arredondamento adicional
     if (
       metric.field.toLowerCase().includes('ctr') || 
       metric.field.toLowerCase().includes('cpm') || 
       metric.field.toLowerCase().includes('cpc')
     ) {
-      // Primeiro converte para string com muitas casas decimais e depois limita a 2
-      return <span>{Number(value.toFixed(2))}</span>;
+      // Força exatamente 2 casas decimais usando string
+      const fixedValue = value.toString().match(/^\d+(?:\.\d{0,2})?/);
+      return <span>{fixedValue ? fixedValue[0] : value.toFixed(2)}</span>;
     }
     
     // Para percentuais (taxas), sempre mostrar 2 casas decimais
