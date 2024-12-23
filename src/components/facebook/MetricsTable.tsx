@@ -23,12 +23,17 @@ export const MetricsTable = ({
   const totals = calculateMetricTotals(data, metrics);
 
   const getCellValue = (item: any, metric: Metric) => {
-    // Para campos básicos, retornar diretamente o valor
     if (['name', 'status', 'objective'].includes(metric.field)) {
       return item[metric.field] || '-';
     }
-    // Para outras métricas, usar o componente MetricValue
     return <MetricValue value={item[metric.field]} metric={metric} />;
+  };
+
+  const getCellAlignment = (metric: Metric) => {
+    if (['name', 'status', 'objective'].includes(metric.field)) {
+      return "text-left";
+    }
+    return "text-right";
   };
 
   return (
@@ -40,6 +45,7 @@ export const MetricsTable = ({
               key={metric.id} 
               className={cn(
                 "text-gray-400",
+                getCellAlignment(metric),
                 index !== metrics.length - 1 && "border-r border-primary/20"
               )}
             >
@@ -65,6 +71,7 @@ export const MetricsTable = ({
                 key={metric.id} 
                 className={cn(
                   "text-gray-400",
+                  getCellAlignment(metric),
                   index !== metrics.length - 1 && "border-r border-primary/20"
                 )}
               >
@@ -81,6 +88,7 @@ export const MetricsTable = ({
               key={metric.id} 
               className={cn(
                 "text-primary",
+                getCellAlignment(metric),
                 index !== metrics.length - 1 && "border-r border-primary/20"
               )}
             >
