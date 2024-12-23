@@ -9,9 +9,9 @@ export interface ProcessedMetric {
 }
 
 const MONETARY_METRICS = ['spend', 'cpm', 'cpc', 'cost_per_unique_click', 'cost_per_conversion'];
-const PERCENTAGE_METRICS = ['ctr', 'unique_ctr', 'return_on_ad_spend'];
+const PERCENTAGE_METRICS = ['ctr', 'unique_ctr'];
 const RATE_METRICS = ['frequency'];
-const COUNT_METRICS = ['impressions', 'clicks', 'reach', 'unique_clicks', 'content_views'];
+const COUNT_METRICS = ['impressions', 'clicks', 'reach', 'unique_clicks'];
 
 export const getMetricCategory = (field: string): MetricCategory => {
   const normalizedField = field.toLowerCase();
