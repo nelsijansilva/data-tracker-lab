@@ -27,7 +27,10 @@ export const FACEBOOK_METRIC_MAPPINGS: Record<string, FacebookMetricMapping> = {
   unique_clicks: { field: 'unique_clicks', isInsightMetric: true },
   unique_ctr: { field: 'unique_ctr', isInsightMetric: true },
   actions: { field: 'actions', isInsightMetric: true },
-  cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true }
+  cost_per_action_type: { field: 'cost_per_action_type', isInsightMetric: true },
+  return_on_ad_spend: { field: 'return_on_ad_spend', isInsightMetric: true },
+  cost_per_conversion: { field: 'cost_per_conversion', isInsightMetric: true },
+  content_views: { field: 'content_views', isInsightMetric: true }
 };
 
 export const getMetricMapping = (field: string): FacebookMetricMapping => {

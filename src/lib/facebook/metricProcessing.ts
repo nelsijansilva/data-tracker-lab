@@ -8,10 +8,10 @@ export interface ProcessedMetric {
   field: string;
 }
 
-const MONETARY_METRICS = ['spend', 'cpm', 'cpc', 'cost_per_unique_click'];
-const PERCENTAGE_METRICS = ['ctr', 'unique_ctr'];
+const MONETARY_METRICS = ['spend', 'cpm', 'cpc', 'cost_per_unique_click', 'cost_per_conversion'];
+const PERCENTAGE_METRICS = ['ctr', 'unique_ctr', 'return_on_ad_spend'];
 const RATE_METRICS = ['frequency'];
-const COUNT_METRICS = ['impressions', 'clicks', 'reach', 'unique_clicks'];
+const COUNT_METRICS = ['impressions', 'clicks', 'reach', 'unique_clicks', 'content_views'];
 
 export const getMetricCategory = (field: string): MetricCategory => {
   const normalizedField = field.toLowerCase();
@@ -29,27 +29,27 @@ export const getMetricCategory = (field: string): MetricCategory => {
 };
 
 export const processMetricValue = (value: number, category: MetricCategory): string => {
+  if (typeof value !== 'number' || isNaN(value)) {
+    return '0';
+  }
+
   if (category === 'monetary') {
-    // Converte para centavos e depois formata como Real
-    return `R$ ${(value).toLocaleString('pt-BR', {
+    return `R$ ${value.toLocaleString('pt-BR', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })}`;
   }
   
   if (category === 'percentage') {
-    // Mantém exatamente duas casas decimais sem arredondamento
-    const fixedValue = value.toString().match(/^\d+(?:\.\d{0,2})?/);
-    return `${fixedValue ? fixedValue[0] : value.toFixed(2)}%`;
+    const fixedValue = value.toFixed(2);
+    return `${fixedValue}%`;
   }
   
   if (category === 'rate') {
-    // Mantém exatamente duas casas decimais sem arredondamento
-    const fixedValue = value.toString().match(/^\d+(?:\.\d{0,2})?/);
-    return fixedValue ? fixedValue[0] : value.toFixed(2);
+    const fixedValue = value.toFixed(2);
+    return fixedValue;
   }
   
-  // Para métricas de contagem, usa separador de milhares
   return value.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 };
 
@@ -62,9 +62,16 @@ export const processInsightsData = (insights: any, metrics: Metric[]): Record<st
       return;
     }
 
-    const rawValue = insights[metric.field];
-    const numericValue = typeof rawValue === 'number' ? rawValue : 0;
-    result[metric.field] = numericValue;
+    let rawValue = insights[metric.field];
+    
+    // Handle array values (like actions)
+    if (Array.isArray(rawValue)) {
+      rawValue = rawValue.length;
+    }
+
+    // Convert string numbers to actual numbers
+    const numericValue = typeof rawValue === 'string' ? parseFloat(rawValue) : rawValue;
+    result[metric.field] = typeof numericValue === 'number' && !isNaN(numericValue) ? numericValue : 0;
   });
   
   return result;
